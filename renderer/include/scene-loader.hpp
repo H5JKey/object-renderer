@@ -1,5 +1,4 @@
 #pragma once
-
 #include <nlohmann/json.hpp>
 #include "scene.hpp"
 
