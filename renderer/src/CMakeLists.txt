@@ -3,6 +3,8 @@ add_executable(renderer
     scene.cpp
     scene-loader.cpp
     render-engine.cpp
+    render-target.cpp
+    target-manager.cpp
 )
 
 target_link_libraries(renderer PRIVATE
