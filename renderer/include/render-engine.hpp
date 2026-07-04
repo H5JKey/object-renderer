@@ -5,10 +5,16 @@
 #include "render-target.hpp"
 #include "scene.hpp"
 
-class Engine {
-public:
-    Engine();
+class ContextGuard {
 
+};
+
+class RenderEngine {
+private:
+    GLuint program;
+public:
+    RenderEngine();
+    void compileShaders();
     void renderFrame(RenderTarget& target, const Scene& scene) const;
 
 };

@@ -6,4 +6,4 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(glad)
-glad_add_library(glad REPRODUCIBLE API gl:core=4.3)
+glad_add_library(glad REPRODUCIBLE API gl:core=4.6)

@@ -7,27 +7,72 @@ TargetManager& TargetManager::getInstance() {
     return instance;
 }
 
-std::weak_ptr<RenderTarget> TargetManager::createEGLTarget(int width, int height) {
-    if (!initialized) {
-        std::println("Initializing EGL...");
-        display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        if (display == EGL_NO_DISPLAY) {
+void TargetManager::init() {
+    TargetManager& self = getInstance();
+    if (!self.initialized) {
+        std::println("Initializing EGL");
+        self.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        if (self.display == EGL_NO_DISPLAY) {
             throw std::runtime_error("Failed to get display");
         }
 
-        if (!eglInitialize(display, &majorVersion, &minorVersion)) {
+        if (!eglInitialize(self.display, &self.majorVersion, &self.minorVersion)) {
              throw std::runtime_error("Failed to initialize EGL");
         }
 
-        EGLint configAttribs[] = { EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8, EGL_NONE };
+        eglBindAPI(EGL_OPENGL_API);
+
+        EGLint configAttribs[] = {
+            EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+            EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+            EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8,
+            EGL_BLUE_SIZE, 8, EGL_ALPHA_SIZE, 8,
+            EGL_NONE
+        };
+        
         EGLint numConfigs;
-        if (!eglChooseConfig(display, configAttribs, &config, 1, &numConfigs)) {
+        if (!eglChooseConfig(self.display, configAttribs, &self.config, 1, &numConfigs)) {
             throw std::runtime_error("Failed to choose config");
         }
-        std::println("EGL initialization finished");
-        initialized = true;
+
+        EGLint contextAttribs[] = {
+            EGL_CONTEXT_MAJOR_VERSION, 4,
+            EGL_CONTEXT_MINOR_VERSION, 3,
+            EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+            EGL_NONE
+        };
+
+        if (!(self.context = eglCreateContext(self.display, self.config, EGL_NO_CONTEXT, contextAttribs))) {
+            EGLint error = eglGetError();
+            throw std::runtime_error("Failed to create EGL context. Error: " + std::to_string(error));
+        }
+
+        EGLint surfaceAttribs[] = { 
+            EGL_WIDTH, 1, 
+            EGL_HEIGHT, 1,
+            EGL_NONE 
+        };
+        if (!(self.dummySurface = eglCreatePbufferSurface(self.display, self.config, surfaceAttribs))) {
+            throw std::runtime_error("Failed to initialize EGL surface");
+        }
+
+        if (!eglMakeCurrent(self.display, self.dummySurface, self.dummySurface, self.context)) {
+            throw std::runtime_error("eglMakeCurrent for dummy surface in TargetManager::init failed");
+        }
+
+        if (!gladLoadGL(eglGetProcAddress)) {
+            throw std::runtime_error("gladLoadGL failed");
+        }
+
+        self.initialized = true;
     }
-    auto target = std::shared_ptr<EglTarget>(new EglTarget(width, height, display, config));
+}
+
+std::weak_ptr<RenderTarget> TargetManager::createEGLTarget(int width, int height) {
+    if (!initialized) {
+        throw std::runtime_error("Failed to create EGLTarget: context wasnt created");
+    }
+    auto target = std::shared_ptr<EglTarget>(new EglTarget(width, height, display, config, context));
     targets.push_back(target);
     return target;
 }

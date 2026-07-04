@@ -14,3 +14,11 @@ target_link_libraries(renderer PRIVATE
 target_include_directories(renderer PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
+
+add_custom_command(
+    TARGET renderer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/shaders
+        ${CMAKE_BINARY_DIR}/shaders
+    COMMENT "Copying shaders to build directory"
+)

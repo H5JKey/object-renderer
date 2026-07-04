@@ -15,6 +15,11 @@ public:
     static TargetManager& getInstance();
     std::weak_ptr<RenderTarget> createEGLTarget(int width, int height);
 
+    static void init();
+
+    EGLDisplay getDisplay() const noexcept {return display;}
+    EGLDisplay getContext() const noexcept {return context;}
+
     void initializeEGL();
 private:
     TargetManager() = default;
@@ -23,6 +28,8 @@ private:
     EGLint majorVersion, minorVersion;
     EGLDisplay display;
     EGLConfig config;
+    EGLContext context;
+    EGLSurface dummySurface;
 
     std::vector<std::shared_ptr<RenderTarget>> targets;
     bool initialized = false;
