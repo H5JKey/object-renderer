@@ -1,0 +1,62 @@
+#include <stdexcept>
+#include <print>
+#include <vector>
+
+#include "render-target.hpp"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config, EGLContext context) : RenderTarget(width, height) {
+    this->display = display;
+    this->context = context;
+    EGLint surfaceAttribs[] = { 
+        EGL_WIDTH, width, 
+        EGL_HEIGHT, height,
+        EGL_NONE 
+    };
+    if (!(surface = eglCreatePbufferSurface(display, config, surfaceAttribs))) {
+        throw std::runtime_error("Failed to initialize EGL surface");
+    }
+    makeCurrent();
+    glGenTextures(1, &renderTexture);
+    glBindTexture(GL_TEXTURE_2D, renderTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    release();
+    initialized = true;
+
+    std::println("EGl target created");
+}
+
+void EglTarget::swapBuffers() {
+     glBindTexture(GL_TEXTURE_2D, renderTexture);
+    
+    std::vector<unsigned char> pixels(width * height * 4);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+    stbi_write_png("output.png", width, height, 4, pixels.data(), width * 4);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+void EglTarget::makeCurrent() {
+    if (!eglMakeCurrent(display, surface, surface, context)) {
+        throw std::runtime_error("eglMakeCurrent in EglTarget::makeCurrent failed");
+    }
+}
+
+void EglTarget::release() {
+    if (!eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
+        throw std::runtime_error("eglMakeCurrent in EglTarget::releaseCurrent failed");
+    }
+}
+
+GLuint EglTarget::getRenderTexture() const {
+    return renderTexture;
+}
+
+EglTarget::~EglTarget() {
+    
+}
