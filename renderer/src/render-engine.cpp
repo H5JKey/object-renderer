@@ -27,6 +27,16 @@ void RenderEngine::compileShaders() {
     GLint success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
+        GLint logLength;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+        
+        std::vector<char> log(logLength);
+        glGetShaderInfoLog(shader, logLength, nullptr, log.data());
+        
+        std::string errorLog(log.data(), logLength);
+
+        std::println("Shader compilation failed:");
+        std::println("{}", errorLog);
         throw std::runtime_error("Shader compilation failed");
     }
 
@@ -52,20 +62,39 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
         GLenum error;
         RenderTarget::ContextGuard context(target);
 
+        GLuint vertexSSBO, indexSSBO;
+
+        const auto& vertices = scene.vertices;
+        const auto& indices = scene.indices;
+
+        glGenBuffers(1, &vertexSSBO);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, vertices.size() * sizeof(vec3), 
+                    vertices.data(), GL_STATIC_DRAW);
+
+        glGenBuffers(1, &indexSSBO);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, indexSSBO);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, indices.size() * sizeof(int), 
+                    indices.data(), GL_STATIC_DRAW);
+
         glUseProgram(program);
+
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vertexSSBO);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indexSSBO);
+
+        glUniform1i(glGetUniformLocation(program, "uCount"), indices.size() / 3);
+        glUniform3f(glGetUniformLocation(program, "uOrigin"), scene.origin.x, scene.origin.y, scene.origin.z);
+        glUniform3f(glGetUniformLocation(program, "uLookAt"), scene.lookAt.x, scene.lookAt.y, scene.lookAt.z);
+        glUniform3f(glGetUniformLocation(program, "uSunDirection"), scene.sunDirection.x, scene.sunDirection.y, scene.sunDirection.z);
+        glUniform3f(glGetUniformLocation(program, "uBackgroundColor"), scene.backgroundColor.x, scene.backgroundColor.y, scene.backgroundColor.z);
+        glUniform3f(glGetUniformLocation(program, "uSunColor"), scene.sunColor.x, scene.sunColor.y, scene.sunColor.z);
+        glUniform1f(glGetUniformLocation(program, "uFovDegrees"), 90.0f);
         
-        error = glGetError();
-        if (error!=0) {
-            throw std::runtime_error("glUseProgram failed. Error: "+std::to_string(error));
-        }
+        
         glBindImageTexture(0, target.getRenderTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-        error = glGetError();
-        if (error != 0) {
-            throw std::runtime_error("glBindImageTexture failed. Error: "+std::to_string(error));
-        }
       
-        int groupsX = (target.getWidth() + 7) / 8;
-        int groupsY = (target.getHeight() + 7) / 8;
+        int groupsX = (target.getWidth() + 15) / 16;
+        int groupsY = (target.getHeight() + 15) / 16;
         glDispatchCompute(groupsX, groupsY, 1);
 
         error = glGetError();
@@ -77,6 +106,8 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
         target.swapBuffers();
 
         glUseProgram(0);
+        glDeleteBuffers(1, &indexSSBO);
+        glDeleteBuffers(1, &vertexSSBO);
     }
 }
 
