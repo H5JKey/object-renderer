@@ -62,27 +62,42 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
         GLenum error;
         RenderTarget::ContextGuard context(target);
 
-        GLuint vertexSSBO, indexSSBO;
+        GLuint vertexSSBO, vertexIndexSSBO;
+        GLuint materialSSBO, materialsIndexSSBO;
 
         const auto& vertices = scene.vertices;
-        const auto& indices = scene.indices;
+        const auto& vertexIndices = scene.vertexIndices;
+        const auto& materials = scene.materials;
+        const auto& materialIndices = scene.materialIndices;
 
         glGenBuffers(1, &vertexSSBO);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
         glBufferData(GL_SHADER_STORAGE_BUFFER, vertices.size() * sizeof(vec3), 
                     vertices.data(), GL_STATIC_DRAW);
 
-        glGenBuffers(1, &indexSSBO);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, indexSSBO);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, indices.size() * sizeof(int), 
-                    indices.data(), GL_STATIC_DRAW);
+        glGenBuffers(1, &vertexIndexSSBO);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexIndexSSBO);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, vertexIndices.size() * sizeof(int), 
+                    vertexIndices.data(), GL_STATIC_DRAW);
+
+        glGenBuffers(1, &materialSSBO);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialSSBO);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, materials.size() * sizeof(Material), 
+                    materials.data(), GL_STATIC_DRAW);
+
+        glGenBuffers(1, &materialsIndexSSBO);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialsIndexSSBO);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, materialIndices.size() * sizeof(int), 
+                    materialIndices.data(), GL_STATIC_DRAW);
 
         glUseProgram(program);
 
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vertexSSBO);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, indexSSBO);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vertexIndexSSBO);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, materialSSBO);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, materialsIndexSSBO);
 
-        glUniform1i(glGetUniformLocation(program, "uCount"), indices.size() / 3);
+        glUniform1i(glGetUniformLocation(program, "uCount"), vertexIndices.size() / 3);
         glUniform3f(glGetUniformLocation(program, "uOrigin"), scene.origin.x, scene.origin.y, scene.origin.z);
         glUniform3f(glGetUniformLocation(program, "uLookAt"), scene.lookAt.x, scene.lookAt.y, scene.lookAt.z);
         glUniform3f(glGetUniformLocation(program, "uSunDirection"), scene.sunDirection.x, scene.sunDirection.y, scene.sunDirection.z);
@@ -106,7 +121,9 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
         target.swapBuffers();
 
         glUseProgram(0);
-        glDeleteBuffers(1, &indexSSBO);
+        glDeleteBuffers(1, &vertexIndexSSBO);
         glDeleteBuffers(1, &vertexSSBO);
+        glDeleteBuffers(1, &materialSSBO);
+        glDeleteBuffers(1, &materialsIndexSSBO);
     }
 }

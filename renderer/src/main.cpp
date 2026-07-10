@@ -8,7 +8,7 @@
 int main(int argc, char* argv[]) {
     TargetManager::init();
     RenderEngine engine;
-    std::shared_ptr<RenderTarget>  egl = TargetManager::getInstance().createEGLTarget(800,600).lock();
+    std::shared_ptr<RenderTarget>  egl = TargetManager::getInstance().createEGLTarget(1600,1200).lock();
     
     Scene scene;
     engine.renderFrame(*egl, scene);
