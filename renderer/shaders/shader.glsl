@@ -2,12 +2,26 @@
 
 layout(rgba8, binding = 0) uniform image2D outputImage;
 
-layout(std430, binding = 1) buffer vertexBuffer {
-    vec3 vertices[];
+struct Material {
+    vec4 albedo;
+    float metalness;
+    float roughness;
 };
 
-layout(std430, binding = 2) buffer indexBuffer {
-    int indices[];
+layout(std430, binding = 1) buffer vertexBuffer {
+    vec4 vertices[];
+};
+
+layout(std430, binding = 2) buffer vertexIndexBuffer {
+    int verticesIndices[];
+};
+
+layout(std430, binding = 3) buffer materialBuffer {
+    Material materials[];
+};
+
+layout(std430, binding = 4) buffer materialIndexBuffer {
+    int materialsIndices[];
 };
 
 uniform int uCount;
@@ -31,9 +45,9 @@ struct HitInfo {
 HitInfo triangle_intersection(vec3 ro, vec3 rd, int triangle_idx) {
     HitInfo info;
 
-    vec3 v0 = vertices[indices[3*triangle_idx]];
-    vec3 v1 = vertices[indices[3*triangle_idx+1]];
-    vec3 v2 = vertices[indices[3*triangle_idx+2]];
+    vec3 v0 = vertices[verticesIndices[3*triangle_idx]].xyz;
+    vec3 v1 = vertices[verticesIndices[3*triangle_idx+1]].xyz;
+    vec3 v2 = vertices[verticesIndices[3*triangle_idx+2]].xyz;
 
     vec3 e1 = v1 - v0;
     vec3 e2 = v2 - v0;
@@ -82,33 +96,14 @@ HitInfo triangle_intersection(vec3 ro, vec3 rd, int triangle_idx) {
     }
     info.distance = t;
     info.position = ro + rd * t;
-    info.normal = cross(v1 - v0, v2 - v0);
-    info.material_id = 0;
+    info.normal = normalize(cross(v1 - v0, v2 - v0));
+    info.material_id = materialsIndices[triangle_idx];
     return info;
 }
 
 vec3 getBackgroundColor(vec3 direction) {
     return uBackgroundColor + uSunColor * pow(max(0.0, dot(direction, normalize(uSunDirection))), 256.0);
 }
-
-vec3 traceRay(vec3 origin, vec3 direction) {
-    const int MAX_DIST=100000;
-    HitInfo closestHitInfo;
-    closestHitInfo.distance = MAX_DIST;
-    for (int i=0; i<uCount; i++) {
-        HitInfo info = triangle_intersection(origin, direction, i);
-        if (info.distance > 0.0 && info.distance < closestHitInfo.distance) {
-            closestHitInfo = info;
-        }
-    }
-    if (closestHitInfo.distance < MAX_DIST) {
-        return vec3(1.0,0.0,0.0);
-    }
-    else {
-        return getBackgroundColor(direction);
-    }
-}
-
 
 uint pcg(uint seed) {
     uint state = seed * uint(747796405) + uint(2891336453);
@@ -124,6 +119,59 @@ vec2 random2(uint seed) {
     return vec2(random(seed), random(seed+1));
 }
 
+vec3 randomOnSphere(uint seed){
+  vec3 rand= vec3(random(seed+67),random(seed+42),random(seed+52));
+  
+  float theta = rand.x * 2.0 * 3.14159265;
+  float v = rand.y;
+  float phi = acos (2.0 * v-1.0);
+  float r = pow(rand.z,1.0 / 3.0);
+  float x=r*sin(phi)*cos (theta);
+  float y=r* sin(phi)*sin(theta);
+  float z=r*cos(phi);
+  return vec3(x, y, z);
+}
+
+const float MAX_DIST=100000.0;
+HitInfo castRay(vec3 origin, vec3 direction) {
+    HitInfo closestHitInfo;
+    closestHitInfo.distance = MAX_DIST;
+    for (int i=0; i<uCount; i++) {
+        HitInfo info = triangle_intersection(origin, direction, i);
+        if (info.distance > 0.0 && info.distance < closestHitInfo.distance) {
+            closestHitInfo = info;
+        }
+    }
+    return closestHitInfo;
+}
+
+vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
+    vec3 color = vec3(0,0,0);
+    vec3 throughput = vec3(1.0);
+    const int bounces = 16;
+    for (int i=0; i<bounces; i++) {
+        seed = pcg(seed);
+        HitInfo hit = castRay(origin, direction);
+        if (hit.distance == MAX_DIST) {
+            return throughput * getBackgroundColor(direction);
+        }
+        Material material = materials[hit.material_id];
+        if (material.metalness > 0.0) {
+            throughput *= material.albedo.xyz;
+            origin = hit.position + hit.normal * 0.001; 
+
+            vec3 randomDirection = randomOnSphere(seed);
+            if (dot(randomDirection, hit.normal) < 0.0) {
+                randomDirection = -randomDirection;
+            }
+            direction = normalize(mix(reflect(direction, hit.normal), randomDirection, material.roughness));
+        }
+        else {
+            
+        }
+    }
+    return vec3(0.0);
+}
 
 
 void main() {
@@ -140,7 +188,7 @@ void main() {
     vec3 up = cross(forward, right);
 
     vec3 color = vec3(0.0);
-    const int samples = 32;
+    const int samples = 128;
     uint seed = uint(pixel.x) * 10000u + uint(pixel.y) * 100u;
     for (int i = 0; i < samples; i++) {
         seed = seed * 10 + uint(i);
@@ -150,7 +198,7 @@ void main() {
 
         vec3 direction = normalize(forward + right * fov * uv.x + up * fov * uv.y);
 
-        color += traceRay(uOrigin, direction);
+        color += traceRay(uOrigin, direction, seed);
     }
     color /= samples;
     imageStore(outputImage, pixel, vec4(color, 1.0));
