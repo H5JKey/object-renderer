@@ -120,7 +120,7 @@ vec2 random2(uint seed) {
 }
 
 vec3 randomOnSphere(uint seed){
-  vec3 rand= vec3(random(seed+67),random(seed+42),random(seed+52));
+  vec3 rand = vec3(random(seed+67),random(seed+42),random(seed+52));
   
   float theta = rand.x * 2.0 * 3.14159265;
   float v = rand.y;
@@ -145,6 +145,10 @@ HitInfo castRay(vec3 origin, vec3 direction) {
     return closestHitInfo;
 }
 
+vec3 schlick(float cosTheta, vec3 R0) {
+    return R0 + (vec3(1.0) - R0) * pow((1 - cosTheta), 5.0);
+}
+
 vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
     vec3 color = vec3(0,0,0);
     vec3 throughput = vec3(1.0);
@@ -157,7 +161,7 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
         }
         Material material = materials[hit.material_id];
         if (material.metalness > 0.0) {
-            throughput *= material.albedo.xyz;
+            throughput *= schlick(max(dot(hit.normal, -direction), 0.0), material.albedo.xyz);
             origin = hit.position + hit.normal * 0.001; 
 
             vec3 randomDirection = randomOnSphere(seed);
