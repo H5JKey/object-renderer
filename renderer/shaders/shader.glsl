@@ -31,6 +31,8 @@ uniform vec3 uLookAt;
 uniform vec3 uSunDirection;
 uniform vec3 uBackgroundColor;
 uniform vec3 uSunColor;
+uniform uint uSeed;
+uniform uint uFrameIndex;
 
 layout(local_size_x = 16, local_size_y = 16) in;
 
@@ -106,7 +108,7 @@ vec3 getBackgroundColor(vec3 direction) {
 }
 
 uint pcg(uint seed) {
-    uint state = seed * uint(747796405) + uint(2891336453);
+    uint state = seed * uint(747796405) + uint(2891336453u);
 	uint word = ((state >> ((state >> uint(28)) + uint(4))) ^ state) * uint(277803737);
 	return (word >> uint(22)) ^ word;
 }
@@ -145,8 +147,42 @@ HitInfo castRay(vec3 origin, vec3 direction) {
     return closestHitInfo;
 }
 
-vec3 schlick(float cosTheta, vec3 R0) {
+vec3 schlickFresnel(vec3 V, vec3 H, vec3 R0) {
+    float cosTheta = max(dot(H, V), 0.0);
     return R0 + (vec3(1.0) - R0) * pow((1 - cosTheta), 5.0);
+}
+
+vec3 GGX(float u1, float u2, vec3 N, float roughness) {
+    float theta = atan(roughness * roughness * sqrt(u1) / sqrt(1 - u1));
+    float phi = 2 * 3.141592 * u2;
+
+    float sinTheta = sin(theta);
+    vec3 local = vec3(sinTheta * cos(phi), cos(theta), sinTheta * sin(phi));
+    vec3 T;
+    if (abs(N.z) < 0.999) {
+        T = normalize(cross(vec3(0,0,1), N));
+    }
+    else {
+        T = normalize(cross(vec3(1,0,0), N));
+    }
+    vec3 B = normalize(cross(N, T));
+
+    return normalize(local.x * T + local.y * N + local.z * B);
+}
+
+float distribution(vec3 H, vec3 N, float roughness) {
+    float a = roughness * roughness;
+    float a2 = a*a;
+    return a2 / (3.141592 * pow((pow(dot(N,H), 2.0) * (a2 - 1.0) + 1.0), 2.0));
+}
+
+float schlickGGX(vec3 N, vec3 V, float roughness) {
+    float k = pow((roughness + 1.0), 2.0) / 8.0;
+    return dot(N,V) / (dot(N,V) * (1.0 - k) + k);
+}
+
+float smith(vec3 N, vec3 V, vec3 L, float roughness) {
+    return schlickGGX(N, V, roughness) * schlickGGX(N, L, roughness);
 }
 
 vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
@@ -161,14 +197,30 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
         }
         Material material = materials[hit.material_id];
         if (material.metalness > 0.0) {
-            throughput *= schlick(max(dot(hit.normal, -direction), 0.0), material.albedo.xyz);
-            origin = hit.position + hit.normal * 0.001; 
-
-            vec3 randomDirection = randomOnSphere(seed);
-            if (dot(randomDirection, hit.normal) < 0.0) {
-                randomDirection = -randomDirection;
+            if (material.roughness > 0.01) {
+                vec3 H,V,N,L;
+                do {
+                    float u1 = random(seed);
+                    float u2 = random(pcg(seed+1u));
+                    H = GGX(u1, u2, hit.normal, material.roughness);
+                    V = normalize(-direction);
+                    N = hit.normal;
+                    L = reflect(-V, H);
+                    seed = pcg(seed);
+                } while (dot(L, N) <= 0.0);
+                vec3 F = schlickFresnel(V, H, material.albedo.xyz);
+                float G = smith(N, V, L, material.roughness);
+                float D = distribution(H, N, material.roughness);
+                vec3 fr = (D * F * G) / (4 * dot(N,V) * dot(N, L));
+                float pdf = D * dot(N,H) / (4 * dot(V,H));
+                throughput *= fr * dot (N, L) / pdf;
+                origin = hit.position + hit.normal * 0.001; 
+                direction = L;
+            } else {
+                throughput *= schlickFresnel(-direction, hit.normal, material.albedo.xyz);
+                origin = hit.position + hit.normal * 0.001;
+                direction = reflect(direction, hit.normal);
             }
-            direction = normalize(mix(reflect(direction, hit.normal), randomDirection, material.roughness));
         }
         else {
             
@@ -185,6 +237,7 @@ void main() {
     if (pixel.x >= size.x || pixel.y >= size.y) {
         return;
     }
+    vec3 oldColor = imageLoad(outputImage, pixel).rgb;
     float fov = tan(uFovDegrees * 0.5 * 3.141592 / 180.0);
 
     vec3 forward = normalize(uLookAt - uOrigin);
@@ -192,10 +245,9 @@ void main() {
     vec3 up = cross(forward, right);
 
     vec3 color = vec3(0.0);
-    const int samples = 128;
-    uint seed = uint(pixel.x) * 10000u + uint(pixel.y) * 100u;
+    const int samples = 32;
     for (int i = 0; i < samples; i++) {
-        seed = seed * 10 + uint(i);
+        uint seed = uSeed + uint(i) + 6732 * uint(pixel.x) + 8157 * uint(pixel.y);
         vec2 jitter = random2(seed) - vec2(0.5, 0.5);
         vec2 uv = (2.0*vec2(pixel) + jitter - vec2(size)) / vec2(size).y;
         uv.y = -uv.y;
@@ -205,5 +257,6 @@ void main() {
         color += traceRay(uOrigin, direction, seed);
     }
     color /= samples;
+    color = mix(oldColor, color, 1.0 / (uFrameIndex + 1));
     imageStore(outputImage, pixel, vec4(color, 1.0));
 }
