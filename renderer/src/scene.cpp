@@ -1,14 +1,14 @@
 #include "scene.hpp"
 
 Scene::Scene() : 
-            origin(-60.0f, 40.0f, 60.0f),
+            origin(-45.0f, 40.0f, 45.0f),
             lookAt(0,0,0), 
             sunDirection(-10.0f, 3.0872f, -10.0f),
             sunColor(1.0f, 0.95f, 0.85f), 
             backgroundColor(0.53f, 0.81f, 0.92f) 
 {
     materials.emplace_back(vec3(0.8,0.8,0.8),1.0,0.85);
-    materials.emplace_back(vec3(0.5,0.5,0.5),1.0,0.05);
+    materials.emplace_back(vec3(0.5,0.5,0.5),1.0,0.15);
     materials.emplace_back(vec3(0.8,0.2,0.2),1.0,0.95);
 
     vertices.emplace_back(0,0,0);

@@ -107,16 +107,21 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
         
         
         glBindImageTexture(0, target.getRenderTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-      
-        int groupsX = (target.getWidth() + 15) / 16;
-        int groupsY = (target.getHeight() + 15) / 16;
-        glDispatchCompute(groupsX, groupsY, 1);
+        
+        for (int i=0; i<20; i++) {
+            glUniform1ui(glGetUniformLocation(program, "uSeed"), uint(rand()));
+            glUniform1ui(glGetUniformLocation(program, "uFrameIndex"), i);
+            int groupsX = (target.getWidth() + 15) / 16;
+            int groupsY = (target.getHeight() + 15) / 16;
+            glDispatchCompute(groupsX, groupsY, 1);
 
-        error = glGetError();
-        if (error!=0) {
-            throw std::runtime_error("glDispatchCompute failed. Error: "+std::to_string(error));
+            error = glGetError();
+            if (error!=0) {
+                throw std::runtime_error("glDispatchCompute failed. Error: "+std::to_string(error));
+            }
+            glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+            glFinish();
         }
-        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
         target.swapBuffers();
 
