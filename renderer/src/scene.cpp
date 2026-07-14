@@ -84,11 +84,10 @@ Scene::Scene() :
     vertexIndices.push_back(1);
     materialIndices.push_back(0);
 
-        // Вертикальный светильник на задней стене (z=0) – как окно
-    vertices.emplace_back(4, 5.5, 0.01);   // 8
-    vertices.emplace_back(6, 5.5, 0.01);   // 9
-    vertices.emplace_back(6, 7.5, 0.01);   // 10
-    vertices.emplace_back(4, 7.5, 0.01);   // 11
+    vertices.emplace_back(4, 5.5, 0.01);
+    vertices.emplace_back(6, 5.5, 0.01);
+    vertices.emplace_back(6, 7.5, 0.01);
+    vertices.emplace_back(4, 7.5, 0.01);
 
     vertexIndices.push_back(8);
     vertexIndices.push_back(9);

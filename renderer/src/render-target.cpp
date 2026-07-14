@@ -19,11 +19,18 @@ EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config
         throw std::runtime_error("Failed to initialize EGL surface");
     }
     makeCurrent();
-    glGenTextures(1, &renderTexture);
-    glBindTexture(GL_TEXTURE_2D, renderTexture);
+    glGenTextures(1, &HDRTexture);
+    glBindTexture(GL_TEXTURE_2D, HDRTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0,
+                 GL_RGBA, GL_FLOAT, nullptr);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenTextures(1, &outputTexture);
+    glBindTexture(GL_TEXTURE_2D, outputTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glBindTexture(GL_TEXTURE_2D, 0);
+
     release();
     initialized = true;
 
@@ -31,7 +38,7 @@ EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config
 }
 
 void EglTarget::swapBuffers() {
-     glBindTexture(GL_TEXTURE_2D, renderTexture);
+     glBindTexture(GL_TEXTURE_2D, outputTexture);
     
     std::vector<unsigned char> pixels(width * height * 4);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
@@ -53,8 +60,12 @@ void EglTarget::release() {
     }
 }
 
-GLuint EglTarget::getRenderTexture() const {
-    return renderTexture;
+GLuint EglTarget::getHDRTexture() const {
+    return HDRTexture;
+}
+
+GLuint EglTarget::getOutputTexture() const {
+    return outputTexture;
 }
 
 EglTarget::~EglTarget() {
