@@ -29,8 +29,9 @@ public:
     };
     int getWidth() const noexcept {return width;}
     int getHeight() const noexcept {return height;}
+    virtual GLuint getHDRTexture() const = 0;
+    virtual GLuint getOutputTexture() const = 0;
     virtual void swapBuffers() = 0;
-    virtual GLuint getRenderTexture() const = 0;
 
     virtual ~RenderTarget() = default;
 };
@@ -49,11 +50,13 @@ private:
     EGLSurface surface;
     EGLContext context;
     GLuint frameBuffer;
-    GLuint renderTexture;
+    GLuint HDRTexture;
+    GLuint outputTexture;
 
 public:
     void swapBuffers() override;
-    GLuint getRenderTexture() const override;
+    GLuint getHDRTexture() const override;
+    GLuint getOutputTexture() const override;
 
     ~EglTarget();
 };
