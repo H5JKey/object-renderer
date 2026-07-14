@@ -104,11 +104,11 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
         glUniform3f(glGetUniformLocation(program, "uBackgroundColor"), scene.backgroundColor.x, scene.backgroundColor.y, scene.backgroundColor.z);
         glUniform3f(glGetUniformLocation(program, "uSunColor"), scene.sunColor.x, scene.sunColor.y, scene.sunColor.z);
         glUniform1f(glGetUniformLocation(program, "uFovDegrees"), 90.0f);
-        
+        glUniform1ui(glGetUniformLocation(program, "uSamples"), 1u);
         
         glBindImageTexture(0, target.getRenderTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
         
-        for (int i=0; i<20; i++) {
+        for (int i=0; i<250; i++) {
             glUniform1ui(glGetUniformLocation(program, "uSeed"), uint(rand()));
             glUniform1ui(glGetUniformLocation(program, "uFrameIndex"), i);
             int groupsX = (target.getWidth() + 15) / 16;
