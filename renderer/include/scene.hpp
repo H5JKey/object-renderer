@@ -10,9 +10,20 @@ struct vec3 {
 
 struct Material {
     vec3 albedo;
+    vec3 emission;
     float metalness;
     float roughness;
-    float padding[2];
+    float transmission;
+    float ior;
+
+    Material(vec3 albedo, vec3 emission, float metalness, float roughness, float transmission, float ior) : 
+        albedo(albedo),
+        emission(emission),
+        metalness(metalness),
+        roughness(roughness),
+        transmission(transmission),
+        ior(ior)
+    {}
 };
 
 

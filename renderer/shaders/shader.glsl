@@ -4,8 +4,11 @@ layout(rgba8, binding = 0) uniform image2D outputImage;
 
 struct Material {
     vec4 albedo;
+    vec4 emission;
     float metalness;
     float roughness;
+    float transmission;
+    float ior;
 };
 
 layout(std430, binding = 1) buffer vertexBuffer {
@@ -33,6 +36,7 @@ uniform vec3 uBackgroundColor;
 uniform vec3 uSunColor;
 uniform uint uSeed;
 uniform uint uFrameIndex;
+uniform uint uSamples;
 
 layout(local_size_x = 16, local_size_y = 16) in;
 
@@ -57,7 +61,7 @@ HitInfo triangle_intersection(vec3 ro, vec3 rd, int triangle_idx) {
     vec3 pvec = cross(rd, e2);
     float det = dot(e1, pvec);
 
-    if (det < 1e-8 && det > -1e-8) {
+    if (abs(det) < 1e-8) {
         info.distance = -1.0;
         info.position = vec3(0.0);
         info.normal = vec3(0.0);
@@ -121,23 +125,36 @@ vec2 random2(uint seed) {
     return vec2(random(seed), random(seed+1));
 }
 
-vec3 randomOnSphere(uint seed){
-  vec3 rand = vec3(random(seed+67),random(seed+42),random(seed+52));
-  
-  float theta = rand.x * 2.0 * 3.14159265;
-  float v = rand.y;
-  float phi = acos (2.0 * v-1.0);
-  float r = pow(rand.z,1.0 / 3.0);
-  float x=r*sin(phi)*cos (theta);
-  float y=r* sin(phi)*sin(theta);
-  float z=r*cos(phi);
-  return vec3(x, y, z);
+vec3 cosineHemisphere(uint seed, vec3 N) {
+    float u1 = random(seed);
+    float u2 = random(seed + 1);
+    float r = sqrt(u1);
+    float theta = 2.0 * 3.14159265 * u2;
+    float x = r * cos(theta);
+    float y = sqrt(1.0 - u1);
+    vec3 local = vec3(x, y, r * sin(theta));
+
+    vec3 T;
+    if (abs(N.z) < 0.999)
+        T = normalize(cross(vec3(0,0,1), N));
+    else
+        T = normalize(cross(vec3(1,0,0), N));
+
+    vec3 B = cross(N, T);
+    return normalize(
+        local.x * T +
+        local.y * N +
+        local.z * B
+    );
 }
 
 const float MAX_DIST=100000.0;
 HitInfo castRay(vec3 origin, vec3 direction) {
     HitInfo closestHitInfo;
     closestHitInfo.distance = MAX_DIST;
+    closestHitInfo.position = vec3(0);
+    closestHitInfo.normal = vec3(0);
+    closestHitInfo.material_id = -1;
     for (int i=0; i<uCount; i++) {
         HitInfo info = triangle_intersection(origin, direction, i);
         if (info.distance > 0.0 && info.distance < closestHitInfo.distance) {
@@ -148,11 +165,13 @@ HitInfo castRay(vec3 origin, vec3 direction) {
 }
 
 vec3 schlickFresnel(vec3 V, vec3 H, vec3 R0) {
-    float cosTheta = max(dot(H, V), 0.0);
+    float cosTheta = clamp(dot(H, V),0.0,1.0);
     return R0 + (vec3(1.0) - R0) * pow((1 - cosTheta), 5.0);
 }
 
-vec3 GGX(float u1, float u2, vec3 N, float roughness) {
+vec3 GGX(uint seed, vec3 N, float roughness) {
+    float u1 = random(seed);
+    float u2 = random(seed + 1);
     float theta = atan(roughness * roughness * sqrt(u1) / sqrt(1 - u1));
     float phi = 2 * 3.141592 * u2;
 
@@ -188,42 +207,95 @@ float smith(vec3 N, vec3 V, vec3 L, float roughness) {
 vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
     vec3 color = vec3(0,0,0);
     vec3 throughput = vec3(1.0);
-    const int bounces = 16;
+    const int bounces = 8;
     for (int i=0; i<bounces; i++) {
+        if (i > 4) {
+            float p = max(max(throughput.r, throughput.g), throughput.b);
+            p = clamp(p,0.05, 0.95);
+            if (random(seed) > p) break;
+            seed = pcg(seed);
+            throughput /= p;
+        }
         seed = pcg(seed);
         HitInfo hit = castRay(origin, direction);
         if (hit.distance == MAX_DIST) {
             return throughput * getBackgroundColor(direction);
         }
         Material material = materials[hit.material_id];
+        if (length(material.emission) > 0.01) {
+            return throughput * material.emission.rgb;
+        }
+        vec3 H,L;
+        vec3 N = hit.normal;
+        if (dot(N, direction) > 0.0) N = -N;
+        vec3 V = normalize(-direction);
+        do {
+            H = GGX(seed, N, material.roughness);
+            L = reflect(-V, H);
+            seed = pcg(seed);
+        } while (dot(L, N) <= 0.0);
+        vec3 F0 = mix(vec3(pow((material.ior - 1) / (material.ior + 1), 2.0)), material.albedo.xyz, material.metalness);
+        vec3 F = schlickFresnel(V, H, F0);
         if (material.metalness > 0.0) {
-            if (material.roughness > 0.01) {
-                vec3 H,V,N,L;
-                do {
-                    float u1 = random(seed);
-                    float u2 = random(pcg(seed+1u));
-                    H = GGX(u1, u2, hit.normal, material.roughness);
-                    V = normalize(-direction);
-                    N = hit.normal;
-                    L = reflect(-V, H);
-                    seed = pcg(seed);
-                } while (dot(L, N) <= 0.0);
-                vec3 F = schlickFresnel(V, H, material.albedo.xyz);
+            if (material.roughness < 0.01) {
+                throughput *= schlickFresnel(-direction, hit.normal, F0);
+                origin = hit.position + hit.normal * 0.001;
+                direction = reflect(direction, hit.normal);
+                continue;
+            }
+            float G = smith(N, V, L, material.roughness);
+            float D = distribution(H, N, material.roughness);
+            vec3 fr = (D * F * G) / (4 * dot(N,V) * dot(N, L));
+            float pdf = D * dot(N,H) / (4 * dot(V,H));
+            throughput *= fr * dot (N, L) / pdf;
+            origin = hit.position + N * 0.001; 
+            direction = L;
+        }
+        else {
+            seed = pcg(seed+2);
+            float r = random(seed);
+            if (r < F.x) {
+                if (material.roughness < 0.01) {
+                    origin = hit.position + N * 0.001;
+                    direction = reflect(direction, N);
+                    throughput *= material.albedo.rgb;
+                    continue;
+                }
                 float G = smith(N, V, L, material.roughness);
                 float D = distribution(H, N, material.roughness);
                 vec3 fr = (D * F * G) / (4 * dot(N,V) * dot(N, L));
                 float pdf = D * dot(N,H) / (4 * dot(V,H));
-                throughput *= fr * dot (N, L) / pdf;
+                throughput *= fr * dot (N, L) / (pdf * F.x);
                 origin = hit.position + hit.normal * 0.001; 
                 direction = L;
-            } else {
-                throughput *= schlickFresnel(-direction, hit.normal, material.albedo.xyz);
-                origin = hit.position + hit.normal * 0.001;
-                direction = reflect(direction, hit.normal);
             }
-        }
-        else {
-            
+            else {
+                seed = pcg(seed);
+                if (material.transmission > 0.0) {
+                    bool frontFace = dot(direction, hit.normal) < 0.0;
+                    vec3 N = frontFace ? hit.normal : - hit.normal;
+                    float eta = frontFace ? (1.0 / material.ior) : material.ior;
+                    
+                    vec3 T = refract(direction, N, eta);
+                    if (length(T) == 0.0) {
+                        direction = reflect(direction, N);
+                        origin = hit.position + N * 0.001;
+                    }
+                    else {
+                        direction = T;
+                        origin = hit.position - N * 0.001;
+                    }
+                }
+                else {
+                    vec3 N = hit.normal;
+                    if (dot(direction, N) > 0.0) {
+                        N = -N;
+                    }
+                    direction = cosineHemisphere(seed, N);
+                    origin = hit.position + N * 0.001;
+                    throughput *= material.albedo.rgb / (1 - F.x);
+                }
+            }
         }
     }
     return vec3(0.0);
@@ -245,8 +317,7 @@ void main() {
     vec3 up = cross(forward, right);
 
     vec3 color = vec3(0.0);
-    const int samples = 32;
-    for (int i = 0; i < samples; i++) {
+    for (int i = 0; i < uSamples; i++) {
         uint seed = uSeed + uint(i) + 6732 * uint(pixel.x) + 8157 * uint(pixel.y);
         vec2 jitter = random2(seed) - vec2(0.5, 0.5);
         vec2 uv = (2.0*vec2(pixel) + jitter - vec2(size)) / vec2(size).y;
@@ -256,7 +327,7 @@ void main() {
 
         color += traceRay(uOrigin, direction, seed);
     }
-    color /= samples;
+    color /= uSamples;
     color = mix(oldColor, color, 1.0 / (uFrameIndex + 1));
     imageStore(outputImage, pixel, vec4(color, 1.0));
 }
