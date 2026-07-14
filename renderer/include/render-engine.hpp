@@ -11,10 +11,11 @@ class ContextGuard {
 
 class RenderEngine {
 private:
-    GLuint program;
+    GLuint pathTracingProgram;
+    GLuint postProcessingProgram;
 public:
     RenderEngine();
-    void compileShaders();
+    GLuint compileShader(const std::string& source);
     void renderFrame(RenderTarget& target, const Scene& scene) const;
-
+    std::string readFromFile(const std::string& path) const;
 };

@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(rgba8, binding = 0) uniform image2D outputImage;
+layout(rgba16f, binding = 0) uniform image2D outputImage;
 
 struct Material {
     vec4 albedo;
@@ -309,7 +309,11 @@ void main() {
     if (pixel.x >= size.x || pixel.y >= size.y) {
         return;
     }
-    vec3 oldColor = imageLoad(outputImage, pixel).rgb;
+    vec3 oldColor;
+    if (uFrameIndex == 0) {
+        oldColor = vec3(0);
+    }
+    oldColor = imageLoad(outputImage, pixel).rgb;
     float fov = tan(uFovDegrees * 0.5 * 3.141592 / 180.0);
 
     vec3 forward = normalize(uLookAt - uOrigin);
