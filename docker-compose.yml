@@ -1,0 +1,34 @@
+services:
+  renderer:
+    build:
+      context: .
+      dockerfile: renderer/Dockerfile
+    container_name: renderer
+    hostname: renderer
+    depends_on:
+      s3_storage:
+        condition: service_healthy
+
+  s3_storage:
+    image: minio/minio
+    container_name: s3_storage
+    hostname: s3_storage
+    command: server --console-address ":9001" /data
+    environment:
+      MINIO_ROOT_USER: adminadmin
+      MINIO_ROOT_PASSWORD: adminadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - s3_storage_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f","http://localhost:9000/minio/health/ready"]
+      start_period: 2s
+      interval: 2s
+      timeout: 2s
+      retries: 3
+
+volumes:
+  s3_storage_data:
+
