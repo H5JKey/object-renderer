@@ -10,6 +10,8 @@ RenderEngine::RenderEngine() {
     pathTracingProgram = compileShader(readFromFile("shaders/path-tracing.glsl"));
     std::println("Compiling post processing shader");
     postProcessingProgram = compileShader(readFromFile("shaders/post-processing.glsl"));
+    std::println("Compiling gbuffer shader");
+    gbufferProgram = compileShader(readFromFile("shaders/gbuffer.glsl"));
 }
 
 std::string RenderEngine::readFromFile(const std::string& path) const {
@@ -112,7 +114,6 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
         glUniform3f(glGetUniformLocation(pathTracingProgram, "uBackgroundColor"), scene.backgroundColor.x, scene.backgroundColor.y, scene.backgroundColor.z);
         glUniform3f(glGetUniformLocation(pathTracingProgram, "uSunColor"), scene.sunColor.x, scene.sunColor.y, scene.sunColor.z);
         glUniform1f(glGetUniformLocation(pathTracingProgram, "uFovDegrees"), 90.0f);
-        glUniform1ui(glGetUniformLocation(pathTracingProgram, "uSamples"), 1u);
         
         glBindImageTexture(0, target.getHDRTexture(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
 
@@ -131,6 +132,29 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
             glFinish();
         }
         /***************************/
+        /******** DENOISING ********/
+        /***************************/
+
+        glUseProgram(gbufferProgram);
+        glBindImageTexture(0, target.getNormalMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        glBindImageTexture(1, target.getAlbedoMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vertexSSBO);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, vertexIndexSSBO);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, materialSSBO);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, materialsIndexSSBO);
+        glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), vertexIndices.size() / 3);
+        glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), scene.origin.x, scene.origin.y, scene.origin.z);
+        glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), scene.lookAt.x, scene.lookAt.y, scene.lookAt.z);
+        glUniform1f(glGetUniformLocation(gbufferProgram, "uFovDegrees"), 90.0f);
+        glDispatchCompute(groupsX, groupsY, 1);
+        error = glGetError();
+        if (error!=0) {
+            throw std::runtime_error("glDispatchCompute for gbuffer failed. Error: "+std::to_string(error));
+        }
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        glFinish();
+
+        /***************************/
         /***** POST PROCESSING *****/
         /***************************/
         glUseProgram(postProcessingProgram);
@@ -144,12 +168,12 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         glFinish();
 
-        target.swapBuffers();
-
         glUseProgram(0);
         glDeleteBuffers(1, &vertexIndexSSBO);
         glDeleteBuffers(1, &vertexSSBO);
         glDeleteBuffers(1, &materialSSBO);
         glDeleteBuffers(1, &materialsIndexSSBO);
+
+        target.swapBuffers();
     }
 }

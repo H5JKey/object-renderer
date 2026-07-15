@@ -11,6 +11,11 @@ protected:
     friend class TargetManager;
     int width, height;
     bool initialized = false;
+    GLuint HDRTexture;
+    GLuint outputTexture;
+    GLuint normalMap;
+    GLuint albedoMap;
+
     RenderTarget(int width, int height) : width{width}, height{height} {}
     virtual void makeCurrent() = 0;
     virtual void release() = 0;
@@ -21,7 +26,7 @@ public:
         }
 
         ~ContextGuard() {
-            //target.release();
+            target.release();
         }
     private:
         RenderTarget& target;
@@ -29,9 +34,12 @@ public:
     };
     int getWidth() const noexcept {return width;}
     int getHeight() const noexcept {return height;}
-    virtual GLuint getHDRTexture() const = 0;
-    virtual GLuint getOutputTexture() const = 0;
-    virtual void swapBuffers() = 0;
+    GLuint getHDRTexture() const noexcept {return HDRTexture;}
+    GLuint getOutputTexture() const noexcept {return outputTexture;}
+    GLuint getNormalMap() const noexcept {return normalMap;}
+    GLuint getAlbedoMap() const noexcept {return albedoMap;}
+    
+    virtual void swapBuffers() const = 0;
 
     virtual ~RenderTarget() = default;
 };
@@ -50,13 +58,9 @@ private:
     EGLSurface surface;
     EGLContext context;
     GLuint frameBuffer;
-    GLuint HDRTexture;
-    GLuint outputTexture;
 
 public:
-    void swapBuffers() override;
-    GLuint getHDRTexture() const override;
-    GLuint getOutputTexture() const override;
+    void swapBuffers() const override;
 
     ~EglTarget();
 };

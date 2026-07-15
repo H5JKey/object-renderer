@@ -13,6 +13,7 @@ class RenderEngine {
 private:
     GLuint pathTracingProgram;
     GLuint postProcessingProgram;
+    GLuint gbufferProgram;
 public:
     RenderEngine();
     GLuint compileShader(const std::string& source);
