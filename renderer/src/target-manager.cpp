@@ -63,6 +63,9 @@ void TargetManager::init() {
         if (!gladLoadGL(eglGetProcAddress)) {
             throw std::runtime_error("gladLoadGL failed");
         }
+        std::println("Vendor   : {}", (const char*)glGetString(GL_VENDOR));
+        std::println("Renderer : {}", (const char*)glGetString(GL_RENDERER));
+        std::println("Version  : {}", (const char*)glGetString(GL_VERSION));
 
         self.initialized = true;
     }
