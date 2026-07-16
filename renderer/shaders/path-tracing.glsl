@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(rgba16f, binding = 0) uniform image2D outputImage;
+layout(rgba32f, binding = 0) uniform image2D outputImage;
 
 struct Material {
     vec4 albedo;
@@ -36,7 +36,6 @@ uniform vec3 uBackgroundColor;
 uniform vec3 uSunColor;
 uniform uint uSeed;
 uniform uint uFrameIndex;
-uniform uint uSamples;
 
 layout(local_size_x = 16, local_size_y = 16) in;
 
@@ -50,7 +49,7 @@ struct HitInfo {
 
 HitInfo triangle_intersection(vec3 ro, vec3 rd, int triangle_idx) {
     HitInfo info;
-
+    
     vec3 v0 = vertices[verticesIndices[3*triangle_idx]].xyz;
     vec3 v1 = vertices[verticesIndices[3*triangle_idx+1]].xyz;
     vec3 v2 = vertices[verticesIndices[3*triangle_idx+2]].xyz;
@@ -312,26 +311,24 @@ void main() {
     vec3 oldColor;
     if (uFrameIndex == 0) {
         oldColor = vec3(0);
+    } else {
+        oldColor = imageLoad(outputImage, pixel).rgb;
     }
-    oldColor = imageLoad(outputImage, pixel).rgb;
     float fov = tan(uFovDegrees * 0.5 * 3.141592 / 180.0);
 
     vec3 forward = normalize(uLookAt - uOrigin);
     vec3 right = cross(vec3(0.0, 1.0, 0.0), forward);
     vec3 up = cross(forward, right);
 
-    vec3 color = vec3(0.0);
-    for (int i = 0; i < uSamples; i++) {
-        uint seed = uSeed + uint(i) + 6732 * uint(pixel.x) + 8157 * uint(pixel.y);
-        vec2 jitter = random2(seed) - vec2(0.5, 0.5);
-        vec2 uv = (2.0*vec2(pixel) + jitter - vec2(size)) / vec2(size).y;
-        uv.y = -uv.y;
+    uint seed = uSeed + 6732 * uint(pixel.x) + 8157 * uint(pixel.y);
+    vec2 jitter = random2(seed) - vec2(0.5, 0.5);
+    vec2 uv = (2.0*vec2(pixel) + jitter - vec2(size)) / vec2(size).y;
+    uv.y = -uv.y;
 
-        vec3 direction = normalize(forward + right * fov * uv.x + up * fov * uv.y);
+    vec3 direction = normalize(forward + right * fov * uv.x + up * fov * uv.y);
 
-        color += traceRay(uOrigin, direction, seed);
-    }
-    color /= uSamples;
+    vec3 color = traceRay(uOrigin, direction, seed);
+
     color = mix(oldColor, color, 1.0 / (uFrameIndex + 1));
     imageStore(outputImage, pixel, vec4(color, 1.0));
 }

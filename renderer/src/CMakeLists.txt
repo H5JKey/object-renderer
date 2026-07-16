@@ -5,6 +5,7 @@ add_executable(renderer
     render-engine.cpp
     render-target.cpp
     target-manager.cpp
+    denoiser.cpp
 )
 
 target_link_libraries(renderer PRIVATE

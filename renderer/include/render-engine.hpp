@@ -4,18 +4,26 @@
 
 #include "render-target.hpp"
 #include "scene.hpp"
-
-class ContextGuard {
-
-};
+#include "denoiser.hpp"
 
 class RenderEngine {
-private:
+    Denoiser denoiser;
     GLuint pathTracingProgram;
     GLuint postProcessingProgram;
+    GLuint gbufferProgram;
+
+    GLuint vertexSSBO;
+    GLuint vertexIndexSSBO;
+    GLuint materialSSBO;
+    GLuint materialIndexSSBO;
 public:
     RenderEngine();
+    void renderFrame(RenderTarget& target, const Scene& scene);
+    ~RenderEngine();
+private:
+    void pathTracing(RenderTarget& target, const Scene& scene);
+    void fillGbuffer(RenderTarget& target, const Scene& scene);
+    void postProcess(RenderTarget& target) const;
+    void loadSceneToGPU(const Scene& scene);
     GLuint compileShader(const std::string& source);
-    void renderFrame(RenderTarget& target, const Scene& scene) const;
-    std::string readFromFile(const std::string& path) const;
 };

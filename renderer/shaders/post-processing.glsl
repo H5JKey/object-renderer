@@ -1,6 +1,6 @@
 #version 430
 layout(local_size_x = 16, local_size_y = 16) in;
-layout(rgba16f, binding = 0) uniform readonly image2D inputTexture;
+layout(rgba32f, binding = 0) uniform readonly image2D inputTexture;
 layout(rgba8, binding = 1) uniform writeonly image2D outputTexture;
 
 void main() {

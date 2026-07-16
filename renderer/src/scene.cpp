@@ -119,14 +119,14 @@ Scene::Scene() :
     vertexIndices.push_back(12);
     materialIndices.push_back(4);
 
-    vertexIndices.push_back(19);
-    vertexIndices.push_back(18);
     vertexIndices.push_back(16);
+    vertexIndices.push_back(18);
+    vertexIndices.push_back(19);
     materialIndices.push_back(4);
 
-    vertexIndices.push_back(18);
-    vertexIndices.push_back(17);
     vertexIndices.push_back(16);
+    vertexIndices.push_back(17);
+    vertexIndices.push_back(18);
     materialIndices.push_back(4);
 
     vertexIndices.push_back(19);

@@ -13,7 +13,7 @@ public:
     TargetManager& operator=(TargetManager&&) = delete;
 
     static TargetManager& getInstance();
-    std::weak_ptr<RenderTarget> createEGLTarget(int width, int height);
+    std::shared_ptr<RenderTarget> createEGLTarget(int width, int height);
 
     static void init();
 
@@ -31,6 +31,5 @@ private:
     EGLContext context;
     EGLSurface dummySurface;
 
-    std::vector<std::shared_ptr<RenderTarget>> targets;
     bool initialized = false;
 };
