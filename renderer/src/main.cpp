@@ -12,4 +12,12 @@ int main(int argc, char* argv[]) {
     
     Scene scene;
     engine.renderFrame(*egl, scene);
+    egl->output();
+    auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());
+    if (eglTarget) {
+        eglTarget->writeToPng(egl->getNormalMap(), "output_normal.png", GL_FLOAT);
+        eglTarget->writeToPng(egl->getAlbedoMap(), "output_albedo.png", GL_FLOAT);
+    }
+    
+    return EXIT_SUCCESS;
 }

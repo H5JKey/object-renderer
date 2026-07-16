@@ -173,7 +173,5 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) const {
         glDeleteBuffers(1, &vertexSSBO);
         glDeleteBuffers(1, &materialSSBO);
         glDeleteBuffers(1, &materialsIndexSSBO);
-
-        target.swapBuffers();
     }
 }

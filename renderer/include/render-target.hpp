@@ -17,11 +17,11 @@ protected:
     GLuint albedoMap;
 
     RenderTarget(int width, int height) : width{width}, height{height} {}
-    virtual void makeCurrent() = 0;
-    virtual void release() = 0;
+    virtual void makeCurrent() const = 0;
+    virtual void release() const = 0;
 public:
     struct ContextGuard {
-        ContextGuard(RenderTarget& target) : target(target) {
+        ContextGuard(const RenderTarget& target) : target(target) {
             target.makeCurrent();
         }
 
@@ -29,7 +29,7 @@ public:
             target.release();
         }
     private:
-        RenderTarget& target;
+        const RenderTarget& target;
 
     };
     int getWidth() const noexcept {return width;}
@@ -38,8 +38,8 @@ public:
     GLuint getOutputTexture() const noexcept {return outputTexture;}
     GLuint getNormalMap() const noexcept {return normalMap;}
     GLuint getAlbedoMap() const noexcept {return albedoMap;}
-    
-    virtual void swapBuffers() const = 0;
+
+    virtual void output() const = 0;
 
     virtual ~RenderTarget() = default;
 };
@@ -51,16 +51,15 @@ private:
     friend class TargetManager;
     EglTarget(int width, int height, EGLDisplay display, EGLConfig config, EGLContext context);
 
-    void makeCurrent() override;
-    void release() override;
-    void initFBO();
+    void makeCurrent() const override;
+    void release() const override;
     EGLDisplay display;
     EGLSurface surface;
     EGLContext context;
-    GLuint frameBuffer;
-
 public:
-    void swapBuffers() const override;
+    void writeToPng(GLuint texture, const std::string& filename, GLenum format) const;
+    
+    void output() const override;
 
     ~EglTarget();
 };

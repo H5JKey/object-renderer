@@ -13,7 +13,7 @@ RUN apk update && apk add \
     mesa-dri-gallium \
     ispc \
     openimagedenoise \
-    && rm -rf /var/cache/apk/*
+    && rm -rf /var/cache/apk/* \
 COPY renderer .
 
 RUN mkdir build && cd build && cmake .. && cmake --build .
