@@ -15,6 +15,7 @@ RUN apk update && apk add \
     openimagedenoise \
     && rm -rf /var/cache/apk/* \
     
+
 COPY renderer .
 
 RUN mkdir build && cd build && cmake .. && cmake --build .
