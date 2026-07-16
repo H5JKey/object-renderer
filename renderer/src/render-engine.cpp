@@ -79,7 +79,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uSunColor"), scene.sunColor.x, scene.sunColor.y, scene.sunColor.z);
     glUniform1f(glGetUniformLocation(pathTracingProgram, "uFovDegrees"), 90.0f);
     
-    glBindImageTexture(0, target.getHDRTexture(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+    glBindImageTexture(0, target.getRawTexture(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
     int groupsX = (target.getWidth() + 15) / 16;
     int groupsY = (target.getHeight() + 15) / 16;
@@ -105,8 +105,8 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
 void RenderEngine::fillGbuffer(RenderTarget& target, const Scene& scene) {
     std::println("===Filling gbuffer===");
     glUseProgram(gbufferProgram);
-    glBindImageTexture(0, target.getNormalMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    glBindImageTexture(1, target.getAlbedoMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    glBindImageTexture(0, target.getNormalMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+    glBindImageTexture(1, target.getAlbedoMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vertexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, vertexIndexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, materialSSBO);
@@ -131,7 +131,7 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const Scene& scene) {
 void RenderEngine::postProcess(RenderTarget& target) const {
     std::println("===Post processing===");
     glUseProgram(postProcessingProgram);
-    glBindImageTexture(0, target.getHDRTexture(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
+    glBindImageTexture(0, target.getDenoisedTexture(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
     glBindImageTexture(1, target.getOutputTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 
     int groupsX = (target.getWidth() + 15) / 16;
@@ -197,9 +197,11 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) {
     RenderTarget::ContextGuard context(target);
 
     loadSceneToGPU(scene);
-
     pathTracing(target, scene);
+    
     fillGbuffer(target, scene);
+    std::println("===Denoising===");
+    denoiser.denoise(target);
     postProcess(target);
 }
 

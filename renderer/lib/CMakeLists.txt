@@ -13,5 +13,6 @@ target_link_libraries(renderer_deps INTERFACE
     nlohmann_json::nlohmann_json
     OpenGL::OpenGL 
     OpenGL::EGL
+    OpenImageDenoise
     glad
 )

@@ -3,6 +3,7 @@
 #include <glad/gl.h>
 #include <EGL/egl.h>
 #include <memory>
+#include <vector>
 
 class TargetManager;
 
@@ -11,7 +12,8 @@ protected:
     friend class TargetManager;
     int width, height;
     bool initialized = false;
-    GLuint HDRTexture;
+    GLuint rawTexture;
+    GLuint denoisedTexture;
     GLuint outputTexture;
     GLuint normalMap;
     GLuint albedoMap;
@@ -34,12 +36,18 @@ public:
     };
     int getWidth() const noexcept {return width;}
     int getHeight() const noexcept {return height;}
-    GLuint getHDRTexture() const noexcept {return HDRTexture;}
+    GLuint getRawTexture() const noexcept {return rawTexture;}
+    GLuint getDenoisedTexture() const noexcept {return denoisedTexture;}
     GLuint getOutputTexture() const noexcept {return outputTexture;}
     GLuint getNormalMap() const noexcept {return normalMap;}
     GLuint getAlbedoMap() const noexcept {return albedoMap;}
-
     virtual void output() const = 0;
+
+    template <typename T>
+    std::vector<T> getBufferData(GLuint texture) const;
+
+    template <typename T>
+    void setBufferData(GLuint texture, const std::vector<T>& data);
 
     virtual ~RenderTarget() = default;
 };

@@ -7,6 +7,7 @@
 #include "denoiser.hpp"
 
 class RenderEngine {
+    Denoiser denoiser;
     GLuint pathTracingProgram;
     GLuint postProcessingProgram;
     GLuint gbufferProgram;

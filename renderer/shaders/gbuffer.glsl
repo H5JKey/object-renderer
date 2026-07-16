@@ -1,7 +1,7 @@
 #version 430 core
 
-layout(rgba16f, binding = 0) uniform writeonly image2D normalMap;
-layout(rgba16f, binding = 1) uniform writeonly image2D albedoMap;
+layout(rgba32f, binding = 0) uniform writeonly image2D normalMap;
+layout(rgba32f, binding = 1) uniform writeonly image2D albedoMap;
 
 struct Material {
     vec4 albedo;

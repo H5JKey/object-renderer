@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(rgba16f, binding = 0) uniform image2D outputImage;
+layout(rgba32f, binding = 0) uniform image2D outputImage;
 
 struct Material {
     vec4 albedo;
@@ -311,8 +311,9 @@ void main() {
     vec3 oldColor;
     if (uFrameIndex == 0) {
         oldColor = vec3(0);
+    } else {
+        oldColor = imageLoad(outputImage, pixel).rgb;
     }
-    oldColor = imageLoad(outputImage, pixel).rgb;
     float fov = tan(uFovDegrees * 0.5 * 3.141592 / 180.0);
 
     vec3 forward = normalize(uLookAt - uOrigin);
@@ -327,7 +328,7 @@ void main() {
     vec3 direction = normalize(forward + right * fov * uv.x + up * fov * uv.y);
 
     vec3 color = traceRay(uOrigin, direction, seed);
-  
+
     color = mix(oldColor, color, 1.0 / (uFrameIndex + 1));
     imageStore(outputImage, pixel, vec4(color, 1.0));
 }
