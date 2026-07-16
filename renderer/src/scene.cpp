@@ -10,9 +10,9 @@ Scene::Scene() :
 {
     materials.emplace_back(vec3(0.725,0.71,0.68),vec3(0,0,0), 0.0, 0.7, 0.0, 1.5);
     materials.emplace_back(vec3(0.12, 0.45, 0.15),vec3(0,0,0), 0.0, 0.7, 0.0, 1.5);
-    materials.emplace_back(vec3(0.65, 0.85, 0.05),vec3(0,0,0), 0.0, 0.7, 0.0, 1.5);
+    materials.emplace_back(vec3(0.65, 0.05, 0.05),vec3(0,0,0), 0.0, 0.7, 0.0, 1.5);
     materials.emplace_back(vec3(0.8,0.8,0.8),vec3(10.0,10.0,10.0), 0.0, 0.1, 0.0, 0.0);
-    materials.emplace_back(vec3(0.65,0.65,0.65),vec3(10,10,100), 0.0, 0.85, 0.0, 1.5);
+    materials.emplace_back(vec3(0.65,0.65,0.65),vec3(0,0,0), 0.0, 0.85, 0.0, 1.5);
     materials.emplace_back(vec3(0.7,0.7,0.7),vec3(0,0,0), 1.0, 0.85, 0.0, 1.5);
 
     vertices.emplace_back(0,0,0);

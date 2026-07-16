@@ -8,7 +8,7 @@
 int main(int argc, char* argv[]) {
     TargetManager::init();
     RenderEngine engine;
-    std::shared_ptr<RenderTarget>  egl = TargetManager::getInstance().createEGLTarget(1600,1200).lock();
+    std::shared_ptr<RenderTarget>  egl = TargetManager::getInstance().createEGLTarget(1600,1200);
     
     Scene scene;
     engine.renderFrame(*egl, scene);
@@ -18,6 +18,5 @@ int main(int argc, char* argv[]) {
         eglTarget->writeToPng(egl->getNormalMap(), "output_normal.png", GL_FLOAT);
         eglTarget->writeToPng(egl->getAlbedoMap(), "output_albedo.png", GL_FLOAT);
     }
-    
     return EXIT_SUCCESS;
 }

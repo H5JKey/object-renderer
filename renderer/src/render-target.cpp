@@ -80,14 +80,18 @@ void EglTarget::writeToPng(GLuint texture, const std::string& filename, GLenum f
 
 
 void EglTarget::makeCurrent() const {
-    if (!eglMakeCurrent(display, surface, surface, context)) {
-        throw std::runtime_error("eglMakeCurrent in EglTarget::makeCurrent failed");
+    eglMakeCurrent(display, surface, surface, context);
+    EGLint error = eglGetError();
+    if (error != EGL_SUCCESS) {
+        throw std::runtime_error(std::format("eglMakeCurrent in EglTarget::makeCurrent failed. Error: {}", error));
     }
 }
 
 void EglTarget::release() const {
-    if (!eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
-        throw std::runtime_error("eglMakeCurrent in EglTarget::releaseCurrent failed");
+    eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    EGLint error = eglGetError();
+    if (error != EGL_SUCCESS) {
+        throw std::runtime_error(std::format("eglMakeCurrent in EglTarget::release failed. Error: {}", error));
     }
 }
 
@@ -98,6 +102,5 @@ EglTarget::~EglTarget() {
         glDeleteTextures(1, &outputTexture);
         glDeleteTextures(1, &normalMap);
         glDeleteTextures(1, &albedoMap);
-        glDeleteFramebuffers(1, &frameBuffer);
     }
 }

@@ -71,18 +71,15 @@ void TargetManager::init() {
     }
 }
 
-std::weak_ptr<RenderTarget> TargetManager::createEGLTarget(int width, int height) {
+std::shared_ptr<RenderTarget> TargetManager::createEGLTarget(int width, int height) {
     if (!initialized) {
         throw std::runtime_error("Failed to create EGLTarget: context wasnt created");
     }
-    auto target = std::shared_ptr<EglTarget>(new EglTarget(width, height, display, config, context));
-    targets.push_back(target);
-    return target;
+    return std::shared_ptr<EglTarget>(new EglTarget(width, height, display, config, context));;
 }
 
 TargetManager::~TargetManager() {
     if (initialized) {
-        targets.clear();
         eglTerminate(display);
         display = EGL_NO_DISPLAY;
         initialized = false;
