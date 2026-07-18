@@ -14,9 +14,16 @@ void BVH::expandToFitTriangle(Node& node, vec3 v0, vec3 v1, vec3 v2) {
     node.min.z = std::min(node.min.z, std::min(v0.z, std::min(v1.z, v2.z)));
 }
 
-int BVH::split(int parentNodeIdx, const Scene& scene, int depth) {
+uint BVH::split(uint parentNodeIdx, const Scene& scene, int depth) {
     Node& node = nodes[parentNodeIdx];
-    if (node.trianglesIndices.size() <= 4 || depth >= 8) return parentNodeIdx;
+    if (node.trianglesIndices.size() <= 4 || depth >= 8) {
+        node.start = triangles.size();
+        for (int triangle: node.trianglesIndices) {
+            triangles.push_back(triangle);
+        }
+        node.count = node.trianglesIndices.size();
+        return parentNodeIdx;
+    }
     Node leftNode, rightNode;
     float offsetX = node.max.x - node.min.x;
     float middleX = (node.max.x + node.min.x) / 2;
@@ -86,7 +93,7 @@ int BVH::split(int parentNodeIdx, const Scene& scene, int depth) {
     }
     int currentIdx = nodes.size() - 1;
     if (leftNode.trianglesIndices.size() == 0 || rightNode.trianglesIndices.size() == 0) {
-        return currentIdx;
+        return parentNodeIdx;
     }
 
     nodes.push_back(leftNode);
@@ -96,6 +103,8 @@ int BVH::split(int parentNodeIdx, const Scene& scene, int depth) {
     node.right = split(nodes.size()-1, scene, depth+1);
 
     node.trianglesIndices.clear();
+    node.start = 0;
+    node.count = 0;
     return currentIdx;
     
 }
@@ -123,4 +132,12 @@ void BVH::build(const Scene& scene) {
     node.min = min;
     nodes.push_back(node);
     split(0, scene, 0);
+}
+
+const std::vector<BVH::Node>& BVH::getNodes() const {
+    return nodes;
+}
+
+const std::vector<uint>& BVH::getTriangles() const {
+    return triangles;
 }
