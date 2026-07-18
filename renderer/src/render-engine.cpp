@@ -190,7 +190,7 @@ void RenderEngine::loadSceneToGPU(const Scene& scene) {
                 materialIndices.data(), GL_STATIC_DRAW);
 }
 
-void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) {
+void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, const BVH& bvh) {
     if (postProcessingProgram == 0) {
         throw std::runtime_error("Shader not compiled");
     }
