@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<RenderTarget>  egl = TargetManager::getInstance().createEGLTarget(1600,1200);
     
     Scene scene;
-    BVH bvh;
+    BVH bvh(12, 8);
     bvh.build(scene);
     engine.renderFrame(*egl, scene, bvh);
     egl->output();

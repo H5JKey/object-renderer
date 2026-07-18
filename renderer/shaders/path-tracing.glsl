@@ -11,9 +11,9 @@ struct Material {
 
 struct Node {
     vec4 min, max;
-    uint left, right;
-    uint start;
-    uint count;
+    int left, right;
+    int start;
+    int count;
 };
 
 layout(rgba32f, binding = 0) uniform image2D outputImage;
@@ -39,7 +39,7 @@ layout(std430, binding = 5) buffer bvhNodesBuffer {
 };
 
 layout(std430, binding = 6) buffer bvhTrianglesBuffer {
-    uint bvhTriangle[];
+    int bvhTriangles[];
 };
 
 uniform int uCount;
@@ -62,7 +62,7 @@ struct HitInfo {
     vec3 normal;
 };
 
-HitInfo triangle_intersection(vec3 ro, vec3 rd, int triangle_idx) {
+HitInfo triangleIntersection(vec3 ro, vec3 rd, int triangle_idx) {
     HitInfo info;
     
     vec3 v0 = vertices[verticesIndices[3*triangle_idx]].xyz;
@@ -121,6 +121,32 @@ HitInfo triangle_intersection(vec3 ro, vec3 rd, int triangle_idx) {
     return info;
 }
 
+float AABBIntersection(vec3 origin, vec3 direction, vec3 boxMin, vec3 boxMax) {
+    vec3 invDir = 1.0f / direction;
+
+    vec3 t0 = (boxMin - origin) * invDir;
+    vec3 t1 = (boxMax - origin) * invDir;
+
+    vec3 tNear = vec3(
+        min(t0.x, t1.x),
+        min(t0.y, t1.y),
+        min(t0.z, t1.z)
+    );
+    vec3 tFar = vec3(
+        max(t0.x, t1.x),
+        max(t0.y, t1.y),
+        max(t0.z, t1.z)
+    );
+
+    float tMin = max(max(tNear.x, tNear.y), max(tNear.z, 0.0f));
+    float tMax = min(min(tFar.x, tFar.y), tFar.z);
+    
+    if (tMin <= tMax) 
+        return tMin;
+    else
+        return -1.0;
+}
+
 vec3 getBackgroundColor(vec3 direction) {
     return uBackgroundColor + uSunColor * pow(max(0.0, dot(direction, normalize(uSunDirection))), 256.0);
 }
@@ -163,16 +189,49 @@ vec3 cosineHemisphere(uint seed, vec3 N) {
 }
 
 const float MAX_DIST=100000.0;
-HitInfo castRay(vec3 origin, vec3 direction) {
+HitInfo castRayTroughAABB(vec3 origin, vec3 direction, Node node) {
     HitInfo closestHitInfo;
     closestHitInfo.distance = MAX_DIST;
     closestHitInfo.position = vec3(0);
     closestHitInfo.normal = vec3(0);
     closestHitInfo.material_id = -1;
-    for (int i=0; i<uCount; i++) {
-        HitInfo info = triangle_intersection(origin, direction, i);
+    
+    for (int i=node.start; i<node.count+node.start; i++) {
+        HitInfo info = triangleIntersection(origin, direction, bvhTriangles[i]);
         if (info.distance > 0.0 && info.distance < closestHitInfo.distance) {
             closestHitInfo = info;
+        }
+    }
+    return closestHitInfo;
+}
+
+HitInfo castRayThroughBVH(vec3 origin, vec3 direction) {
+    HitInfo closestHitInfo;
+    closestHitInfo.distance = MAX_DIST;
+    closestHitInfo.position = vec3(0);
+    closestHitInfo.normal = vec3(0);
+    closestHitInfo.material_id = -1;
+
+    int stack[64];
+    int stackPtr = 0;
+
+    stack[stackPtr++] = 0;
+    while (stackPtr > 0) {
+        int nodeIdx = stack[--stackPtr];
+        Node node = bvhNodes[nodeIdx];
+        float t = AABBIntersection(origin, direction, node.min.xyz, node.max.xyz);
+        if (t < 0.0 || t > closestHitInfo.distance)
+            continue;
+        if (node.left == -1 && node.right == -1) {
+            HitInfo info = castRayTroughAABB(origin, direction, node);
+            if (info.distance > 0 && info.distance < closestHitInfo.distance)
+                closestHitInfo = info;
+        }
+        else {
+            if (node.left != -1) 
+                stack[stackPtr++] = node.left;
+            if (node.right != -1)
+                stack[stackPtr++] = node.right;
         }
     }
     return closestHitInfo;
@@ -231,7 +290,7 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
             throughput /= p;
         }
         seed = pcg(seed);
-        HitInfo hit = castRay(origin, direction);
+        HitInfo hit = castRayThroughBVH(origin, direction);
         if (hit.distance == MAX_DIST) {
             return throughput * getBackgroundColor(direction);
         }
