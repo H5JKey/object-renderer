@@ -6,7 +6,7 @@ Scene::Scene() :
             lookAt(5,5,5), 
             sunDirection(-10.0f, 3.0f, -10.0f),
             sunColor(0.0f, 0.0f, 0.0f), 
-            backgroundColor(0.0f, 0.0f, 0.0f) 
+            backgroundColor(0.7f, 0.7f, 0.7f) 
 {
     materials.emplace_back(vec3(0.725,0.71,0.68),vec3(0,0,0), 0.0, 0.7, 0.0, 1.5);
     materials.emplace_back(vec3(0.12, 0.45, 0.15),vec3(0,0,0), 0.0, 0.7, 0.0, 1.5);
