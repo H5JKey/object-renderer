@@ -1,6 +1,6 @@
-from fastapi import FastAPI
 from api import router as api_router
 from api.main_views import router as main_router
+from fastapi import FastAPI
 
 app = FastAPI(
     title="Renderer",
