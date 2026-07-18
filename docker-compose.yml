@@ -8,6 +8,38 @@ services:
     depends_on:
       s3_storage:
         condition: service_healthy
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: app
+    hostname: app
+    ports:
+      - "8000:8000"
+    depends_on:
+      s3_storage:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+
+  database:
+    image: postgres:17-bookworm
+    container_name: database
+    hostname: database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: renderer
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d renderer"]
+      start_period: 3s
+      interval: 2s
+      timeout: 2s
+      retries: 3
 
   s3_storage:
     image: minio/minio
@@ -31,4 +63,5 @@ services:
 
 volumes:
   s3_storage_data:
+  postgres_data:
 
