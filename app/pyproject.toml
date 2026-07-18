@@ -82,7 +82,6 @@ exclude = [
     ".venv",
     "alembic",
     "tests",
-    "frontend",
 ]
 
 # Same as Black.
