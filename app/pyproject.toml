@@ -8,13 +8,17 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi[standard] (>=0.139.0,<0.140.0)",
+    "fastapi[standard] (>=0.139.2,<0.140.0)",
     "asyncpg (>=0.31.0,<0.32.0)",
     "sqlalchemy (>=2.0.51,<3.0.0)",
     "pydantic (>=2.13.4,<3.0.0)",
     "pydantic-settings (>=2.14.2,<3.0.0)",
     "alembic (>=1.18.5,<2.0.0)"
 ]
+
+
+[tool.poetry]
+package-mode = false
 
 
 [build-system]
