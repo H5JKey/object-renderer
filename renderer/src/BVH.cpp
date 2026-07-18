@@ -1,8 +1,11 @@
 #include "BVH.hpp"
 #include <algorithm>
+#include <stdexcept>
 
-BVH::BVH() {
+BVH::BVH(int depthLimit, int trianglesLimit) : depth(0) {
     nodes.reserve(128);
+    setDepthLimit(depthLimit);
+    setTrianglesLimit(trianglesLimit);
 }
 
 void BVH::expandToFitTriangle(Node& node, vec3 v0, vec3 v1, vec3 v2) {
@@ -17,11 +20,12 @@ void BVH::expandToFitTriangle(Node& node, vec3 v0, vec3 v1, vec3 v2) {
 
 int BVH::split(int parentNodeIdx, const Scene& scene, std::vector<int>::iterator begin, std::vector<int>::iterator end, int depth) {
     Node& node = nodes[parentNodeIdx];
-    if (end - begin <= 4 || depth >= 8) {
+    if (end - begin <= trianglesLimit || depth >= depthLimit) {
         node.start = begin - trianglesIndices.begin();
         node.count = end-begin;
         node.left = -1;
         node.right = -1;
+        this->depth = std::max(depth, this->depth);
         return parentNodeIdx;
     }
     Node leftNode, rightNode;
@@ -151,10 +155,28 @@ void BVH::build(const Scene& scene) {
     split(0, scene, trianglesIndices.begin(), trianglesIndices.end(), 0);
 }
 
-const std::vector<BVH::Node>& BVH::getNodes() const {
+const std::vector<BVH::Node>& BVH::getNodes() const noexcept {
     return nodes;
 }
 
-const std::vector<int>& BVH::getTriangles() const {
+const std::vector<int>& BVH::getTriangles() const noexcept {
     return trianglesIndices;
+}
+
+int BVH::getDepth() const noexcept {
+    return depth;
+}
+
+void BVH::setDepthLimit(int limit) {
+    if (limit < 0) {
+        throw std::runtime_error("Depth limit should be greater than zero");
+    }
+    depthLimit = limit;
+}
+
+void BVH::setTrianglesLimit(int limit) {
+    if (limit < 0) {
+        throw std::runtime_error("Triangles limit should be greater than zero");
+    }
+    trianglesLimit = limit;
 }

@@ -157,9 +157,7 @@ void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
     const auto& bvhTriangles = bvh.getTriangles();
     std::println("Total triangles: {}", vertexIndices.size() / 3);
     std::println("BVH nodes: {}", bvhNodes.size());
-    for (int i = 0; i<bvhNodes.size(); i++) {
-        std::println("BVH node {} consists of {} triangles with start at {}", i, bvhNodes[i].count, bvhNodes[i].start);
-    }
+    std::println("BVH depth: {}", bvh.getDepth());
     GLenum error;
 
     glGenBuffers(1, &vertexSSBO); 
