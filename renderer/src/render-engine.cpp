@@ -70,6 +70,8 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, vertexIndexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, materialSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, materialIndexSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, bvhNodesSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, bvhTrianglesSSBO);
 
     glUniform1i(glGetUniformLocation(pathTracingProgram, "uCount"), scene.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uOrigin"), scene.origin.x, scene.origin.y, scene.origin.z);
@@ -146,11 +148,13 @@ void RenderEngine::postProcess(RenderTarget& target) const {
     glUseProgram(0);
 }
 
-void RenderEngine::loadSceneToGPU(const Scene& scene) {
+void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
     const auto& vertices = scene.vertices;
     const auto& vertexIndices = scene.vertexIndices;
     const auto& materials = scene.materials;
     const auto& materialIndices = scene.materialIndices;
+    const auto& bvhNodes = bvh.getNodes();
+    const auto& bvhTriangles = bvh.getTriangles();
     GLenum error;
 
     glGenBuffers(1, &vertexSSBO); 
@@ -188,6 +192,24 @@ void RenderEngine::loadSceneToGPU(const Scene& scene) {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialIndexSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, materialIndices.size() * sizeof(int), 
                 materialIndices.data(), GL_STATIC_DRAW);
+
+    glGenBuffers(1, &bvhNodesSSBO); 
+    error = glGetError();
+    if (error!=0) {
+        throw std::runtime_error("failed to create bvhNodesSSBO. Error: "+std::to_string(error));
+    }
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhNodesSSBO);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, bvhNodes.size() * sizeof(BVH::Node), 
+                bvhNodes.data(), GL_STATIC_DRAW);
+
+    glGenBuffers(1, &bvhTrianglesSSBO); 
+    error = glGetError();
+    if (error!=0) {
+        throw std::runtime_error("failed to create bvhTrianglesSSBO. Error: "+std::to_string(error));
+    }
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhTrianglesSSBO);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, bvhTriangles.size() * sizeof(uint), 
+                bvhTriangles.data(), GL_STATIC_DRAW);
 }
 
 void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, const BVH& bvh) {
@@ -196,7 +218,7 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, const B
     }
     RenderTarget::ContextGuard context(target);
 
-    loadSceneToGPU(scene);
+    loadSceneToGPU(scene, bvh);
     pathTracing(target, scene);
     
     fillGbuffer(target, scene);
@@ -210,4 +232,6 @@ RenderEngine::~RenderEngine() {
     glDeleteBuffers(1, &vertexIndexSSBO);
     glDeleteBuffers(1, &materialSSBO);
     glDeleteBuffers(1, &materialIndexSSBO);
+    glDeleteBuffers(1, &bvhNodesSSBO);
+    glDeleteBuffers(1, &bvhTrianglesSSBO);
 }

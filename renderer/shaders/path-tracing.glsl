@@ -1,7 +1,5 @@
 #version 430 core
 
-layout(rgba32f, binding = 0) uniform image2D outputImage;
-
 struct Material {
     vec4 albedo;
     vec4 emission;
@@ -10,6 +8,15 @@ struct Material {
     float transmission;
     float ior;
 };
+
+struct Node {
+    vec4 min, max;
+    uint left, right;
+    uint start;
+    uint count;
+};
+
+layout(rgba32f, binding = 0) uniform image2D outputImage;
 
 layout(std430, binding = 1) buffer vertexBuffer {
     vec4 vertices[];
@@ -25,6 +32,14 @@ layout(std430, binding = 3) buffer materialBuffer {
 
 layout(std430, binding = 4) buffer materialIndexBuffer {
     int materialsIndices[];
+};
+
+layout(std430, binding = 5) buffer bvhNodesBuffer {
+    Node bvhNodes[];
+};
+
+layout(std430, binding = 6) buffer bvhTrianglesBuffer {
+    uint bvhTriangle[];
 };
 
 uniform int uCount;
