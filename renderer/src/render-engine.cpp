@@ -155,6 +155,11 @@ void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
     const auto& materialIndices = scene.materialIndices;
     const auto& bvhNodes = bvh.getNodes();
     const auto& bvhTriangles = bvh.getTriangles();
+    std::println("Total triangles: {}", vertexIndices.size() / 3);
+    std::println("BVH nodes: {}", bvhNodes.size());
+    for (int i = 0; i<bvhNodes.size(); i++) {
+        std::println("BVH node {} consists of {} triangles with start at {}", i, bvhNodes[i].count, bvhNodes[i].start);
+    }
     GLenum error;
 
     glGenBuffers(1, &vertexSSBO); 
@@ -208,7 +213,7 @@ void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
         throw std::runtime_error("failed to create bvhTrianglesSSBO. Error: "+std::to_string(error));
     }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhTrianglesSSBO);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, bvhTriangles.size() * sizeof(uint), 
+    glBufferData(GL_SHADER_STORAGE_BUFFER, bvhTriangles.size() * sizeof(int), 
                 bvhTriangles.data(), GL_STATIC_DRAW);
 }
 

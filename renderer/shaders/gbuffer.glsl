@@ -43,7 +43,7 @@ struct HitInfo {
     vec3 normal;
 };
 
-HitInfo triangle_intersection(vec3 ro, vec3 rd, int triangle_idx) {
+HitInfo triangleIntersection(vec3 ro, vec3 rd, int triangle_idx) {
     HitInfo info;
     
     vec3 v0 = vertices[verticesIndices[3*triangle_idx]].xyz;
@@ -125,7 +125,7 @@ HitInfo castRay(vec3 origin, vec3 direction) {
     closestHitInfo.normal = vec3(0);
     closestHitInfo.material_id = -1;
     for (int i=0; i<uCount; i++) {
-        HitInfo info = triangle_intersection(origin, direction, i);
+        HitInfo info = triangleIntersection(origin, direction, i);
         if (info.distance > 0.0 && info.distance < closestHitInfo.distance) {
             closestHitInfo = info;
         }
