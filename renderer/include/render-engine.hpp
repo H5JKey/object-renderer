@@ -5,6 +5,7 @@
 #include "render-target.hpp"
 #include "scene.hpp"
 #include "denoiser.hpp"
+#include "BVH.hpp"
 
 class RenderEngine {
     Denoiser denoiser;
@@ -18,7 +19,7 @@ class RenderEngine {
     GLuint materialIndexSSBO;
 public:
     RenderEngine();
-    void renderFrame(RenderTarget& target, const Scene& scene);
+    void renderFrame(RenderTarget& target, const Scene& scene, const BVH& bvh);
     ~RenderEngine();
 private:
     void pathTracing(RenderTarget& target, const Scene& scene);
