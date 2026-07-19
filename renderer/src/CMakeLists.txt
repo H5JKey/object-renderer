@@ -1,5 +1,4 @@
-add_executable(renderer
-    main.cpp
+add_library(renderer_core STATIC
     scene.cpp
     scene-loader.cpp
     render-engine.cpp
@@ -10,12 +9,20 @@ add_executable(renderer
     BVH-builder.cpp
 )
 
-target_link_libraries(renderer PRIVATE
+target_link_libraries(renderer_core PUBLIC
     renderer_deps
 )
 
-target_include_directories(renderer PRIVATE
+target_include_directories(renderer_core PUBLIC
     ${CMAKE_SOURCE_DIR}/include
+)
+
+add_executable(renderer
+    main.cpp
+)
+
+target_link_libraries(renderer PRIVATE
+    renderer_core
 )
 
 add_custom_command(
