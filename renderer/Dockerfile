@@ -2,7 +2,7 @@ FROM archlinux:latest
 
 WORKDIR /renderer
 
-RUN pacman -Syu --noconfirm &&
+RUN pacman -Syu --noconfirm && \
     pacman -S --noconfirm \
     gcc \
     make \
@@ -21,12 +21,8 @@ RUN pacman -Syu --noconfirm &&
     libxi \
 && pacman -Scc --noconfirm
 
-COPY renderer/CMakeLists.txt .
-RUN mkdir build && cd build && cmake ..
-
 COPY renderer/ .
-RUN cd build && make -j$(nproc)
-
 RUN mkdir build && cd build && cmake ..
+RUN cd build && make -j$(nproc)
 
 CMD ["./build/renderer"]

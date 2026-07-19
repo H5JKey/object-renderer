@@ -1,0 +1,30 @@
+name: C++ checks
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+
+
+jobs:
+  style:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run clang-format check
+      uses: jidicula/clang-format-action@v4.18.0
+      with:
+          clang-format-version: '18'
+          check-path: 'renderer'
+          format-filepath: 'renderer/.clang-format'
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build and test
+      run: |
+        docker build . --file renderer/Dockerfile --tag renderer
+        docker run --rm renderer sh -c "cd build/tests && ctest --output-on-failure"
