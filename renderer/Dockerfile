@@ -2,7 +2,7 @@ FROM archlinux:latest
 
 WORKDIR /renderer
 
-RUN pacman -Syu --noconfirm &&
+RUN pacman -Syu --noconfirm && \
     pacman -S --noconfirm \
     gcc \
     make \
