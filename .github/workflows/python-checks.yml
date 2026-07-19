@@ -33,7 +33,7 @@ jobs:
         run: poetry install
 
       - name: run black
-        run: black . --check
+        run: black . --check --target-version py313
 
       - name: run mypy
         run: mypy .
