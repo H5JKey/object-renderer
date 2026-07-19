@@ -81,7 +81,7 @@ exclude = [
     "site-packages",
     "venv",
     ".venv",
-    "alembic",
+    "migrations",
     "tests",
 ]
 
