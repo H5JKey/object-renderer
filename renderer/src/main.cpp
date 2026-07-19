@@ -4,7 +4,7 @@
 #include "scene.hpp"
 #include "target-manager.hpp"
 #include "render-engine.hpp"
-#include "BVH.hpp"
+#include "BVH-builder.hpp"
 
 int main(int argc, char* argv[]) {
     TargetManager::init();
@@ -12,8 +12,8 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<RenderTarget>  egl = TargetManager::getInstance().createEGLTarget(1600,1200);
     
     Scene scene;
-    BVH bvh(12, 8);
-    bvh.build(scene);
+    MedianBuilder builder(12,8);
+    BVH bvh = builder.build(scene);
     engine.renderFrame(*egl, scene, bvh);
     egl->output();
     auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());

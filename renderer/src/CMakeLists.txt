@@ -7,6 +7,7 @@ add_executable(renderer
     target-manager.cpp
     denoiser.cpp
     BVH.cpp
+    BVH-builder.cpp
 )
 
 target_link_libraries(renderer PRIVATE

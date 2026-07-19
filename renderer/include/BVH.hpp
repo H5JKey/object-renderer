@@ -4,30 +4,22 @@
 #include <limits>
 
 class BVH {
+    friend class MedianBuilder;
+    BVH();
 public:
     struct Node {
         vec3 min, max;
         int left, right;
         int start;
         int count;
-
-        Node() : min(0,0,0), max(0,0,0), left(-1), right(-1) {
-        }
+        Node() : min(0,0,0), max(0,0,0), left(-1), right(-1) {}
+        void expandToFitTriangle(vec3 v0, vec3 v1, vec3 v2);
     };
-
-    BVH(int depthLimit, int trianglesLimit);
-    void build(const Scene& scene);
     const std::vector<Node>& getNodes() const noexcept;
     const std::vector<int>& getTriangles() const noexcept;
     int getDepth() const noexcept;
-    void setDepthLimit(int limit);
-    void setTrianglesLimit(int limit);
 private:
-    void expandToFitTriangle(Node& node, vec3 v0, vec3 v1, vec3 v2);
-    int split(int parentNodeIdx, const Scene& scene, std::vector<int>::iterator begin, std::vector<int>::iterator end, int depth);
     std::vector<Node> nodes;
     std::vector<int> trianglesIndices;
     int depth;
-    int trianglesLimit;
-    int depthLimit;
 };
