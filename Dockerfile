@@ -24,7 +24,10 @@ RUN pacman -Syu --noconfirm && \
 COPY renderer/CMakeLists.txt .
 RUN mkdir build && cd build && cmake ..
 
-COPY renderer/ .
+COPY renderer/lib/ lib/
+COPY renderer/tests/ tests/
+COPY renderer/include/ include/
+COPY renderer/src/ src/
 RUN cd build && make -j$(nproc)
 
 RUN mkdir build && cd build && cmake ..
