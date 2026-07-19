@@ -21,15 +21,9 @@ RUN pacman -Syu --noconfirm && \
     libxi \
 && pacman -Scc --noconfirm
 
-COPY renderer/CMakeLists.txt .
+COPY renderer/ .
 RUN mkdir build && cd build && cmake ..
 
-COPY renderer/lib/ lib/
-COPY renderer/tests/ tests/
-COPY renderer/include/ include/
-COPY renderer/src/ src/
 RUN cd build && make -j$(nproc)
-
-RUN mkdir build && cd build && cmake ..
 
 CMD ["./build/renderer"]
