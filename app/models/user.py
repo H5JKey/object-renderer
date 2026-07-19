@@ -1,0 +1,63 @@
+from datetime import datetime
+
+from core.constants import (
+    USER_EMAIL_MAX_LENGTH,
+    USER_EMAIL_MIN_LENGTH,
+    USER_ENCRYPTED_PASSWORD_MAX_LENGTH,
+    USER_NAME_MAX_LENGTH,
+    USER_NAME_MIN_LENGTH,
+    USER_SURNAME_MAX_LENGTH,
+    USER_SURNAME_MIN_LENGTH,
+    USER_USERNAME_MAX_LENGTH,
+    USER_USERNAME_MIN_LENGTH,
+)
+from core.database import Base
+from sqlalchemy import CheckConstraint, String, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    surname: Mapped[str] = mapped_column(String(USER_SURNAME_MAX_LENGTH))
+    name: Mapped[str] = mapped_column(String(USER_NAME_MAX_LENGTH))
+    username: Mapped[str] = mapped_column(String(USER_USERNAME_MAX_LENGTH))
+    email: Mapped[str] = mapped_column(String(USER_EMAIL_MAX_LENGTH))
+    encrypted_password: Mapped[str] = mapped_column(
+        String(USER_ENCRYPTED_PASSWORD_MAX_LENGTH),
+    )
+    registration_date: Mapped[datetime] = mapped_column(
+        server_default=func.timezone("UTC", func.now()),
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            f"""
+            LENGTH(surname) >= {USER_SURNAME_MIN_LENGTH} 
+            AND LENGTH(surname) <= {USER_SURNAME_MAX_LENGTH}
+            """,
+            name="length_surname",
+        ),
+        CheckConstraint(
+            f"""
+            LENGTH(name) >= {USER_NAME_MIN_LENGTH} 
+            AND LENGTH(name) <= {USER_NAME_MAX_LENGTH}
+            """,
+            name="length_name",
+        ),
+        CheckConstraint(
+            f"""
+            LENGTH(username) >= {USER_USERNAME_MIN_LENGTH} 
+            AND LENGTH(username) <= {USER_USERNAME_MAX_LENGTH}
+            """,
+            name="length_username",
+        ),
+        CheckConstraint(
+            f"""
+            LENGTH(email) >= {USER_EMAIL_MIN_LENGTH} 
+            AND LENGTH(email) <= {USER_EMAIL_MAX_LENGTH}
+            """,
+            name="length_email",
+        ),
+    )
