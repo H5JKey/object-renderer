@@ -23,6 +23,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4
     - name: Build and test
       run: |
         docker build . --file renderer/Dockerfile --tag renderer
