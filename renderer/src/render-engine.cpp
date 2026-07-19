@@ -113,6 +113,8 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const Scene& scene) {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, vertexIndexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, materialSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, materialIndexSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, bvhNodesSSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, bvhTrianglesSSBO);
     glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), scene.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), scene.origin.x, scene.origin.y, scene.origin.z);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), scene.lookAt.x, scene.lookAt.y, scene.lookAt.z);
@@ -149,15 +151,16 @@ void RenderEngine::postProcess(RenderTarget& target) const {
 }
 
 void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
+    std::println("Loading geometry to GPU");
     const auto& vertices = scene.vertices;
     const auto& vertexIndices = scene.vertexIndices;
     const auto& materials = scene.materials;
     const auto& materialIndices = scene.materialIndices;
     const auto& bvhNodes = bvh.getNodes();
     const auto& bvhTriangles = bvh.getTriangles();
-    std::println("Total triangles: {}", vertexIndices.size() / 3);
-    std::println("BVH nodes: {}", bvhNodes.size());
-    std::println("BVH depth: {}", bvh.getDepth());
+    std::println("- Total triangles: {}", vertexIndices.size() / 3);
+    std::println("- BVH nodes: {}", bvhNodes.size());
+    std::println("- BVH depth: {}", bvh.getDepth());
     GLenum error;
 
     glGenBuffers(1, &vertexSSBO); 
