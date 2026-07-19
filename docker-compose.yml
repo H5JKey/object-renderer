@@ -15,6 +15,10 @@ services:
       dockerfile: app/Dockerfile
     container_name: app
     hostname: app
+    environment:
+      DATABASE__HOST: database
+      DATABASE__PORT: 5432
+      DATABASE__DB_NAME: renderer
     ports:
       - "8000:8000"
     depends_on:
@@ -38,7 +42,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: renderer
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
