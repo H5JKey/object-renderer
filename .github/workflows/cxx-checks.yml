@@ -1,0 +1,24 @@
+name: C++ checks
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run clang-format check
+      uses: jidicula/clang-format-action@v4.18.0
+        with:
+          clang-format-version: '18'
+          check-path: '.'
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - name: Run tests in Docker
+      run: |
+        docker run --rm my-image-name:$(date +%s) ./build/tests
