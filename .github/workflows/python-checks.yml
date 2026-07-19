@@ -12,8 +12,7 @@ jobs:
   lint:
     runs-on: ubuntu:latest
     defaults:
-      working-directory:
-        ./app
+      working-directory: ./app
     steps:
       - name: clone git repository
         uses: actions/checkout@v4
