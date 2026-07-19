@@ -1,23 +1,32 @@
-FROM alpine:latest
+FROM archlinux:latest
 
 WORKDIR /renderer
 
-ENV EGL_PLATFORM=surfaceless
-
-RUN apk update && apk add \
+RUN pacman -Syu --noconfirm &&
+    pacman -S --noconfirm \
+    gcc \
+    make \
     cmake \
-    ca-certificates \
-    mesa-dev \
-    mesa-gl \
-    py3-jinja2 \
-    mesa-dri-gallium \
+    git \
+    mesa \
+    mesa-utils \
+    python-jinja \
     ispc \
     openimagedenoise \
-    && rm -rf /var/cache/apk/* \
-    
+    libglvnd \
+    libx11 \
+    libxrandr \
+    libxinerama \
+    libxcursor \
+    libxi \
+&& pacman -Scc --noconfirm
 
-COPY renderer .
+COPY renderer/CMakeLists.txt .
+RUN mkdir build && cd build && cmake ..
 
-RUN mkdir build && cd build && cmake .. && cmake --build .
+COPY renderer/ .
+RUN cd build && make -j$(nproc)
+
+RUN mkdir build && cd build && cmake ..
 
 CMD ["./build/renderer"]
