@@ -16,7 +16,7 @@ class Base(DeclarativeBase):
     Базовый класс для наследования моделей базы данных.
     """
 
-    metadata: MetaData = metadata
+    metadata: MetaData = metadata  # type: ignore[misc]
 
 
 engine = create_async_engine(

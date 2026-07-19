@@ -34,28 +34,28 @@ class User(Base):
     __table_args__ = (
         CheckConstraint(
             f"""
-            LENGTH(surname) >= {USER_SURNAME_MIN_LENGTH} 
+            LENGTH(surname) >= {USER_SURNAME_MIN_LENGTH}
             AND LENGTH(surname) <= {USER_SURNAME_MAX_LENGTH}
             """,
             name="length_surname",
         ),
         CheckConstraint(
             f"""
-            LENGTH(name) >= {USER_NAME_MIN_LENGTH} 
+            LENGTH(name) >= {USER_NAME_MIN_LENGTH}
             AND LENGTH(name) <= {USER_NAME_MAX_LENGTH}
             """,
             name="length_name",
         ),
         CheckConstraint(
             f"""
-            LENGTH(username) >= {USER_USERNAME_MIN_LENGTH} 
+            LENGTH(username) >= {USER_USERNAME_MIN_LENGTH}
             AND LENGTH(username) <= {USER_USERNAME_MAX_LENGTH}
             """,
             name="length_username",
         ),
         CheckConstraint(
             f"""
-            LENGTH(email) >= {USER_EMAIL_MIN_LENGTH} 
+            LENGTH(email) >= {USER_EMAIL_MIN_LENGTH}
             AND LENGTH(email) <= {USER_EMAIL_MAX_LENGTH}
             """,
             name="length_email",

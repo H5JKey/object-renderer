@@ -1,8 +1,7 @@
 from core.constants import FILE_BUCKET_LENGTH, FILE_KEY_LENGTH
 from core.database import Base
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped
-from sqlalchemy.testing.schema import mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class File(Base):
