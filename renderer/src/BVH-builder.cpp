@@ -26,7 +26,7 @@ void BVHBuilder::setTrianglesLimit(int limit) {
 MedianBuilder::MedianBuilder(int depthLimit, int trianglesLimit) : BVHBuilder(depthLimit, trianglesLimit) {}
 
 int MedianBuilder::split(BVH& bvh, int nodeIdx, const Scene& scene, std::vector<int>::iterator begin, std::vector<int>::iterator end, int depth) const {
-   BVH::Node& node = bvh.nodes[nodeIdx];
+    BVH::Node& node = bvh.nodes[nodeIdx];
     if ((trianglesLimit != -1 && end - begin <= trianglesLimit) || (depthLimit != -1 && depth >= depthLimit)) {
         node.start = begin - bvh.trianglesIndices.begin();
         node.count = end-begin;
@@ -55,9 +55,9 @@ int MedianBuilder::split(BVH& bvh, int nodeIdx, const Scene& scene, std::vector<
         auto v0_j = scene.vertices[scene.vertexIndices[3*j]];
         auto v1_j = scene.vertices[scene.vertexIndices[3*j+1]];
         auto v2_j = scene.vertices[scene.vertexIndices[3*j+2]];
-        if (axis == 0) return v0_i.x+v1_i.x+v2_i.x <= v0_j.x+v1_j.x+v2_j.x;
-        else if (axis == 1) return v0_i.y+v1_i.y+v2_i.y <= v0_j.y+v1_j.y+v2_j.y;
-        else return v0_i.z+v1_i.z+v2_i.z <= v0_j.z+v1_j.z+v2_j.z;
+        if (axis == 0) return v0_i.x+v1_i.x+v2_i.x < v0_j.x+v1_j.x+v2_j.x;
+        else if (axis == 1) return v0_i.y+v1_i.y+v2_i.y < v0_j.y+v1_j.y+v2_j.y;
+        else return v0_i.z+v1_i.z+v2_i.z < v0_j.z+v1_j.z+v2_j.z;
     });
     auto median = begin + (end - begin) / 2;
     int medianIdx = *median;
