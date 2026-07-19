@@ -9,62 +9,62 @@
 class TargetManager;
 
 class RenderTarget {
- protected:
-  friend class TargetManager;
-  int width, height;
-  bool initialized = false;
-  GLuint rawTexture;
-  GLuint denoisedTexture;
-  GLuint outputTexture;
-  GLuint normalMap;
-  GLuint albedoMap;
+   protected:
+    friend class TargetManager;
+    int width, height;
+    bool initialized = false;
+    GLuint rawTexture;
+    GLuint denoisedTexture;
+    GLuint outputTexture;
+    GLuint normalMap;
+    GLuint albedoMap;
 
-  RenderTarget(int width, int height) : width{width}, height{height} {}
-  virtual void makeCurrent() const = 0;
-  virtual void release() const = 0;
+    RenderTarget(int width, int height) : width{width}, height{height} {}
+    virtual void makeCurrent() const = 0;
+    virtual void release() const = 0;
 
- public:
-  struct ContextGuard {
-    ContextGuard(const RenderTarget& target) : target(target) { target.makeCurrent(); }
+   public:
+    struct ContextGuard {
+        ContextGuard(const RenderTarget& target) : target(target) { target.makeCurrent(); }
 
-    ~ContextGuard() { target.release(); }
+        ~ContextGuard() { target.release(); }
 
-   private:
-    const RenderTarget& target;
-  };
-  int getWidth() const noexcept { return width; }
-  int getHeight() const noexcept { return height; }
-  GLuint getRawTexture() const noexcept { return rawTexture; }
-  GLuint getDenoisedTexture() const noexcept { return denoisedTexture; }
-  GLuint getOutputTexture() const noexcept { return outputTexture; }
-  GLuint getNormalMap() const noexcept { return normalMap; }
-  GLuint getAlbedoMap() const noexcept { return albedoMap; }
-  virtual void output() const = 0;
+       private:
+        const RenderTarget& target;
+    };
+    int getWidth() const noexcept { return width; }
+    int getHeight() const noexcept { return height; }
+    GLuint getRawTexture() const noexcept { return rawTexture; }
+    GLuint getDenoisedTexture() const noexcept { return denoisedTexture; }
+    GLuint getOutputTexture() const noexcept { return outputTexture; }
+    GLuint getNormalMap() const noexcept { return normalMap; }
+    GLuint getAlbedoMap() const noexcept { return albedoMap; }
+    virtual void output() const = 0;
 
-  template <typename T>
-  std::vector<T> getBufferData(GLuint texture) const;
+    template <typename T>
+    std::vector<T> getBufferData(GLuint texture) const;
 
-  template <typename T>
-  void setBufferData(GLuint texture, const std::vector<T>& data);
+    template <typename T>
+    void setBufferData(GLuint texture, const std::vector<T>& data);
 
-  virtual ~RenderTarget() = default;
+    virtual ~RenderTarget() = default;
 };
 
 class EglTarget : public RenderTarget {
- private:
-  friend class TargetManager;
-  EglTarget(int width, int height, EGLDisplay display, EGLConfig config, EGLContext context);
+   private:
+    friend class TargetManager;
+    EglTarget(int width, int height, EGLDisplay display, EGLConfig config, EGLContext context);
 
-  void makeCurrent() const override;
-  void release() const override;
-  EGLDisplay display;
-  EGLSurface surface;
-  EGLContext context;
+    void makeCurrent() const override;
+    void release() const override;
+    EGLDisplay display;
+    EGLSurface surface;
+    EGLContext context;
 
- public:
-  void writeToPng(GLuint texture, const std::string& filename, GLenum format) const;
+   public:
+    void writeToPng(GLuint texture, const std::string& filename, GLenum format) const;
 
-  void output() const override;
+    void output() const override;
 
-  ~EglTarget();
+    ~EglTarget();
 };

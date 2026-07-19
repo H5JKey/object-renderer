@@ -14,11 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run clang-format check
-      uses: jidicula/clang-format-action@v4.18.0
+      uses: mrousavy/clang-format-action@v1
       with:
           clang-format-version: '18'
           check-path: 'renderer'
-          format-filepath: 'renderer/.clang-format'
+          clang-format-style-path: renderer/.clang-format
 
   build:
     runs-on: ubuntu-latest
