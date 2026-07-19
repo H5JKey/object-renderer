@@ -1,6 +1,7 @@
 #include "BVH-builder.hpp"
 #include <algorithm>
 #include <stdexcept>
+#include <print>
 
 
 BVHBuilder::BVHBuilder(int depthLimit, int trianglesLimit) {
@@ -9,30 +10,30 @@ BVHBuilder::BVHBuilder(int depthLimit, int trianglesLimit) {
 }
 
 void BVHBuilder::setDepthLimit(int limit) {
-    if (limit < 0) {
-        throw std::runtime_error("Depth limit should be greater than zero");
+    if (limit < -1) {
+        throw std::runtime_error("Depth limit should be greater than zero or -1 for unlimit");
     }
     depthLimit = limit;
 }
 
 void BVHBuilder::setTrianglesLimit(int limit) {
-    if (limit < 0) {
-        throw std::runtime_error("Triangles limit should be greater than zero");
+    if (limit < -1) {
+        throw std::runtime_error("Triangles limit should be greater than zero -1 for unlimit");
     }
     trianglesLimit = limit;
 }
 
 MedianBuilder::MedianBuilder(int depthLimit, int trianglesLimit) : BVHBuilder(depthLimit, trianglesLimit) {}
 
-int MedianBuilder::split(BVH& bvh, int parentNodeIdx, const Scene& scene, std::vector<int>::iterator begin, std::vector<int>::iterator end, int depth) const {
-   BVH::Node& node = bvh.nodes[parentNodeIdx];
-    if (end - begin <= trianglesLimit || depth >= depthLimit) {
+int MedianBuilder::split(BVH& bvh, int nodeIdx, const Scene& scene, std::vector<int>::iterator begin, std::vector<int>::iterator end, int depth) const {
+   BVH::Node& node = bvh.nodes[nodeIdx];
+    if ((trianglesLimit != -1 && end - begin <= trianglesLimit) || (depthLimit != -1 && depth >= depthLimit)) {
         node.start = begin - bvh.trianglesIndices.begin();
         node.count = end-begin;
         node.left = -1;
         node.right = -1;
         bvh.depth = std::max(depth, bvh.depth);
-        return parentNodeIdx;
+        return nodeIdx;
     }
     BVH::Node leftNode, rightNode;
     float offsetX = node.max.x - node.min.x;
@@ -116,24 +117,29 @@ int MedianBuilder::split(BVH& bvh, int parentNodeIdx, const Scene& scene, std::v
         auto v2 = scene.vertices[scene.vertexIndices[3*triangleIdx+2]];
         rightNode.expandToFitTriangle(v0, v1, v2);
     }
-    int currentIdx = bvh.nodes.size() - 1;
     if (begin == median || median == end) {
-        return parentNodeIdx;
+        node.start = begin - bvh.trianglesIndices.begin();
+        node.count = end - begin;
+        node.left = -1;
+        node.right = -1;
+        bvh.depth = std::max(depth, bvh.depth);
+        return nodeIdx;
     }
 
     bvh.nodes.push_back(leftNode);
-    bvh.nodes[parentNodeIdx].left = split(bvh, bvh.nodes.size()-1, scene, begin, median, depth+1);
+    bvh.nodes[nodeIdx].left = split(bvh, bvh.nodes.size()-1, scene, begin, median, depth+1);
 
     bvh.nodes.push_back(rightNode);
-    bvh.nodes[parentNodeIdx].right = split(bvh, bvh.nodes.size()-1, scene, median, end, depth+1);
+    bvh.nodes[nodeIdx].right = split(bvh, bvh.nodes.size()-1, scene, median, end, depth+1);
 
-    bvh.nodes[parentNodeIdx].start = 0;
-    bvh.nodes[parentNodeIdx].count = 0;
-    return currentIdx;
+    bvh.nodes[nodeIdx].start = 0;
+    bvh.nodes[nodeIdx].count = 0;
+    return nodeIdx;
     
 }
 
 BVH MedianBuilder::build(const Scene& scene) const{
+    std::println("Building BVH");
     BVH bvh;
     const auto INFINITY = std::numeric_limits<float>::infinity();
     vec3 max(-INFINITY,-INFINITY,-INFINITY), min(INFINITY,INFINITY,INFINITY);
