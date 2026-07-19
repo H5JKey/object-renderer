@@ -17,9 +17,9 @@ jobs:
       with:
           clang-format-version: '18'
           check-path: 'renderer'
-          format-filepath: 'renderer'
+          format-filepath: 'renderer/.clang-format'
 
     - name: Build and test
       run: |
-        docker build . --file Dockerfile --tag renderer
+        docker build . --file renderer/Dockerfile --tag renderer
         docker run --rm renderer sh -c "cd build/tests && ctest --output-on-failure"
