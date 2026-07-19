@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import jwt
 
@@ -6,7 +7,7 @@ from core.config.application import settings
 
 
 def encode_jwt(
-    payload: dict,
+    payload: dict[str, Any],
     algorithm: str = settings.jwt.algorithm,
     key: str = settings.jwt.private_key,
     expires_in_minutes: int = settings.jwt.access_token_expires_in_minutes,
@@ -28,7 +29,7 @@ def decode_jwt(
     token: str,
     algorithm: str = settings.jwt.algorithm,
     key: str = settings.jwt.public_key,
-) -> dict:
+) -> dict[str, Any]:
     return jwt.decode(
         jwt=token,
         algorithms=[algorithm],
