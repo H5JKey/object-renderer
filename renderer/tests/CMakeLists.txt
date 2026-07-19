@@ -15,7 +15,9 @@ add_executable(test
 target_link_libraries(test PRIVATE
     renderer_core
     GTest::gtest_main
+    GTest::gtest
 )
 
 include(GoogleTest)
+add_test(NAME test COMMAND test)
 gtest_discover_tests(test)

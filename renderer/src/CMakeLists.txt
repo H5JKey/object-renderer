@@ -7,6 +7,7 @@ add_library(renderer_core STATIC
     denoiser.cpp
     BVH.cpp
     BVH-builder.cpp
+    utils.cpp
 )
 
 target_link_libraries(renderer_core PUBLIC
