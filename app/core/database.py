@@ -1,15 +1,22 @@
 from collections.abc import AsyncGenerator
 
+from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 from core.config.application import settings
+
+metadata = MetaData(
+    naming_convention=settings.database.naming_convention,
+)
 
 
 class Base(DeclarativeBase):
     """
     Базовый класс для наследования моделей базы данных.
     """
+
+    metadata: MetaData = metadata
 
 
 engine = create_async_engine(
