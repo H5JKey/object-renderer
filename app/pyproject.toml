@@ -29,13 +29,24 @@ dev = [
     "mypy (>=2.3.0,<3.0.0)"
 ]
 
+
+# black settings
+
+[tool.black]
+extend-exclude = '''
+/(
+    migrations
+)/
+'''
+
+
 # mypy settings
 
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
 exclude = [
-    "alembic",
+    "migrations",
     "tests"
 ]
 plugins = [
