@@ -19,6 +19,7 @@ RUN pacman -Syu --noconfirm && \
     libxinerama \
     libxcursor \
     libxi \
+    valgrind \
 && pacman -Scc --noconfirm
 
 COPY renderer/ .
