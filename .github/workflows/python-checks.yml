@@ -11,6 +11,9 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app
     steps:
       - name: clone git repository
         uses: actions/checkout@v4
@@ -25,10 +28,10 @@ jobs:
         run: poetry install
 
       - name: run black
-        run: black app --check
+        run: black . --check
 
       - name: run mypy
-        run: mypy app
+        run: mypy .
 
       - name: run ruff
         run: ruff check
