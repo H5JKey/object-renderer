@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from core.constants import (
     USER_EMAIL_MAX_LENGTH,
@@ -13,7 +14,10 @@ from core.constants import (
 )
 from core.database import Base
 from sqlalchemy import CheckConstraint, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from models import File
 
 
 class User(Base):
@@ -22,13 +26,18 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     surname: Mapped[str] = mapped_column(String(USER_SURNAME_MAX_LENGTH))
     name: Mapped[str] = mapped_column(String(USER_NAME_MAX_LENGTH))
-    username: Mapped[str] = mapped_column(String(USER_USERNAME_MAX_LENGTH))
-    email: Mapped[str] = mapped_column(String(USER_EMAIL_MAX_LENGTH))
+    username: Mapped[str] = mapped_column(String(USER_USERNAME_MAX_LENGTH), unique=True)
+    email: Mapped[str] = mapped_column(String(USER_EMAIL_MAX_LENGTH), unique=True)
     encrypted_password: Mapped[str] = mapped_column(
         String(USER_ENCRYPTED_PASSWORD_MAX_LENGTH),
     )
     registration_date: Mapped[datetime] = mapped_column(
         server_default=func.timezone("UTC", func.now()),
+    )
+
+    files: Mapped[list["File"]] = relationship(
+        "File",
+        back_populates="user",
     )
 
     __table_args__ = (
