@@ -18,8 +18,9 @@ jobs:
           clang-format-version: '18'
           check-path: '.'
           style: 'file:renderer/.clang-format'
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+
+    - name: Build and test
+      run: docker build . --file Dockerfile --tag renderer
     - name: Run tests in Docker
       run: |
         docker run --rm my-image-name:$(date +%s) ./build/tests
