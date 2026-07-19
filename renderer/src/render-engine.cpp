@@ -4,27 +4,15 @@
 #include <fstream>
 #include <sstream>
 #include "target-manager.hpp"
-
-
-std::string readFromFile(const std::string& path) {
-    std::string source;
-    std::fstream shaderFile(path);
-    if (!shaderFile.is_open()) {
-        throw std::runtime_error(std::format("failed to open file. Path: {}", path));
-    }
-    std::stringstream buffer;
-    buffer << shaderFile.rdbuf();
-    source = buffer.str();
-    return source;
-}
+#include "utils.hpp"
 
 RenderEngine::RenderEngine() {
     std::println("Compiling path tracing shader");
-    pathTracingProgram = compileShader(readFromFile("shaders/path-tracing.glsl"));
+    pathTracingProgram = compileShader(utils::readFromFile("shaders/path-tracing.glsl"));
     std::println("Compiling post processing shader");
-    postProcessingProgram = compileShader(readFromFile("shaders/post-processing.glsl"));
+    postProcessingProgram = compileShader(utils::readFromFile("shaders/post-processing.glsl"));
     std::println("Compiling gbuffer shader");
-    gbufferProgram = compileShader(readFromFile("shaders/gbuffer.glsl"));
+    gbufferProgram = compileShader(utils::readFromFile("shaders/gbuffer.glsl"));
 }
 
 GLuint RenderEngine::compileShader(const std::string& source) {
