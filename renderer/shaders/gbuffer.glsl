@@ -12,6 +12,13 @@ struct Material {
     float ior;
 };
 
+struct Node {
+    vec4 min, max;
+    int left, right;
+    int start;
+    int count;
+};
+
 layout(std430, binding = 2) buffer vertexBuffer {
     vec4 vertices[];
 };
@@ -26,6 +33,14 @@ layout(std430, binding = 4) buffer materialBuffer {
 
 layout(std430, binding = 5) buffer materialIndexBuffer {
     int materialsIndices[];
+};
+
+layout(std430, binding = 6) buffer bvhNodesBuffer {
+    Node bvhNodes[];
+};
+
+layout(std430, binding = 7) buffer bvhTrianglesBuffer {
+    int bvhTriangles[];
 };
 
 uniform int uCount;
@@ -102,6 +117,32 @@ HitInfo triangleIntersection(vec3 ro, vec3 rd, int triangle_idx) {
     return info;
 }
 
+float AABBIntersection(vec3 origin, vec3 direction, vec3 boxMin, vec3 boxMax) {
+    vec3 invDir = 1.0f / direction;
+
+    vec3 t0 = (boxMin - origin) * invDir;
+    vec3 t1 = (boxMax - origin) * invDir;
+
+    vec3 tNear = vec3(
+        min(t0.x, t1.x),
+        min(t0.y, t1.y),
+        min(t0.z, t1.z)
+    );
+    vec3 tFar = vec3(
+        max(t0.x, t1.x),
+        max(t0.y, t1.y),
+        max(t0.z, t1.z)
+    );
+
+    float tMin = max(max(tNear.x, tNear.y), max(tNear.z, 0.0f));
+    float tMax = min(min(tFar.x, tFar.y), tFar.z);
+    
+    if (tMin <= tMax) 
+        return tMin;
+    else
+        return -1.0;
+}
+
 
 uint pcg(uint seed) {
     uint state = seed * uint(747796405) + uint(2891336453u);
@@ -118,16 +159,49 @@ vec2 random2(uint seed) {
 }
 
 const float MAX_DIST=100000.0;
-HitInfo castRay(vec3 origin, vec3 direction) {
+HitInfo castRayTroughAABB(vec3 origin, vec3 direction, Node node) {
     HitInfo closestHitInfo;
     closestHitInfo.distance = MAX_DIST;
     closestHitInfo.position = vec3(0);
     closestHitInfo.normal = vec3(0);
     closestHitInfo.material_id = -1;
-    for (int i=0; i<uCount; i++) {
-        HitInfo info = triangleIntersection(origin, direction, i);
+    
+    for (int i=node.start; i<node.count+node.start; i++) {
+        HitInfo info = triangleIntersection(origin, direction, bvhTriangles[i]);
         if (info.distance > 0.0 && info.distance < closestHitInfo.distance) {
             closestHitInfo = info;
+        }
+    }
+    return closestHitInfo;
+}
+
+HitInfo castRayThroughBVH(vec3 origin, vec3 direction) {
+    HitInfo closestHitInfo;
+    closestHitInfo.distance = MAX_DIST;
+    closestHitInfo.position = vec3(0);
+    closestHitInfo.normal = vec3(0);
+    closestHitInfo.material_id = -1;
+
+    int stack[64];
+    int stackPtr = 0;
+
+    stack[stackPtr++] = 0;
+    while (stackPtr > 0) {
+        int nodeIdx = stack[--stackPtr];
+        Node node = bvhNodes[nodeIdx];
+        float t = AABBIntersection(origin, direction, node.min.xyz, node.max.xyz);
+        if (t < 0.0 || t > closestHitInfo.distance)
+            continue;
+        if (node.left == -1 && node.right == -1) {
+            HitInfo info = castRayTroughAABB(origin, direction, node);
+            if (info.distance > 0 && info.distance < closestHitInfo.distance)
+                closestHitInfo = info;
+        }
+        else {
+            if (node.left != -1) 
+                stack[stackPtr++] = node.left;
+            if (node.right != -1)
+                stack[stackPtr++] = node.right;
         }
     }
     return closestHitInfo;
@@ -153,7 +227,7 @@ void main() {
 
     vec3 direction = normalize(forward + right * fov * uv.x + up * fov * uv.y);
 
-    HitInfo hit = castRay(uOrigin, direction);
+    HitInfo hit = castRayThroughBVH(uOrigin, direction);
 
     imageStore(normalMap, pixel, vec4(hit.normal, 1.0));
     if (hit.distance == MAX_DIST) {
