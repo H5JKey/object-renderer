@@ -12,7 +12,7 @@ from core.constants import (
     USER_USERNAME_MAX_LENGTH,
     USER_USERNAME_MIN_LENGTH,
 )
-from core.database import Base
+from infrastructure.database import Base
 from sqlalchemy import CheckConstraint, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
