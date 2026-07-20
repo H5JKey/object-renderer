@@ -1,14 +1,12 @@
 #include "render-target.hpp"
+#include "utils.hpp"
 
 #include <print>
 #include <stdexcept>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-
 template <typename T>
 std::vector<T> RenderTarget::getBufferData(GLuint texture) const {
-    static_assert(sizeof(T) == 0, "Only GLubyte (RGBA8) and GLfloat (RGBA32F) are supported");
+    static_assert(sizeof(T) == 0, "Only unsigned char (RGBA8) and float (RGBA32F) are supported");
 }
 
 template <>
@@ -31,7 +29,7 @@ std::vector<unsigned char> RenderTarget::getBufferData(GLuint texture) const {
 
 template <typename T>
 void RenderTarget::setBufferData(GLuint texture, const std::vector<T>& data) {
-    static_assert(sizeof(T) == 0, "Only GLubyte (RGBA8) and GLfloat (RGBA16F) are supported");
+    static_assert(sizeof(T) == 0, "Only unsigned char (RGBA8) and float (RGBA32F) are supported");
 }
 
 template <>
@@ -86,23 +84,8 @@ EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config
     std::println("EGl target created");
 }
 
-void EglTarget::output() const { writeToPng(getOutputTexture(), "output.png", GL_UNSIGNED_BYTE); }
-
-void EglTarget::writeToPng(GLuint texture, const std::string& filename, GLenum format) const {
-    std::println("Writing into {}", filename);
-    ContextGuard context(*this);
-    if (format == GL_FLOAT) {
-        std::vector<float> pixels = getBufferData<float>(texture);
-        std::vector<unsigned char> normalizedPixels(width * height * 4);
-        for (int i = 0; i < pixels.size(); i++)
-            normalizedPixels[i] = static_cast<unsigned char>(std::min(std::max(pixels[i], 0.0f), 1.0f) * 255);
-        stbi_write_png(filename.c_str(), width, height, 4, normalizedPixels.data(), width * 4);
-    } else if (format == GL_UNSIGNED_BYTE) {
-        std::vector<unsigned char> pixels = getBufferData<unsigned char>(texture);
-        stbi_write_png(filename.c_str(), width, height, 4, pixels.data(), width * 4);
-    } else {
-        throw std::runtime_error(std::format("unknown data format:{}", format));
-    }
+void EglTarget::output() const {
+    utils::writeToPng(getBufferData<unsigned char>(getOutputTexture()), width, height, 4, "output.png"); 
 }
 
 void EglTarget::makeCurrent() const {

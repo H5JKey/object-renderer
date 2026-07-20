@@ -62,9 +62,9 @@ class EglTarget : public RenderTarget {
     EGLContext context;
 
    public:
-    void writeToPng(GLuint texture, const std::string& filename, GLenum format) const;
-
     void output() const override;
 
     ~EglTarget();
 };
+
+
