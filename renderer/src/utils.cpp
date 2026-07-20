@@ -17,6 +17,7 @@ std::string utils::readFromFile(const std::string& path) {
     std::stringstream buffer;
     buffer << shaderFile.rdbuf();
     source = buffer.str();
+    shaderFile.close();
     return source;
 }
 

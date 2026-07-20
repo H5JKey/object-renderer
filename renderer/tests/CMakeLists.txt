@@ -11,6 +11,7 @@ enable_testing()
 add_executable(test
     utils/test-rgb-rgba.cpp
     utils/test-writeToPng.cpp
+    utils/test-readFromFile.cpp
     test-main.cpp
 )
 
