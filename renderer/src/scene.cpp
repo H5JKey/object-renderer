@@ -1,26 +1,26 @@
 #include "scene.hpp"
 
 Scene::Scene()
-    : origin(0.1f, 5.0f, 5.0f),
-      lookAt(5, 5, 5),
-      sunDirection(-10.0f, 3.0f, -10.0f),
-      sunColor(0.0f, 0.0f, 0.0f),
-      backgroundColor(0.7f, 0.7f, 0.7f) {
-    materials.emplace_back(vec3(0.725, 0.71, 0.68), vec3(0, 0, 0), 0.0, 0.7, 0.0, 1.5);
-    materials.emplace_back(vec3(0.12, 0.45, 0.15), vec3(0, 0, 0), 0.0, 0.7, 0.0, 1.5);
-    materials.emplace_back(vec3(0.65, 0.05, 0.05), vec3(0, 0, 0), 0.0, 0.7, 0.0, 1.5);
-    materials.emplace_back(vec3(0.8, 0.8, 0.8), vec3(10.0, 10.0, 10.0), 0.0, 0.1, 0.0, 0.0);
-    materials.emplace_back(vec3(0.65, 0.65, 0.65), vec3(0, 0, 0), 0.0, 0.85, 0.0, 1.5);
-    materials.emplace_back(vec3(0.7, 0.7, 0.7), vec3(0, 0, 0), 1.0, 0.85, 0.0, 1.5);
+    : origin(0.1f, 5.0f, 5.0f, 0),
+      lookAt(5, 5, 5, 0),
+      sunDirection(-10.0f, 3.0f, -10.0f, 0),
+      sunColor(0.0f, 0.0f, 0.0f, 0),
+      backgroundColor(0.7f, 0.7f, 0.7f, 0) {
+    materials.emplace_back(glm::vec4(0.725, 0.71, 0.68, 0), glm::vec4(0, 0, 0, 0), 0.0, 0.7, 0.0, 1.5);
+    materials.emplace_back(glm::vec4(0.12, 0.45, 0.15, 0), glm::vec4(0, 0, 0, 0), 0.0, 0.7, 0.0, 1.5);
+    materials.emplace_back(glm::vec4(0.65, 0.05, 0.05, 0), glm::vec4(0, 0, 0, 0), 0.0, 0.7, 0.0, 1.5);
+    materials.emplace_back(glm::vec4(0.8, 0.8, 0.8, 0), glm::vec4(10.0, 10.0, 10.0, 0), 0.0, 0.1, 0.0, 0.0);
+    materials.emplace_back(glm::vec4(0.65, 0.65, 0.65, 0), glm::vec4(0, 0, 0, 0), 0.0, 0.85, 0.0, 1.5);
+    materials.emplace_back(glm::vec4(0.7, 0.7, 0.7, 0), glm::vec4(0, 0, 0, 0), 1.0, 0.85, 0.0, 1.5);
 
-    vertices.emplace_back(0, 0, 0);
-    vertices.emplace_back(0, 0, 10);
-    vertices.emplace_back(0, 10, 0);
-    vertices.emplace_back(0, 10, 10);
-    vertices.emplace_back(10, 0, 0);
-    vertices.emplace_back(10, 0, 10);
-    vertices.emplace_back(10, 10, 0);
-    vertices.emplace_back(10, 10, 10);
+    vertices.emplace_back(0, 0, 0, 0);
+    vertices.emplace_back(0, 0, 10, 0);
+    vertices.emplace_back(0, 10, 0, 0);
+    vertices.emplace_back(0, 10, 10, 0);
+    vertices.emplace_back(10, 0, 0, 0);
+    vertices.emplace_back(10, 0, 10, 0);
+    vertices.emplace_back(10, 10, 0, 0);
+    vertices.emplace_back(10, 10, 10, 0);
 
     vertexIndices.push_back(2);
     vertexIndices.push_back(1);
@@ -82,10 +82,10 @@ Scene::Scene()
     vertexIndices.push_back(1);
     materialIndices.push_back(0);
 
-    vertices.emplace_back(4, 5.5, 0.01);
-    vertices.emplace_back(6, 5.5, 0.01);
-    vertices.emplace_back(6, 7.5, 0.01);
-    vertices.emplace_back(4, 7.5, 0.01);
+    vertices.emplace_back(4, 5.5, 0.01, 0);
+    vertices.emplace_back(6, 5.5, 0.01, 0);
+    vertices.emplace_back(6, 7.5, 0.01, 0);
+    vertices.emplace_back(4, 7.5, 0.01, 0);
 
     vertexIndices.push_back(8);
     vertexIndices.push_back(9);
@@ -97,15 +97,15 @@ Scene::Scene()
     vertexIndices.push_back(10);
     materialIndices.push_back(3);
 
-    vertices.emplace_back(8 + 1.414f, 0, 8);
-    vertices.emplace_back(8, 0, 8 - 1.414f);
-    vertices.emplace_back(8 - 1.414f, 0, 8);
-    vertices.emplace_back(8, 0, 8 + 1.414f);
+    vertices.emplace_back(8 + 1.414f, 0, 8, 0);
+    vertices.emplace_back(8, 0, 8 - 1.414f, 0);
+    vertices.emplace_back(8 - 1.414f, 0, 8, 0);
+    vertices.emplace_back(8, 0, 8 + 1.414f, 0);
 
-    vertices.emplace_back(8 + 1.414f, 4, 8);
-    vertices.emplace_back(8, 4, 8 - 1.414f);
-    vertices.emplace_back(8 - 1.414f, 4, 8);
-    vertices.emplace_back(8, 4, 8 + 1.414f);
+    vertices.emplace_back(8 + 1.414f, 4, 8, 0);
+    vertices.emplace_back(8, 4, 8 - 1.414f, 0);
+    vertices.emplace_back(8 - 1.414f, 4, 8, 0);
+    vertices.emplace_back(8, 4, 8 + 1.414f, 0);
 
     vertexIndices.push_back(15);
     vertexIndices.push_back(14);
@@ -167,15 +167,15 @@ Scene::Scene()
     vertexIndices.push_back(15);
     materialIndices.push_back(4);
 
-    vertices.emplace_back(7 + 1.5 * 0.866f, 0, 3 + 1.5 * 0.5f);
-    vertices.emplace_back(7 - 1.5 * 0.5f, 0, 3 + 1.5 * 0.866f);
-    vertices.emplace_back(7 - 1.5 * 0.866f, 0, 3 - 1.5 * 0.5f);
-    vertices.emplace_back(7 + 1.5 * 0.5f, 0, 3 - 1.5 * 0.866f);
+    vertices.emplace_back(7 + 1.5 * 0.866f, 0, 3 + 1.5 * 0.5f, 0);
+    vertices.emplace_back(7 - 1.5 * 0.5f, 0, 3 + 1.5 * 0.866f, 0);
+    vertices.emplace_back(7 - 1.5 * 0.866f, 0, 3 - 1.5 * 0.5f, 0);
+    vertices.emplace_back(7 + 1.5 * 0.5f, 0, 3 - 1.5 * 0.866f, 0);
 
-    vertices.emplace_back(7 + 1.5 * 0.866f, 3, 3 + 1.5 * 0.5f);
-    vertices.emplace_back(7 - 1.5 * 0.5f, 3, 3 + 1.5 * 0.866f);
-    vertices.emplace_back(7 - 1.5 * 0.866f, 3, 3 - 1.5 * 0.5f);
-    vertices.emplace_back(7 + 1.5 * 0.5f, 3, 3 - 1.5 * 0.866f);
+    vertices.emplace_back(7 + 1.5 * 0.866f, 3, 3 + 1.5 * 0.5f, 0);
+    vertices.emplace_back(7 - 1.5 * 0.5f, 3, 3 + 1.5 * 0.866f, 0);
+    vertices.emplace_back(7 - 1.5 * 0.866f, 3, 3 - 1.5 * 0.5f, 0);
+    vertices.emplace_back(7 + 1.5 * 0.5f, 3, 3 - 1.5 * 0.866f, 0);
 
     vertexIndices.push_back(23);
     vertexIndices.push_back(22);

@@ -161,7 +161,7 @@ void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
         throw std::runtime_error("failed to create vertexSSBO. Error: " + std::to_string(error));
     }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, vertices.size() * sizeof(vec3), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, vertices.size() * sizeof(glm::vec4), vertices.data(), GL_STATIC_DRAW);
 
     glGenBuffers(1, &vertexIndexSSBO);
     error = glGetError();
