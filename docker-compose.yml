@@ -6,7 +6,7 @@ services:
     container_name: renderer
     hostname: renderer
     depends_on:
-      s3_storage:
+      minio:
         condition: service_healthy
 
   app:
@@ -19,12 +19,20 @@ services:
       DATABASE__HOST: database
       DATABASE__PORT: 5432
       DATABASE__DB_NAME: renderer
+
+      MINIO__HOST: minio
+      MINIO__PORT: 9000
+
+      MINIO__USERNAME: adminadmin
+      MINIO__PASSWORD: adminadmin
+    volumes:
+      - "./app:/app"
     ports:
       - "8000:8000"
     depends_on:
       database:
         condition: service_healthy
-      s3_storage:
+      minio:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost:8000/health"]
@@ -52,10 +60,10 @@ services:
       timeout: 2s
       retries: 3
 
-  s3_storage:
+  minio:
     image: minio/minio
-    container_name: s3_storage
-    hostname: s3_storage
+    container_name: minio
+    hostname: minio
     command: server --console-address ":9001" /data
     environment:
       MINIO_ROOT_USER: adminadmin
@@ -64,7 +72,7 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - s3_storage_data:/data
+      - minio_data:/data
     healthcheck:
       test: ["CMD", "curl", "-f","http://localhost:9000/minio/health/ready"]
       start_period: 2s
@@ -73,6 +81,5 @@ services:
       retries: 3
 
 volumes:
-  s3_storage_data:
+  minio_data:
   postgres_data:
-
