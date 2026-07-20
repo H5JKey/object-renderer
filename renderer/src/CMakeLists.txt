@@ -39,7 +39,6 @@ target_compile_options(renderer PRIVATE
     -ftree-vectorize 
     -funroll-loops
     -flto=auto
-    -fno-rtti
 )
 
 add_custom_command(
