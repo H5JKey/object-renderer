@@ -1,6 +1,6 @@
 #include "render-target.hpp"
 
-#include <print>
+#include <iostream>
 #include <stdexcept>
 
 #include "utils.hpp"
@@ -40,7 +40,7 @@ EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config
     }
     initialized = true;
 
-    std::println("EGl target created");
+    std::clog << std::format("EGl target created") << std::endl;
 }
 
 void EglTarget::output() const {

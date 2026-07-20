@@ -1,19 +1,18 @@
 #include "render-engine.hpp"
 
-#include <fstream>
-#include <print>
-#include <sstream>
+#include <iostream>
 #include <string>
 
-#include "target-manager.hpp"
 #include "utils.hpp"
 
 RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0, 0xFFFFFFFF) {
-    std::println("Compiling path tracing shader");
+    std::clog << std::format("Compiling path tracing shader") << std::endl;
     pathTracingProgram = compileShader(utils::readFromFile("shaders/path-tracing.glsl"));
-    std::println("Compiling post processing shader");
+    std::clog << std::format("Compiling post processing shader") << std::endl;
+    ;
     postProcessingProgram = compileShader(utils::readFromFile("shaders/post-processing.glsl"));
-    std::println("Compiling gbuffer shader");
+    std::clog << std::format("Compiling gbuffer shader") << std::endl;
+    ;
     gbufferProgram = compileShader(utils::readFromFile("shaders/gbuffer.glsl"));
 }
 
@@ -34,8 +33,10 @@ GLuint RenderEngine::compileShader(const std::string& source) {
 
         std::string errorLog(log.data(), logLength);
 
-        std::println("Shader compilation failed:");
-        std::println("{}", errorLog);
+        std::clog << std::format("Shader compilation failed:") << std::endl;
+
+        std::clog << std::format("{}", errorLog) << std::endl;
+
         throw std::runtime_error("Shader compilation failed");
     }
 
@@ -53,7 +54,8 @@ GLuint RenderEngine::compileShader(const std::string& source) {
 }
 
 void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
-    std::println("===Path tracing started===");
+    std::clog << std::format("===Path tracing started===") << std::endl;
+    ;
     glUseProgram(pathTracingProgram);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vertexSSBO);
@@ -81,7 +83,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
 
     const int samples = 20;
     for (int i = 0; i < samples; i++) {
-        if (i % 5 == 0) std::println("{}/{}", i, samples);
+        if (i % 5 == 0) std::clog << std::format("{}/{}", i, samples) << std::endl;
         glUniform1ui(glGetUniformLocation(pathTracingProgram, "uSeed"), uniformDistr(gen));
         glUniform1ui(glGetUniformLocation(pathTracingProgram, "uFrameIndex"), i);
         glDispatchCompute(groupsX, groupsY, 1);
@@ -97,7 +99,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
 }
 
 void RenderEngine::fillGbuffer(RenderTarget& target, const Scene& scene) {
-    std::println("===Filling gbuffer===");
+    std::clog << std::format("===Filling gbuffer===") << std::endl;
     glUseProgram(gbufferProgram);
     glBindImageTexture(0, target.getNormalMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
     glBindImageTexture(1, target.getAlbedoMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
@@ -125,7 +127,7 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const Scene& scene) {
 }
 
 void RenderEngine::postProcess(RenderTarget& target) const {
-    std::println("===Post processing===");
+    std::clog << std::format("===Post processing===") << std::endl;
     glUseProgram(postProcessingProgram);
     glBindImageTexture(0, target.getDenoisedTexture(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
     glBindImageTexture(1, target.getOutputTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
@@ -143,16 +145,16 @@ void RenderEngine::postProcess(RenderTarget& target) const {
 }
 
 void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
-    std::println("Loading geometry to GPU");
+    std::clog << std::format("Loading geometry to GPU");
     const auto& vertices = scene.vertices;
     const auto& vertexIndices = scene.vertexIndices;
     const auto& materials = scene.materials;
     const auto& materialIndices = scene.materialIndices;
     const auto& bvhNodes = bvh.getNodes();
     const auto& bvhTriangles = bvh.getTriangles();
-    std::println("- Total triangles: {}", vertexIndices.size() / 3);
-    std::println("- BVH nodes: {}", bvhNodes.size());
-    std::println("- BVH depth: {}", bvh.getDepth());
+    std::clog << std::format("- Total triangles: {}", vertexIndices.size() / 3) << std::endl;
+    std::clog << std::format("- BVH nodes: {}", bvhNodes.size()) << std::endl;
+    std::clog << std::format("- BVH depth: {}", bvh.getDepth()) << std::endl;
     GLenum error;
 
     glGenBuffers(1, &vertexSSBO);
@@ -215,7 +217,7 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, const B
     pathTracing(target, scene);
 
     fillGbuffer(target, scene);
-    std::println("===Denoising===");
+    std::clog << std::format("===Denoising===");
     denoiser.denoise(target);
     postProcess(target);
 }

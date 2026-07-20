@@ -9,7 +9,9 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(test
-    test-rgb-rgba.cpp
+    utils/test-rgb-rgba.cpp
+    utils/test-writeToPng.cpp
+    test-main.cpp
 )
 
 target_compile_options(test PRIVATE 
@@ -23,7 +25,6 @@ target_compile_options(test PRIVATE
 target_link_libraries(test PRIVATE
     renderer_core
     GTest::gtest_main
-    GTest::gtest
 )
 
 include(GoogleTest)

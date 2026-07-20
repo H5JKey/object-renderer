@@ -1,6 +1,6 @@
 #include "target-manager.hpp"
 
-#include <print>
+#include <iostream>
 #include <stdexcept>
 
 TargetManager& TargetManager::getInstance() {
@@ -11,7 +11,7 @@ TargetManager& TargetManager::getInstance() {
 void TargetManager::init() {
     TargetManager& self = getInstance();
     if (!self.initialized) {
-        std::println("Initializing EGL");
+        std::clog << std::format("Initializing EGL") << std::endl;
         self.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
         if (self.display == EGL_NO_DISPLAY) {
             throw std::runtime_error("Failed to get display");
@@ -63,9 +63,9 @@ void TargetManager::init() {
         if (!gladLoadGL(eglGetProcAddress)) {
             throw std::runtime_error("gladLoadGL failed");
         }
-        std::println("Vendor   : {}", (const char*)glGetString(GL_VENDOR));
-        std::println("Renderer : {}", (const char*)glGetString(GL_RENDERER));
-        std::println("Version  : {}", (const char*)glGetString(GL_VERSION));
+        std::clog << std::format("Vendor   : {}", (const char*)glGetString(GL_VENDOR)) << std::endl;
+        std::clog << std::format("Renderer : {}", (const char*)glGetString(GL_RENDERER)) << std::endl;
+        std::clog << std::format("Version  : {}", (const char*)glGetString(GL_VERSION)) << std::endl;
 
         self.initialized = true;
     }
@@ -84,6 +84,6 @@ TargetManager::~TargetManager() {
         eglTerminate(display);
         display = EGL_NO_DISPLAY;
         initialized = false;
-        std::println("EGL released");
+        std::clog << std::format("EGL released") << std::endl;
     }
 }
