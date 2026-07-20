@@ -1,22 +1,16 @@
 #pragma once
-#include <string>
+#include <glm/glm.hpp>
 #include <vector>
 
-struct vec3 {
-    float x, y, z;
-    float padding;
-    vec3(float x, float y, float z) : x(x), y(y), z(z), padding(0) {}
-};
-
 struct Material {
-    vec3 albedo;
-    vec3 emission;
+    glm::vec4 albedo;
+    glm::vec4 emission;
     float metalness;
     float roughness;
     float transmission;
     float ior;
 
-    Material(vec3 albedo, vec3 emission, float metalness, float roughness, float transmission, float ior)
+    Material(glm::vec4 albedo, glm::vec4 emission, float metalness, float roughness, float transmission, float ior)
         : albedo(albedo),
           emission(emission),
           metalness(metalness),
@@ -28,14 +22,14 @@ struct Material {
 class Scene {
    public:
     std::vector<int> vertexIndices;
-    std::vector<vec3> vertices;
+    std::vector<glm::vec4> vertices;
     std::vector<Material> materials;
     std::vector<int> materialIndices;
-    vec3 origin;
-    vec3 lookAt;
-    vec3 backgroundColor;
-    vec3 sunColor;
-    vec3 sunDirection;
+    glm::vec4 origin;
+    glm::vec4 lookAt;
+    glm::vec4 backgroundColor;
+    glm::vec4 sunColor;
+    glm::vec4 sunDirection;
 
    public:
     Scene();

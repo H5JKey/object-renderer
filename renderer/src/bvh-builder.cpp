@@ -25,7 +25,7 @@ void BVHBuilder::setTrianglesLimit(int limit) {
 
 MedianBuilder::MedianBuilder(int depthLimit, int trianglesLimit) : BVHBuilder(depthLimit, trianglesLimit) {}
 
-int MedianBuilder::split(BVH& bvh, int nodeIdx, const std::vector<vec3>& vertices,
+int MedianBuilder::split(BVH& bvh, int nodeIdx, const std::vector<glm::vec4>& vertices,
                          const std::vector<int>& vertexIndices, std::vector<int>::iterator begin,
                          std::vector<int>::iterator end, int depth) const {
     BVH::Node& node = bvh.nodes[nodeIdx];
@@ -143,7 +143,7 @@ int MedianBuilder::split(BVH& bvh, int nodeIdx, const std::vector<vec3>& vertice
     return nodeIdx;
 }
 
-BVH MedianBuilder::build(const std::vector<vec3>& vertices, const std::vector<int>& vertexIndices) const {
+BVH MedianBuilder::build(const std::vector<glm::vec4>& vertices, const std::vector<int>& vertexIndices) const {
     if (vertexIndices.empty()) {
         BVH bvh;
         return bvh;
@@ -153,8 +153,8 @@ BVH MedianBuilder::build(const std::vector<vec3>& vertices, const std::vector<in
     }
     std::clog << "Building BVH" << std::endl;
     BVH bvh;
-    const auto INFINITY = std::numeric_limits<float>::infinity();
-    vec3 max(-INFINITY, -INFINITY, -INFINITY), min(INFINITY, INFINITY, INFINITY);
+
+    glm::vec4 max(-std::numeric_limits<float>::infinity()), min(std::numeric_limits<float>::infinity());
 
     BVH::Node node;
     bvh.trianglesIndices.reserve(vertexIndices.size() / 3);

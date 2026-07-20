@@ -3,6 +3,7 @@ include(FetchContent)
 add_subdirectory(json)
 add_subdirectory(glad)
 add_subdirectory(stb)
+add_subdirectory(glm)
 
 find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
 find_package(OpenImageDenoise REQUIRED)
@@ -13,6 +14,7 @@ target_link_libraries(renderer_deps INTERFACE
     nlohmann_json::nlohmann_json
     OpenGL::OpenGL 
     OpenGL::EGL
+    glm::glm
     OpenImageDenoise
     glad
 )

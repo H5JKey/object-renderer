@@ -1,23 +1,23 @@
 #include <gtest/gtest.h>
 
+#include <glm/glm.hpp>
 #include <set>
 #include <stack>
 #include <stdexcept>
 
 #include "bvh-builder.hpp"
-#include "scene.hpp"
 
 class BVHBuildingTest : public ::testing::Test {
    protected:
     void SetUp() override {
         vertices = {
-            vec3(0, 0, 0), vec3(0, 0, 1), vec3(0, 1, 0), vec3(0, 1, 1),
-            vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0), vec3(1, 1, 1),
+            glm::vec4(0, 0, 0, 0), glm::vec4(0, 0, 1, 0), glm::vec4(0, 1, 0, 0), glm::vec4(0, 1, 1, 0),
+            glm::vec4(1, 0, 0, 0), glm::vec4(1, 0, 1, 0), glm::vec4(1, 1, 0, 0), glm::vec4(1, 1, 1, 0),
         };
         vertexIndices = {0, 1, 2, 3, 2, 1, 3, 1, 5, 7, 3, 5, 4, 7, 5, 4, 6, 7,
                          6, 0, 2, 6, 4, 0, 6, 2, 3, 7, 6, 3, 4, 1, 0, 1, 4, 5};
     }
-    std::vector<vec3> vertices;
+    std::vector<glm::vec4> vertices;
     std::vector<int> vertexIndices;
 
    public:
@@ -75,7 +75,7 @@ TEST_F(BVHBuildingTest, BuildingDepthLimitOne) {
 }
 
 TEST_F(BVHBuildingTest, EmptyScene) {
-    std::vector<vec3> vertices = {};
+    std::vector<glm::vec4> vertices = {};
     std::vector<int> vertexIndices = {};
     MedianBuilder builder(-1, -1);
 
@@ -86,7 +86,7 @@ TEST_F(BVHBuildingTest, EmptyScene) {
 
 TEST_F(BVHBuildingTest, InvalidVertexIndicies) {
     std::vector<int> vertexIndices;
-    std::vector<vec3> vertices = {vec3(0, 0, 0), vec3(0, 0, 1), vec3(0, 1, 0)};
+    std::vector<glm::vec4> vertices = {glm::vec4(0, 0, 0, 0), glm::vec4(0, 0, 1, 0), glm::vec4(0, 1, 0, 0)};
     MedianBuilder builder(-1, -1);
 
     vertexIndices = {1, 2};
