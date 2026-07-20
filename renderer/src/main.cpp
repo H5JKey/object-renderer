@@ -1,10 +1,13 @@
 #include <print>
+#include <memory>
 
 #include "BVH-builder.hpp"
 #include "render-engine.hpp"
 #include "scene-loader.hpp"
 #include "scene.hpp"
 #include "target-manager.hpp"
+#include "utils.hpp"
+
 
 int main(int argc, char* argv[]) {
     TargetManager::init();
@@ -15,12 +18,14 @@ int main(int argc, char* argv[]) {
     MedianBuilder builder(-1, 32);
     BVH bvh = builder.build(scene);
     engine.renderFrame(*egl, scene, bvh);
-    egl->output();
+
     auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());
     if (eglTarget) {
-        eglTarget->writeToPng(egl->getRawTexture(), "output_raw.png", GL_FLOAT);
-        eglTarget->writeToPng(egl->getNormalMap(), "output_normal.png", GL_FLOAT);
-        eglTarget->writeToPng(egl->getAlbedoMap(), "output_albedo.png", GL_FLOAT);
+        RenderTarget::ContextGuard guard(*egl);
+        egl->output();
+        utils::writeToPng(egl->getBufferData<float>(egl->getRawTexture()),egl->getWidth(), egl->getHeight(), 4, "output_raw.png");
+        utils::writeToPng(egl->getBufferData<float>(egl->getAlbedoMap()), egl->getWidth(), egl->getHeight(), 4, "output_albedo.png");
+        utils::writeToPng(egl->getBufferData<float>(egl->getNormalMap()), egl->getWidth(), egl->getHeight(), 4, "output_normal.png");
     }
     return EXIT_SUCCESS;
 }
