@@ -1,9 +1,7 @@
 #include <memory>
-#include <print>
 
-#include "BVH-builder.hpp"
+#include "bvh-builder.hpp"
 #include "render-engine.hpp"
-#include "scene-loader.hpp"
 #include "scene.hpp"
 #include "target-manager.hpp"
 #include "utils.hpp"

@@ -3,7 +3,7 @@
 
 #include <random>
 
-#include "BVH.hpp"
+#include "bvh.hpp"
 #include "denoiser.hpp"
 #include "render-target.hpp"
 #include "scene.hpp"

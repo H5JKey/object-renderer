@@ -9,10 +9,10 @@ RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0, 0xFFFFFFFF) {
     std::clog << std::format("Compiling path tracing shader") << std::endl;
     pathTracingProgram = compileShader(utils::readFromFile("shaders/path-tracing.glsl"));
     std::clog << std::format("Compiling post processing shader") << std::endl;
-    ;
+
     postProcessingProgram = compileShader(utils::readFromFile("shaders/post-processing.glsl"));
     std::clog << std::format("Compiling gbuffer shader") << std::endl;
-    ;
+
     gbufferProgram = compileShader(utils::readFromFile("shaders/gbuffer.glsl"));
 }
 
@@ -34,9 +34,7 @@ GLuint RenderEngine::compileShader(const std::string& source) {
         std::string errorLog(log.data(), logLength);
 
         std::clog << std::format("Shader compilation failed:") << std::endl;
-
         std::clog << std::format("{}", errorLog) << std::endl;
-
         throw std::runtime_error("Shader compilation failed");
     }
 
