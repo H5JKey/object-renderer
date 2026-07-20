@@ -1,6 +1,30 @@
 from abc import ABC, abstractmethod
 from typing import BinaryIO
 
+from models import File
+from schemas.path_tracing_model import PathTracingModelCreate
+from schemas.user import UserCreate
+
+
+class AbstractFileRepository(ABC):
+    @abstractmethod
+    async def get_by_id(self) -> File | None:
+        """
+        Метод для получения данных о файле по id.
+        """
+
+    @abstractmethod
+    async def create_file(self, user_create_data: UserCreate) -> File:
+        """
+        Метод для создания записи о файле.
+        """
+
+    @abstractmethod
+    async def delete_by_id(self, file_id: int) -> None:
+        """
+        Метод для удаления данных о файле.
+        """
+
 
 class AbstractS3Client(ABC):
     @abstractmethod
@@ -22,12 +46,12 @@ class AbstractS3Client(ABC):
         """
 
 
-class AbstractModelUploader(ABC):
+class AbstractFileUploader(ABC):
     @abstractmethod
     async def upload_model(
         self,
-        bucket: str,
-        key: str,
+        path_tracing_model_create: PathTracingModelCreate,
+        file_name: str,
         file: BinaryIO,
     ) -> None:
         """
