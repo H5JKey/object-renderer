@@ -9,7 +9,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(test
-    test.cpp
+    test-rgb-rgba.cpp
 )
 
 target_compile_options(test PRIVATE 
