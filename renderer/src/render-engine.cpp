@@ -8,7 +8,7 @@
 #include "target-manager.hpp"
 #include "utils.hpp"
 
-RenderEngine::RenderEngine() {
+RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0,0xFFFFFFFF) {
     std::println("Compiling path tracing shader");
     pathTracingProgram = compileShader(utils::readFromFile("shaders/path-tracing.glsl"));
     std::println("Compiling post processing shader");
@@ -82,7 +82,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
     const int samples = 20;
     for (int i = 0; i < samples; i++) {
         if (i % 5 == 0) std::println("{}/{}", i, samples);
-        glUniform1ui(glGetUniformLocation(pathTracingProgram, "uSeed"), uint(rand()));
+        glUniform1ui(glGetUniformLocation(pathTracingProgram, "uSeed"), uniformDistr(gen));
         glUniform1ui(glGetUniformLocation(pathTracingProgram, "uFrameIndex"), i);
         glDispatchCompute(groupsX, groupsY, 1);
 

@@ -1,11 +1,12 @@
 #pragma once
-
+#include <random>
 #include <glad/gl.h>
 
 #include "BVH.hpp"
 #include "denoiser.hpp"
 #include "render-target.hpp"
 #include "scene.hpp"
+
 
 class RenderEngine {
     Denoiser denoiser;
@@ -19,6 +20,10 @@ class RenderEngine {
     GLuint materialIndexSSBO;
     GLuint bvhNodesSSBO;
     GLuint bvhTrianglesSSBO;
+    std::random_device rd;
+    std::mt19937 gen;
+    std::uniform_int_distribution<uint> uniformDistr;
+   
 
    public:
     RenderEngine();
