@@ -4,48 +4,6 @@
 #include <print>
 #include <stdexcept>
 
-template <typename T>
-std::vector<T> RenderTarget::getBufferData(GLuint texture) const {
-    static_assert(sizeof(T) == 0, "Only unsigned char (RGBA8) and float (RGBA32F) are supported");
-}
-
-template <>
-std::vector<float> RenderTarget::getBufferData(GLuint texture) const {
-    std::vector<float> pixels(width * height * 4);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, pixels.data());
-    glBindTexture(GL_TEXTURE_2D, 0);
-    return pixels;
-}
-
-template <>
-std::vector<unsigned char> RenderTarget::getBufferData(GLuint texture) const {
-    std::vector<unsigned char> pixels(width * height * 4);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
-    glBindTexture(GL_TEXTURE_2D, 0);
-    return pixels;
-}
-
-template <typename T>
-void RenderTarget::setBufferData(GLuint texture, const std::vector<T>& data) {
-    static_assert(sizeof(T) == 0, "Only unsigned char (RGBA8) and float (RGBA32F) are supported");
-}
-
-template <>
-void RenderTarget::setBufferData(GLuint texture, const std::vector<float>& data) {
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_FLOAT, data.data());
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-template <>
-void RenderTarget::setBufferData(GLuint texture, const std::vector<unsigned char>& data) {
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
 EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config, EGLContext context)
     : RenderTarget(width, height), display(display), context(context) {
     EGLint surfaceAttribs[] = {EGL_WIDTH, width, EGL_HEIGHT, height, EGL_NONE};
@@ -85,7 +43,7 @@ EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config
 }
 
 void EglTarget::output() const {
-    utils::writeToPng(getBufferData<unsigned char>(getOutputTexture()), width, height, 4, "output.png"); 
+    utils::writeToPng(getBufferData<uint8_t>(getOutputTexture()), width, height, 4, "output.png"); 
 }
 
 void EglTarget::makeCurrent() const {

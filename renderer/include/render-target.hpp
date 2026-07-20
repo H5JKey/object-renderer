@@ -42,10 +42,12 @@ class RenderTarget {
     virtual void output() const = 0;
 
     template <typename T>
+    requires std::is_same_v<T, uint8_t> || std::is_same_v<T, float>
     std::vector<T> getBufferData(GLuint texture) const;
 
     template <typename T>
-    void setBufferData(GLuint texture, const std::vector<T>& data);
+    requires std::is_same_v<T, uint8_t> || std::is_same_v<T, float>
+    void setBufferData(GLuint texture, const std::vector<T>& pixels);
 
     virtual ~RenderTarget() = default;
 };
@@ -68,3 +70,4 @@ class EglTarget : public RenderTarget {
 };
 
 
+#include "render-target.inl"
