@@ -7,6 +7,7 @@ class Denoiser {
    public:
     Denoiser();
     void denoise(RenderTarget& target);
+
    private:
     oidn::DeviceRef device;
 };

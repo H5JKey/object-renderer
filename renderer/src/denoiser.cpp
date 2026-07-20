@@ -1,7 +1,8 @@
 #include "denoiser.hpp"
-#include "utils.hpp"
+
 #include <print>
 
+#include "utils.hpp"
 
 Denoiser::Denoiser() {
     device = oidn::newDevice(oidn::DeviceType::CPU);
