@@ -25,7 +25,8 @@ void BVHBuilder::setTrianglesLimit(int limit) {
 
 MedianBuilder::MedianBuilder(int depthLimit, int trianglesLimit) : BVHBuilder(depthLimit, trianglesLimit) {}
 
-int MedianBuilder::split(BVH& bvh, int nodeIdx, const Scene& scene, std::vector<int>::iterator begin,
+int MedianBuilder::split(BVH& bvh, int nodeIdx, const std::vector<vec3>& vertices,
+                         const std::vector<int>& vertexIndices, std::vector<int>::iterator begin,
                          std::vector<int>::iterator end, int depth) const {
     BVH::Node& node = bvh.nodes[nodeIdx];
     if ((trianglesLimit != -1 && end - begin <= trianglesLimit) || (depthLimit != -1 && depth >= depthLimit)) {
@@ -49,13 +50,13 @@ int MedianBuilder::split(BVH& bvh, int nodeIdx, const Scene& scene, std::vector<
     else
         axis = 2;
     std::nth_element(begin, begin + (end - begin) / 2, end, [&](int i, int j) {
-        auto v0_i = scene.vertices[scene.vertexIndices[3 * i]];
-        auto v1_i = scene.vertices[scene.vertexIndices[3 * i + 1]];
-        auto v2_i = scene.vertices[scene.vertexIndices[3 * i + 2]];
+        auto v0_i = vertices[vertexIndices[3 * i]];
+        auto v1_i = vertices[vertexIndices[3 * i + 1]];
+        auto v2_i = vertices[vertexIndices[3 * i + 2]];
 
-        auto v0_j = scene.vertices[scene.vertexIndices[3 * j]];
-        auto v1_j = scene.vertices[scene.vertexIndices[3 * j + 1]];
-        auto v2_j = scene.vertices[scene.vertexIndices[3 * j + 2]];
+        auto v0_j = vertices[vertexIndices[3 * j]];
+        auto v1_j = vertices[vertexIndices[3 * j + 1]];
+        auto v2_j = vertices[vertexIndices[3 * j + 2]];
         if (axis == 0)
             return v0_i.x + v1_i.x + v2_i.x < v0_j.x + v1_j.x + v2_j.x;
         else if (axis == 1)
@@ -65,9 +66,9 @@ int MedianBuilder::split(BVH& bvh, int nodeIdx, const Scene& scene, std::vector<
     });
     auto median = begin + (end - begin) / 2;
     int medianIdx = *median;
-    auto v0 = scene.vertices[scene.vertexIndices[3 * medianIdx]];
-    auto v1 = scene.vertices[scene.vertexIndices[3 * medianIdx + 1]];
-    auto v2 = scene.vertices[scene.vertexIndices[3 * medianIdx + 2]];
+    auto v0 = vertices[vertexIndices[3 * medianIdx]];
+    auto v1 = vertices[vertexIndices[3 * medianIdx + 1]];
+    auto v2 = vertices[vertexIndices[3 * medianIdx + 2]];
 
     float splitPos;
     if (axis == 0)
@@ -109,17 +110,17 @@ int MedianBuilder::split(BVH& bvh, int nodeIdx, const Scene& scene, std::vector<
     }
     for (auto it = begin; it != median; ++it) {
         int triangleIdx = *it;
-        auto v0 = scene.vertices[scene.vertexIndices[3 * triangleIdx]];
-        auto v1 = scene.vertices[scene.vertexIndices[3 * triangleIdx + 1]];
-        auto v2 = scene.vertices[scene.vertexIndices[3 * triangleIdx + 2]];
+        auto v0 = vertices[vertexIndices[3 * triangleIdx]];
+        auto v1 = vertices[vertexIndices[3 * triangleIdx + 1]];
+        auto v2 = vertices[vertexIndices[3 * triangleIdx + 2]];
         leftNode.expandToFitTriangle(v0, v1, v2);
     }
 
     for (auto it = median; it != end; ++it) {
         int triangleIdx = *it;
-        auto v0 = scene.vertices[scene.vertexIndices[3 * triangleIdx]];
-        auto v1 = scene.vertices[scene.vertexIndices[3 * triangleIdx + 1]];
-        auto v2 = scene.vertices[scene.vertexIndices[3 * triangleIdx + 2]];
+        auto v0 = vertices[vertexIndices[3 * triangleIdx]];
+        auto v1 = vertices[vertexIndices[3 * triangleIdx + 1]];
+        auto v2 = vertices[vertexIndices[3 * triangleIdx + 2]];
         rightNode.expandToFitTriangle(v0, v1, v2);
     }
     if (begin == median || median == end) {
@@ -132,28 +133,28 @@ int MedianBuilder::split(BVH& bvh, int nodeIdx, const Scene& scene, std::vector<
     }
 
     bvh.nodes.push_back(leftNode);
-    bvh.nodes[nodeIdx].left = split(bvh, bvh.nodes.size() - 1, scene, begin, median, depth + 1);
+    bvh.nodes[nodeIdx].left = split(bvh, bvh.nodes.size() - 1, vertices, vertexIndices, begin, median, depth + 1);
 
     bvh.nodes.push_back(rightNode);
-    bvh.nodes[nodeIdx].right = split(bvh, bvh.nodes.size() - 1, scene, median, end, depth + 1);
+    bvh.nodes[nodeIdx].right = split(bvh, bvh.nodes.size() - 1, vertices, vertexIndices, median, end, depth + 1);
 
     bvh.nodes[nodeIdx].start = 0;
     bvh.nodes[nodeIdx].count = 0;
     return nodeIdx;
 }
 
-BVH MedianBuilder::build(const Scene& scene) const {
+BVH MedianBuilder::build(const std::vector<vec3>& vertices, const std::vector<int>& vertexIndices) const {
     std::println("Building BVH");
     BVH bvh;
     const auto INFINITY = std::numeric_limits<float>::infinity();
     vec3 max(-INFINITY, -INFINITY, -INFINITY), min(INFINITY, INFINITY, INFINITY);
 
     BVH::Node node;
-    bvh.trianglesIndices.reserve(scene.vertexIndices.size() / 3);
-    for (int triangleIdx = 0; triangleIdx < scene.vertexIndices.size() / 3; ++triangleIdx) {
-        auto v1 = scene.vertices[scene.vertexIndices[3 * triangleIdx]];
-        auto v2 = scene.vertices[scene.vertexIndices[3 * triangleIdx + 1]];
-        auto v3 = scene.vertices[scene.vertexIndices[3 * triangleIdx + 2]];
+    bvh.trianglesIndices.reserve(vertexIndices.size() / 3);
+    for (int triangleIdx = 0; triangleIdx < vertexIndices.size() / 3; ++triangleIdx) {
+        auto v1 = vertices[vertexIndices[3 * triangleIdx]];
+        auto v2 = vertices[vertexIndices[3 * triangleIdx + 1]];
+        auto v3 = vertices[vertexIndices[3 * triangleIdx + 2]];
 
         min.x = std::min(min.x, std::min(v1.x, std::min(v2.x, v3.x)));
         min.y = std::min(min.y, std::min(v1.y, std::min(v2.y, v3.y)));
@@ -167,6 +168,6 @@ BVH MedianBuilder::build(const Scene& scene) const {
     node.max = max;
     node.min = min;
     bvh.nodes.push_back(node);
-    split(bvh, 0, scene, bvh.trianglesIndices.begin(), bvh.trianglesIndices.end(), 0);
+    split(bvh, 0, vertices, vertexIndices, bvh.trianglesIndices.begin(), bvh.trianglesIndices.end(), 0);
     return bvh;
 }

@@ -1,8 +1,9 @@
 #include "render-target.hpp"
-#include "utils.hpp"
 
 #include <print>
 #include <stdexcept>
+
+#include "utils.hpp"
 
 EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config, EGLContext context)
     : RenderTarget(width, height), display(display), context(context) {
@@ -43,7 +44,7 @@ EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config
 }
 
 void EglTarget::output() const {
-    utils::writeToPng(getBufferData<uint8_t>(getOutputTexture()), width, height, 4, "output.png"); 
+    utils::writeToPng(getBufferData<uint8_t>(getOutputTexture()), width, height, 4, "output.png");
 }
 
 void EglTarget::makeCurrent() const {

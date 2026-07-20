@@ -2,12 +2,11 @@
 
 #include <format>
 #include <fstream>
-#include <sstream>
 #include <print>
+#include <sstream>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-
 
 std::string utils::readFromFile(const std::string& path) {
     std::string source;
@@ -21,11 +20,10 @@ std::string utils::readFromFile(const std::string& path) {
     return source;
 }
 
-
 void utils::rgbaToRgb(const std::vector<float>& rgba, std::vector<float>& rgb) {
     if (rgba.size() % 4 != 0) {
         throw std::runtime_error("RGBA buffer size must be multiple of 4");
-    } 
+    }
     if (rgb.size() % 3 != 0) {
         throw std::runtime_error("RGB buffer size must be multiple of 3");
     }
@@ -43,7 +41,7 @@ void utils::rgbaToRgb(const std::vector<float>& rgba, std::vector<float>& rgb) {
 void utils::rgbToRgba(const std::vector<float>& rgb, std::vector<float>& rgba) {
     if (rgba.size() % 4 != 0) {
         throw std::runtime_error("RGBA buffer size must be multiple of 4");
-    } 
+    }
     if (rgb.size() % 3 != 0) {
         throw std::runtime_error("RGB buffer size must be multiple of 3");
     }
@@ -62,7 +60,7 @@ void utils::rgbToRgba(const std::vector<float>& rgb, std::vector<float>& rgba) {
 void utils::rgbaToRgb(const std::vector<unsigned char>& rgba, std::vector<unsigned char>& rgb) {
     if (rgba.size() % 4 != 0) {
         throw std::runtime_error("RGBA buffer size must be multiple of 4");
-    } 
+    }
     if (rgb.size() % 3 != 0) {
         throw std::runtime_error("RGB buffer size must be multiple of 3");
     }
@@ -80,7 +78,7 @@ void utils::rgbaToRgb(const std::vector<unsigned char>& rgba, std::vector<unsign
 void utils::rgbToRgba(const std::vector<unsigned char>& rgb, std::vector<unsigned char>& rgba) {
     if (rgba.size() % 4 != 0) {
         throw std::runtime_error("RGBA buffer size must be multiple of 4");
-    } 
+    }
     if (rgb.size() % 3 != 0) {
         throw std::runtime_error("RGB buffer size must be multiple of 3");
     }
@@ -96,7 +94,8 @@ void utils::rgbToRgba(const std::vector<unsigned char>& rgb, std::vector<unsigne
     }
 }
 
-void utils::writeToPng(const std::vector<unsigned char>& pixels, int width, int height, int channels, const std::string& filename) {
+void utils::writeToPng(const std::vector<unsigned char>& pixels, int width, int height, int channels,
+                       const std::string& filename) {
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
         throw std::runtime_error("Pixel data size mismatch");
     }
@@ -104,7 +103,8 @@ void utils::writeToPng(const std::vector<unsigned char>& pixels, int width, int 
     stbi_write_png(filename.c_str(), width, height, channels, pixels.data(), width * channels);
 }
 
-void utils::writeToPng(const std::vector<float>& pixels, int width, int height, int channels, const std::string& filename) {
+void utils::writeToPng(const std::vector<float>& pixels, int width, int height, int channels,
+                       const std::string& filename) {
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
         throw std::runtime_error("Pixel data size mismatch");
     }
@@ -112,5 +112,5 @@ void utils::writeToPng(const std::vector<float>& pixels, int width, int height, 
     std::vector<unsigned char> normalizedPixels(width * height * channels);
     for (int i = 0; i < pixels.size(); i++)
         normalizedPixels[i] = static_cast<unsigned char>(std::min(std::max(pixels[i], 0.0f), 1.0f) * 255);
-    stbi_write_png(filename.c_str(), width, height, channels, normalizedPixels.data(), width * channels);  
+    stbi_write_png(filename.c_str(), width, height, channels, normalizedPixels.data(), width * channels);
 }

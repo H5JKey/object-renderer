@@ -8,7 +8,7 @@
 #include "target-manager.hpp"
 #include "utils.hpp"
 
-RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0,0xFFFFFFFF) {
+RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0, 0xFFFFFFFF) {
     std::println("Compiling path tracing shader");
     pathTracingProgram = compileShader(utils::readFromFile("shaders/path-tracing.glsl"));
     std::println("Compiling post processing shader");
