@@ -24,7 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build and test
+    - name: Build docker
       run: |
         docker build . --file renderer/Dockerfile --tag renderer
-        docker run --rm renderer sh -c "cd build/tests && ctest --output-on-failure"
+    - name: Run tests
+      run: |
+        docker run --rm renderer sh -c "cd build && valgrind --leak-check=full \
+         --show-leak-kinds=all \
+         --track-origins=yes \
+         --error-exitcode=1 ./test"

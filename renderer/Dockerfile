@@ -2,6 +2,7 @@ FROM archlinux:latest
 
 WORKDIR /renderer
 
+ENV DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
 RUN pacman -Syu --noconfirm && \
     pacman -S --noconfirm \
     gcc \
@@ -19,6 +20,7 @@ RUN pacman -Syu --noconfirm && \
     libxinerama \
     libxcursor \
     libxi \
+    valgrind \
 && pacman -Scc --noconfirm
 
 COPY renderer/ .
