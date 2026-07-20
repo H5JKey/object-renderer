@@ -21,7 +21,6 @@ RUN pacman -Syu --noconfirm && \
     libxcursor \
     libxi \
     valgrind \
-    glibc-debug \
 && pacman -Scc --noconfirm
 
 COPY renderer/ .
