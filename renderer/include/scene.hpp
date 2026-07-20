@@ -5,7 +5,7 @@
 struct vec3 {
     float x, y, z;
     float padding;
-    vec3(float x, float y, float z) : x(x), y(y), z(z) {}
+    vec3(float x, float y, float z) : x(x), y(y), z(z), padding(0) {}
 };
 
 struct Material {

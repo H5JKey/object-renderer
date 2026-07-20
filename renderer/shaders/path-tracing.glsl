@@ -295,7 +295,7 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
             return throughput * getBackgroundColor(direction);
         }
         Material material = materials[hit.material_id];
-        if (length(material.emission) > 0.01) {
+        if (length(material.emission.rgb) > 0.01) {
             return throughput * material.emission.rgb;
         }
         vec3 H,L;
