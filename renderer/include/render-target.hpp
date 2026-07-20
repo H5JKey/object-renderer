@@ -3,7 +3,7 @@
 #include <EGL/egl.h>
 #include <glad/gl.h>
 
-#include <memory>
+#include <stdexcept>
 #include <vector>
 
 class TargetManager;

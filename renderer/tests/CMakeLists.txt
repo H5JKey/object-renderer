@@ -12,6 +12,7 @@ add_executable(test
     utils/test-rgb-rgba.cpp
     utils/test-writeToPng.cpp
     utils/test-readFromFile.cpp
+    bvh/test-building.cpp
     test-main.cpp
 )
 

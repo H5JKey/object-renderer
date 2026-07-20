@@ -5,8 +5,8 @@ add_library(renderer_core STATIC
     render-target.cpp
     target-manager.cpp
     denoiser.cpp
-    BVH.cpp
-    BVH-builder.cpp
+    bvh.cpp
+    bvh-builder.cpp
     utils.cpp
 )
 

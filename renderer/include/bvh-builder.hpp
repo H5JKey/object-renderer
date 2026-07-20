@@ -1,8 +1,7 @@
 #pragma once
-#include <limits>
 #include <vector>
 
-#include "BVH.hpp"
+#include "bvh.hpp"
 #include "scene.hpp"
 
 class BVHBuilder {

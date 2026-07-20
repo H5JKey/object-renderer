@@ -1,7 +1,7 @@
-#include "BVH-builder.hpp"
+#include "bvh-builder.hpp"
 
 #include <algorithm>
-#include <print>
+#include <iostream>
 #include <stdexcept>
 
 BVHBuilder::BVHBuilder(int depthLimit, int trianglesLimit) {
@@ -144,7 +144,14 @@ int MedianBuilder::split(BVH& bvh, int nodeIdx, const std::vector<vec3>& vertice
 }
 
 BVH MedianBuilder::build(const std::vector<vec3>& vertices, const std::vector<int>& vertexIndices) const {
-    std::println("Building BVH");
+    if (vertexIndices.empty()) {
+        BVH bvh;
+        return bvh;
+    }
+    if (vertexIndices.size() % 3 != 0) {
+        throw std::runtime_error("Vertex indicies array size must be multiple of 3");
+    }
+    std::clog << "Building BVH" << std::endl;
     BVH bvh;
     const auto INFINITY = std::numeric_limits<float>::infinity();
     vec3 max(-INFINITY, -INFINITY, -INFINITY), min(INFINITY, INFINITY, INFINITY);
@@ -152,6 +159,11 @@ BVH MedianBuilder::build(const std::vector<vec3>& vertices, const std::vector<in
     BVH::Node node;
     bvh.trianglesIndices.reserve(vertexIndices.size() / 3);
     for (int triangleIdx = 0; triangleIdx < vertexIndices.size() / 3; ++triangleIdx) {
+        if (vertexIndices[3 * triangleIdx] >= vertices.size() || vertexIndices[3 * triangleIdx] < 0 ||
+            vertexIndices[3 * triangleIdx + 1] >= vertices.size() || vertexIndices[3 * triangleIdx + 1] < 0 ||
+            vertexIndices[3 * triangleIdx + 2] >= vertices.size() || vertexIndices[3 * triangleIdx + 2] < 0) {
+            throw std::runtime_error("Vertex index is out of range");
+        }
         auto v1 = vertices[vertexIndices[3 * triangleIdx]];
         auto v2 = vertices[vertexIndices[3 * triangleIdx + 1]];
         auto v3 = vertices[vertexIndices[3 * triangleIdx + 2]];

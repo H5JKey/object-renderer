@@ -1,4 +1,4 @@
-#include "BVH.hpp"
+#include "bvh.hpp"
 
 #include <algorithm>
 #include <stdexcept>
