@@ -1,8 +1,7 @@
 #pragma once
+#include <glm/glm.hpp>
 #include <limits>
 #include <vector>
-
-#include "scene.hpp"
 
 class BVH {
     friend class MedianBuilder;
@@ -10,12 +9,12 @@ class BVH {
 
    public:
     struct Node {
-        vec3 min, max;
+        glm::vec4 min, max;
         int left, right;
         int start;
         int count;
-        Node() : min(0, 0, 0), max(0, 0, 0), left(-1), right(-1) {}
-        void expandToFitTriangle(vec3 v0, vec3 v1, vec3 v2);
+        Node() : min(0), max(0), left(-1), right(-1) {}
+        void expandToFitTriangle(glm::vec4 v0, glm::vec4 v1, glm::vec4 v2);
     };
     const std::vector<Node>& getNodes() const noexcept;
     const std::vector<int>& getTriangles() const noexcept;
