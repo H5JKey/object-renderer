@@ -12,6 +12,14 @@ add_executable(test
     test.cpp
 )
 
+target_compile_options(test PRIVATE 
+    -O0
+    -g
+    -fno-omit-frame-pointer
+    -fno-inline
+    -fno-optimize-sibling-calls 
+)
+
 target_link_libraries(test PRIVATE
     renderer_core
     GTest::gtest_main
