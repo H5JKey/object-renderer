@@ -29,7 +29,8 @@ int MedianBuilder::split(BVH& bvh, int nodeIdx, const std::vector<glm::vec4>& ve
                          const std::vector<int>& vertexIndices, std::vector<int>::iterator begin,
                          std::vector<int>::iterator end, int depth) const {
     BVH::Node& node = bvh.nodes[nodeIdx];
-    if ((trianglesLimit != -1 && end - begin <= trianglesLimit) || (depthLimit != -1 && depth >= depthLimit)) {
+    if ((depthLimit == -1 && trianglesLimit == -1 && end - begin <= 1) ||
+        (trianglesLimit != -1 && end - begin <= trianglesLimit) || (depthLimit != -1 && depth >= depthLimit)) {
         node.start = begin - bvh.trianglesIndices.begin();
         node.count = end - begin;
         node.left = -1;

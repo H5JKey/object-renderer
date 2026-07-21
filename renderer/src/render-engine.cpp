@@ -125,7 +125,7 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const Scene& scene) {
 }
 
 void RenderEngine::postProcess(RenderTarget& target) const {
-    std::clog << std::format("===Post processing===") << std::endl;
+    std::clog << "===Post processing===" << std::endl;
     glUseProgram(postProcessingProgram);
     glBindImageTexture(0, target.getDenoisedTexture(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
     glBindImageTexture(1, target.getOutputTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
@@ -143,7 +143,7 @@ void RenderEngine::postProcess(RenderTarget& target) const {
 }
 
 void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
-    std::clog << std::format("Loading geometry to GPU");
+    std::clog << "Loading geometry to GPU" << std::endl;
     const auto& vertices = scene.vertices;
     const auto& vertexIndices = scene.vertexIndices;
     const auto& materials = scene.materials;
@@ -215,7 +215,7 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, const B
     pathTracing(target, scene);
 
     fillGbuffer(target, scene);
-    std::clog << std::format("===Denoising===");
+    std::clog << "===Denoising===" << std::endl;
     denoiser.denoise(target);
     postProcess(target);
 }
