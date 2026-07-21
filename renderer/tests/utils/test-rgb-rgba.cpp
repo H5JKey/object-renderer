@@ -165,11 +165,11 @@ void testRoundTrip() {
     EXPECT_EQ(rgb_result, rgb_original);
 }
 
-TEST(Utils, RgbToRgba_uint8_t) { testRgbToRgba<uint8_t>(); }
-TEST(Utils, RgbToRgba_float) { testRgbToRgba<float>(); }
+TEST(RgbToRgbaTest, uint8_t) { testRgbToRgba<uint8_t>(); }
+TEST(RgbToRgbaTest, float) { testRgbToRgba<float>(); }
 
-TEST(Utils, RgbaToRgb_uint8_t) { testRgbaToRgb<uint8_t>(); }
-TEST(Utils, RgbaToRgb_float) { testRgbaToRgb<float>(); }
+TEST(RgbaToRgbTest, uint8_t) { testRgbaToRgb<uint8_t>(); }
+TEST(RgbaToRgbTest, float) { testRgbaToRgb<float>(); }
 
-TEST(Utils, RoundTrip_uint8_t) { testRoundTrip<uint8_t>(); }
-TEST(Utils, RoundTrip_float) { testRoundTrip<float>(); }
+TEST(RgbaRgbRoundTrip, uint8_t) { testRoundTrip<uint8_t>(); }
+TEST(RgbaRgbRoundTrip, float) { testRoundTrip<float>(); }
