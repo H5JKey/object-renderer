@@ -6,6 +6,8 @@ from fastapi import Depends
 from infrastructure.database import session_factory
 from infrastructure.minio.client import MinioClient
 from repositories.file import FileRepository
+from repositories.user import UserRepository
+from services.auth import AuthService
 from services.file_uploader import FileUploader
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,3 +45,27 @@ async def get_input_file_uploader(
         file_repository=file_repository,
     )
     yield file_uploader
+
+
+async def get_user_repository(
+    session: Annotated[
+        AsyncSession,
+        Depends(get_session),
+    ],
+) -> AsyncGenerator[UserRepository]:
+    user_repository = UserRepository(session)
+    yield user_repository
+
+
+async def get_auth_service(
+    session: Annotated[
+        AsyncSession,
+        Depends(get_session),
+    ],
+    user_repository: Annotated[
+        UserRepository,
+        Depends(get_user_repository),
+    ],
+) -> AsyncGenerator[AuthService]:
+    auth_service = AuthService(session, user_repository)
+    yield auth_service

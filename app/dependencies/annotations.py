@@ -2,9 +2,14 @@ from typing import Annotated
 
 from fastapi import Depends
 from repositories.file import FileRepository
+from services.auth import AuthService
 from services.file_uploader import FileUploader
 
-from dependencies.services import get_file_repository, get_input_file_uploader
+from dependencies.services import (
+    get_auth_service,
+    get_file_repository,
+    get_input_file_uploader,
+)
 
 FileRepositoryDep = Annotated[
     FileRepository,
@@ -14,4 +19,9 @@ FileRepositoryDep = Annotated[
 InputFileUploaderDep = Annotated[
     FileUploader,
     Depends(get_input_file_uploader),
+]
+
+AuthServiceDep = Annotated[
+    AuthService,
+    Depends(get_auth_service),
 ]
