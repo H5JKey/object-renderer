@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import ClassVar
 
+from fastapi.security import OAuth2PasswordBearer
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from core.config.database import DataBaseConfig
@@ -13,6 +14,9 @@ class Settings(BaseSettings):
     database: DataBaseConfig = DataBaseConfig()
     jwt: JWTConfig = JWTConfig()
     minio: MinioConfig = MinioConfig()
+    oauth2_scheme: OAuth2PasswordBearer = OAuth2PasswordBearer(
+        tokenUrl="/api/v1/auth/login",
+    )
 
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
         case_sensitive=False,
