@@ -19,7 +19,7 @@ USER_ENCRYPTED_PASSWORD_MAX_LENGTH = 128
 
 
 FILE_BUCKET_LENGTH = 25
-FILE_KEY_LENGTH = 40
+FILE_KEY_LENGTH = 128
 
 FIELD_SUB = "sub"
 TOKEN_TYPE = "type"
@@ -31,7 +31,7 @@ REFRESH_TOKEN_FIELD = "refresh"
 
 @dataclass
 class S3Bucket:
-    input_bucket = "input"
+    input_bucket = "output"
     output_bucket = "output"
 
 
