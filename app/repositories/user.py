@@ -1,4 +1,4 @@
-from core.interfaces import AbstractUserRepository
+from core.interfaces.repositories import AbstractUserRepository
 from models import User
 from schemas.user import UserCreate
 from sqlalchemy import delete, select
