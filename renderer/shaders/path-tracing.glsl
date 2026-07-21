@@ -121,6 +121,7 @@ HitInfo triangleIntersection(vec3 ro, vec3 rd, int triangle_idx) {
     return info;
 }
 
+const float EPSILON = 1e-6f;
 float AABBIntersection(vec3 origin, vec3 direction, vec3 boxMin, vec3 boxMax) {
     vec3 invDir = 1.0f / direction;
 
@@ -140,8 +141,8 @@ float AABBIntersection(vec3 origin, vec3 direction, vec3 boxMin, vec3 boxMax) {
 
     float tMin = max(max(tNear.x, tNear.y), max(tNear.z, 0.0f));
     float tMax = min(min(tFar.x, tFar.y), tFar.z);
-    
-    if (tMin <= tMax) 
+    const float EPSILON = 1e-6f;
+    if (tMax >= 0.0 && tMin <= tMax + EPSILON)
         return tMin;
     else
         return -1.0;
@@ -220,7 +221,7 @@ HitInfo castRayThroughBVH(vec3 origin, vec3 direction) {
         int nodeIdx = stack[--stackPtr];
         Node node = bvhNodes[nodeIdx];
         float t = AABBIntersection(origin, direction, node.min.xyz, node.max.xyz);
-        if (t < 0.0 || t > closestHitInfo.distance)
+        if (t < 0.0 || t > closestHitInfo.distance + EPSILON)
             continue;
         if (node.left == -1 && node.right == -1) {
             HitInfo info = castRayTroughAABB(origin, direction, node);

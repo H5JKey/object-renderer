@@ -13,6 +13,7 @@ add_executable(test
     utils/test-writeToPng.cpp
     utils/test-readFromFile.cpp
     bvh/test-building.cpp
+    bvh/test-intersections.cpp
     test-main.cpp
 )
 
