@@ -7,7 +7,6 @@ from core.config.application import settings
 from fastapi import Depends
 from infrastructure.minio.client import MinioClient
 from infrastructure.minio.session import get_minio_session
-from services.model_uploader import ModelUploader
 
 
 async def get_s3_client(
@@ -31,13 +30,3 @@ async def get_minio_client(
 ) -> AsyncGenerator[MinioClient]:
     minio_client = MinioClient(s3_client)
     yield minio_client
-
-
-async def get_model_uploader(
-    minio_client: Annotated[
-        MinioClient,
-        Depends(get_minio_client),
-    ],
-) -> AsyncGenerator[ModelUploader]:
-    model_uploader = ModelUploader(minio_client)
-    yield model_uploader

@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 USER_SURNAME_MIN_LENGTH = 3
 USER_SURNAME_MAX_LENGTH = 20
 
@@ -15,3 +17,12 @@ USER_ENCRYPTED_PASSWORD_MAX_LENGTH = 128
 
 FILE_BUCKET_LENGTH = 25
 FILE_KEY_LENGTH = 40
+
+
+@dataclass
+class S3Bucket:
+    input_bucket = "input"
+    output_bucket = "output"
+
+
+s3_bucket = S3Bucket()
