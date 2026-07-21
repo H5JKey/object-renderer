@@ -20,7 +20,6 @@ class UserBase(BaseModel):
     name: NameConstraint
     username: UsernameConstraint
     email: EmailConstraint
-    registration_date: datetime
 
 
 class UserCreate(UserBase):
@@ -37,3 +36,4 @@ class UserResponse(UserBase):
     """
 
     id: int
+    registration_date: datetime

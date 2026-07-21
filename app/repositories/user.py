@@ -1,9 +1,8 @@
-from sqlalchemy import delete
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.interfaces import AbstractUserRepository
 from models import User
 from schemas.user import UserCreate
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class UserRepository(AbstractUserRepository):
@@ -15,6 +14,11 @@ class UserRepository(AbstractUserRepository):
             entity=User,
             ident=user_id,
         )
+
+    async def get_by_username(self, username: str) -> User | None:
+        stmt = select(User).where(User.username == username)
+        result = await self.session.execute(stmt)
+        return result.scalar()
 
     async def create_user(self, create_user_data: UserCreate) -> User:
         user = User(**create_user_data.model_dump())
