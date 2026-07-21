@@ -1,11 +1,11 @@
 from core.constants import BEARER_TOKEN_TYPE
-from core.interfaces import AbstractAuthService, AbstractUserRepository
-from core.jwt_utils import (
-    create_access_token,
-    create_token,
-    get_user_id_by_refresh_token,
+from core.interfaces.repositories import AbstractUserRepository
+from core.interfaces.services import AbstractAuthService
+from core.security.jwt_tokens.factory import create_access_token, create_token
+from core.security.password_utils import (
+    convert_register_to_create_user,
+    validate_password,
 )
-from core.security import convert_register_to_create_user, validate_password
 from schemas.auth import LoginRequest, RegisterRequest
 from schemas.token import TokenInfo
 from schemas.user import UserResponse
@@ -24,7 +24,7 @@ class AuthService(AbstractAuthService):
     async def register(self, register_user_data: RegisterRequest) -> TokenInfo:
         create_user_data = convert_register_to_create_user(register_user_data)
         user = await self.user_repository.create_user(create_user_data)
-        user_response = UserResponse.model_validate(user, from_attributes=True)
+        user_response = UserResponse.model_validate(user)
         token = create_token(user_response)
         return token
 
@@ -33,6 +33,8 @@ class AuthService(AbstractAuthService):
         auth_user_data: LoginRequest,
     ) -> TokenInfo:
         user = await self.user_repository.get_by_username(auth_user_data.username)
+        if user is None:
+            raise NotImplementedError
         password = auth_user_data.password
         encrypted_password = user.encrypted_password
         if not validate_password(
@@ -41,14 +43,13 @@ class AuthService(AbstractAuthService):
         ):
             raise NotImplementedError
 
-        user_response = UserResponse.model_validate(user, from_attributes=True)
+        user_response = UserResponse.model_validate(user)
         token = create_token(user_response)
         return token
 
-    async def refresh_access_token(self, refresh_token: str) -> TokenInfo:
-        user_id = get_user_id_by_refresh_token(refresh_token)
+    async def refresh_access_token(self, user_id: int) -> TokenInfo:
         user = await self.user_repository.get_by_id(user_id)
-        user_response = UserResponse.model_validate(user, from_attributes=True)
+        user_response = UserResponse.model_validate(user)
         access_token = create_access_token(user_response)
         token = TokenInfo(
             access_token=access_token,
