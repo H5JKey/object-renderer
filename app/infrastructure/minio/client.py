@@ -1,7 +1,7 @@
-from typing import BinaryIO
+from typing import BinaryIO, cast
 
 from aiobotocore.client import AioBaseClient
-from core.interfaces import AbstractS3Client
+from core.interfaces.clients import AbstractS3Client
 
 
 class MinioClient(AbstractS3Client):
@@ -19,11 +19,12 @@ class MinioClient(AbstractS3Client):
             "Bucket": bucket,
             "Key": key,
         }
-        return await self.minio_client.generate_presigned_url(
+        presigned_url = await self.minio_client.generate_presigned_url(
             ClientMethod=client_method,
             Params=params,
             ExpiresIn=expires_in,
         )
+        return cast(str, presigned_url)
 
     async def get_object(self, bucket: str, key: str) -> BinaryIO:
         file_response = await self.minio_client.get_object(
@@ -31,7 +32,7 @@ class MinioClient(AbstractS3Client):
             Key=key,
         )
         file_binary = file_response.read()
-        return file_binary
+        return cast(BinaryIO, file_binary)
 
     async def put_object(
         self,
