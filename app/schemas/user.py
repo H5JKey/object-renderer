@@ -1,6 +1,7 @@
 from datetime import datetime
+from typing import ClassVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from schemas.constraints import (
     EmailConstraint,
@@ -20,6 +21,8 @@ class UserBase(BaseModel):
     name: NameConstraint
     username: UsernameConstraint
     email: EmailConstraint
+
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
 
 class UserCreate(UserBase):

@@ -1,11 +1,9 @@
 from typing import BinaryIO
 from uuid import uuid4
 
-from core.interfaces import (
-    AbstractFileRepository,
-    AbstractFileUploader,
-    AbstractS3Client,
-)
+from core.interfaces.clients import AbstractS3Client
+from core.interfaces.repositories import AbstractFileRepository
+from core.interfaces.services import AbstractFileUploader
 from schemas.file import FileCreate, FileResponse
 
 
@@ -42,8 +40,8 @@ class FileUploader(AbstractFileUploader):
             bucket=self.bucket,
             key=key,
         )
-        file = await self.file_repository.create_file(
+        created_file = await self.file_repository.create_file(
             user_id=user_id,
             create_file_data=create_file_data,
         )
-        return FileResponse.model_validate(file, from_attributes=True)
+        return FileResponse.model_validate(created_file)

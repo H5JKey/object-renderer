@@ -1,4 +1,4 @@
-from core.interfaces import AbstractFileRepository
+from core.interfaces.repositories import AbstractFileRepository
 from models import File
 from schemas.file import FileCreate
 from sqlalchemy import delete, select
