@@ -51,5 +51,5 @@ void testWriteToPng() {
     std::remove("test.png");
 }
 
-TEST(Utils, WriteToPng_uint8_t) { testWriteToPng<uint8_t>(); }
-TEST(Utils, WriteToPng_float) { testWriteToPng<float>(); }
+TEST(WriteToPng, uint8_t) { testWriteToPng<uint8_t>(); }
+TEST(WriteToPng, float) { testWriteToPng<float>(); }
