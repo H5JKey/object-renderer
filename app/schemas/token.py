@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class TokenInfo(BaseModel):
     """
-    Схема для отображения информации о токене.
+    Модель для отображения информации о токене.
     """
 
     access_token: str

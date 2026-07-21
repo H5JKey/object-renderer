@@ -29,11 +29,11 @@ def validate_password(
 def convert_register_to_create_user(register_user_data: RegisterRequest) -> UserCreate:
     password = register_user_data.password
     encrypted_password = hash_password(password)
-    register_user_data = register_user_data.model_dump(
+    register_user_data_dict = register_user_data.model_dump(
         exclude={"password"},
     )
     create_user_data = UserCreate(
         encrypted_password=encrypted_password,
-        **register_user_data,
+        **register_user_data_dict,
     )
     return create_user_data
