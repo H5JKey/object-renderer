@@ -1,11 +1,18 @@
 from abc import ABC, abstractmethod
 from typing import BinaryIO
 
-from models import File
+from models import File, User
+from schemas.auth import RegisterRequest, LoginReguest
 from schemas.file import FileCreate
+from schemas.token import TokenInfo
+from schemas.user import UserCreate
 
 
 class AbstractFileRepository(ABC):
+    """
+    Интерфейс для репозитория работы с файлами в базе данных.
+    """
+
     @abstractmethod
     async def get_by_id(self, file_id: int) -> File | None:
         """
@@ -26,6 +33,10 @@ class AbstractFileRepository(ABC):
 
 
 class AbstractS3Client(ABC):
+    """
+    Интерфейс для работы с s3 хранилищем.
+    """
+
     @abstractmethod
     async def get_object(self, bucket: str, key: str) -> None:
         """
@@ -46,6 +57,10 @@ class AbstractS3Client(ABC):
 
 
 class AbstractFileUploader(ABC):
+    """
+    Интерфейс для сервиса загрузки файлов.
+    """
+
     @abstractmethod
     async def upload(
         self,
