@@ -12,9 +12,12 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(1600, 1200);
 
     Scene scene;
+    scene.buildMeshData();
+    MeshData meshData = scene.getMeshData();
+
     MedianBuilder builder(-1, 32);
-    BVH bvh = builder.build(scene.vertices, scene.vertexIndices);
-    engine.renderFrame(*egl, scene, bvh);
+    BVH bvh = builder.build(meshData.vertices, meshData.vertexIndices);
+    engine.renderFrame(*egl, meshData, scene.getCamera(), scene.getbackgroundColor(), bvh);
 
     auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());
     if (eglTarget) {

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 
+#include "render-target.hpp"
 #include "utils.hpp"
 
 RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0, 0xFFFFFFFF) {
@@ -51,9 +52,10 @@ GLuint RenderEngine::compileShader(const std::string& source) {
     return program;
 }
 
-void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
+void RenderEngine::pathTracing(RenderTarget& target, const MeshData& meshData, const Camera& camera,
+                               const glm::vec4& backgroundColor) {
     std::clog << std::format("===Path tracing started===") << std::endl;
-    ;
+
     glUseProgram(pathTracingProgram);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, vertexSSBO);
@@ -63,16 +65,12 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, bvhNodesSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, bvhTrianglesSSBO);
 
-    glUniform1i(glGetUniformLocation(pathTracingProgram, "uCount"), scene.vertexIndices.size() / 3);
-    glUniform3f(glGetUniformLocation(pathTracingProgram, "uOrigin"), scene.origin.x, scene.origin.y, scene.origin.z);
-    glUniform3f(glGetUniformLocation(pathTracingProgram, "uLookAt"), scene.lookAt.x, scene.lookAt.y, scene.lookAt.z);
-    glUniform3f(glGetUniformLocation(pathTracingProgram, "uSunDirection"), scene.sunDirection.x, scene.sunDirection.y,
-                scene.sunDirection.z);
-    glUniform3f(glGetUniformLocation(pathTracingProgram, "uBackgroundColor"), scene.backgroundColor.x,
-                scene.backgroundColor.y, scene.backgroundColor.z);
-    glUniform3f(glGetUniformLocation(pathTracingProgram, "uSunColor"), scene.sunColor.x, scene.sunColor.y,
-                scene.sunColor.z);
-    glUniform1f(glGetUniformLocation(pathTracingProgram, "uFovDegrees"), 90.0f);
+    glUniform1i(glGetUniformLocation(pathTracingProgram, "uCount"), meshData.vertexIndices.size() / 3);
+    glUniform3f(glGetUniformLocation(pathTracingProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
+    glUniform3f(glGetUniformLocation(pathTracingProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
+    glUniform3f(glGetUniformLocation(pathTracingProgram, "uBackgroundColor"), backgroundColor.r, backgroundColor.g,
+                backgroundColor.b);
+    glUniform1f(glGetUniformLocation(pathTracingProgram, "uFovDegrees"), camera.fov);
 
     glBindImageTexture(0, target.getRawTexture(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
@@ -96,7 +94,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene& scene) {
     glUseProgram(0);
 }
 
-void RenderEngine::fillGbuffer(RenderTarget& target, const Scene& scene) {
+void RenderEngine::fillGbuffer(RenderTarget& target, const MeshData& meshData, const Camera& camera) {
     std::clog << std::format("===Filling gbuffer===") << std::endl;
     glUseProgram(gbufferProgram);
     glBindImageTexture(0, target.getNormalMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
@@ -107,9 +105,9 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const Scene& scene) {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, materialIndexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, bvhNodesSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, bvhTrianglesSSBO);
-    glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), scene.vertexIndices.size() / 3);
-    glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), scene.origin.x, scene.origin.y, scene.origin.z);
-    glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), scene.lookAt.x, scene.lookAt.y, scene.lookAt.z);
+    glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), meshData.vertexIndices.size() / 3);
+    glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
+    glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
     glUniform1f(glGetUniformLocation(gbufferProgram, "uFovDegrees"), 90.0f);
 
     int groupsX = (target.getWidth() + 15) / 16;
@@ -142,12 +140,12 @@ void RenderEngine::postProcess(RenderTarget& target) const {
     glUseProgram(0);
 }
 
-void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
+void RenderEngine::loadDataToGPU(const MeshData& meshData, const BVH& bvh) {
     std::clog << "Loading geometry to GPU" << std::endl;
-    const auto& vertices = scene.vertices;
-    const auto& vertexIndices = scene.vertexIndices;
-    const auto& materials = scene.materials;
-    const auto& materialIndices = scene.materialIndices;
+    const auto& vertices = meshData.vertices;
+    const auto& vertexIndices = meshData.vertexIndices;
+    const auto& materials = meshData.materials;
+    const auto& materialIndices = meshData.materialIndices;
     const auto& bvhNodes = bvh.getNodes();
     const auto& bvhTriangles = bvh.getTriangles();
     std::clog << std::format("- Total triangles: {}", vertexIndices.size() / 3) << std::endl;
@@ -205,16 +203,17 @@ void RenderEngine::loadSceneToGPU(const Scene& scene, const BVH& bvh) {
     glBufferData(GL_SHADER_STORAGE_BUFFER, bvhTriangles.size() * sizeof(int), bvhTriangles.data(), GL_STATIC_DRAW);
 }
 
-void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, const BVH& bvh) {
+void RenderEngine::renderFrame(RenderTarget& target, const MeshData& meshData, const Camera& camera,
+                               const glm::vec4& backgroundColor, const BVH& bvh) {
     if (postProcessingProgram == 0) {
         throw std::runtime_error("Shader not compiled");
     }
     RenderTarget::ContextGuard context(target);
 
-    loadSceneToGPU(scene, bvh);
-    pathTracing(target, scene);
+    loadDataToGPU(meshData, bvh);
+    pathTracing(target, meshData, camera, backgroundColor);
 
-    fillGbuffer(target, scene);
+    fillGbuffer(target, meshData, camera);
     std::clog << "===Denoising===" << std::endl;
     denoiser.denoise(target);
     postProcess(target);
