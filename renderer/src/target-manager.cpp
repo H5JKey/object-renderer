@@ -12,7 +12,7 @@ void TargetManager::init() {
     TargetManager& self = getInstance();
     if (!self.initialized) {
         std::clog << std::format("Initializing EGL") << std::endl;
-        self.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        self.display = eglGetPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA, EGL_DEFAULT_DISPLAY, nullptr);
         if (self.display == EGL_NO_DISPLAY) {
             throw std::runtime_error("Failed to get display");
         }
