@@ -169,9 +169,9 @@ TEST_F(BVHIntersectionsTest, DifferentRays) {
 }
 
 TEST_F(BVHIntersectionsTest, DifferentRaysRotated) {
-    MedianBuilder builder(-1, 3);
-    BVH bvh = builder.build(vertices, vertexIndices);
     rotate(glm::radians(30.f), glm::radians(60.f), 0);
+    MedianBuilder builder(-1, 1);
+    BVH bvh = builder.build(vertices, vertexIndices);
     float R = 2;
     for (float phi = 0; phi < 2 * std::numbers::pi_v<float>; phi += std::numbers::pi_v<float> / 10) {
         for (float theta = 0; theta < std::numbers::pi_v<float>; theta += std::numbers::pi_v<float> / 10) {
