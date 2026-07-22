@@ -1,239 +1,27 @@
 #include "scene.hpp"
 
-Scene::Scene()
-    : origin(0.1f, 5.0f, 5.0f, 0),
-      lookAt(5, 5, 5, 0),
-      sunDirection(-10.0f, 3.0f, -10.0f, 0),
-      sunColor(0.0f, 0.0f, 0.0f, 0),
-      backgroundColor(0.7f, 0.7f, 0.7f, 0) {
-    materials.emplace_back(glm::vec4(0.725, 0.71, 0.68, 0), glm::vec4(0, 0, 0, 0), 0.0, 0.7, 0.0, 1.5);
-    materials.emplace_back(glm::vec4(0.12, 0.45, 0.15, 0), glm::vec4(0, 0, 0, 0), 0.0, 0.7, 0.0, 1.5);
-    materials.emplace_back(glm::vec4(0.65, 0.05, 0.05, 0), glm::vec4(0, 0, 0, 0), 0.0, 0.7, 0.0, 1.5);
-    materials.emplace_back(glm::vec4(0.8, 0.8, 0.8, 0), glm::vec4(10.0, 10.0, 10.0, 0), 0.0, 0.1, 0.0, 0.0);
-    materials.emplace_back(glm::vec4(0.65, 0.65, 0.65, 0), glm::vec4(0, 0, 0, 0), 0.0, 0.85, 0.0, 1.5);
-    materials.emplace_back(glm::vec4(0.7, 0.7, 0.7, 0), glm::vec4(0, 0, 0, 0), 1.0, 0.85, 0.0, 1.5);
+Scene::Scene() {}
 
-    vertices.emplace_back(0, 0, 0, 0);
-    vertices.emplace_back(0, 0, 10, 0);
-    vertices.emplace_back(0, 10, 0, 0);
-    vertices.emplace_back(0, 10, 10, 0);
-    vertices.emplace_back(10, 0, 0, 0);
-    vertices.emplace_back(10, 0, 10, 0);
-    vertices.emplace_back(10, 10, 0, 0);
-    vertices.emplace_back(10, 10, 10, 0);
+void Scene::buildMeshData() {
+    meshData.vertices.clear();
+    meshData.vertexIndices.clear();
+    meshData.materials = this->materials;
+    meshData.materialIndices.clear();
 
-    vertexIndices.push_back(2);
-    vertexIndices.push_back(1);
-    vertexIndices.push_back(0);
-    materialIndices.push_back(0);
+    for (const auto& mesh : meshes) {
+        int indexOffset = meshData.vertices.size();
+        for (const auto& v : mesh.vertices) meshData.vertices.push_back(mesh.transform * v);
 
-    vertexIndices.push_back(1);
-    vertexIndices.push_back(2);
-    vertexIndices.push_back(3);
-    materialIndices.push_back(0);
-
-    vertexIndices.push_back(5);
-    vertexIndices.push_back(1);
-    vertexIndices.push_back(3);
-    materialIndices.push_back(2);
-
-    vertexIndices.push_back(5);
-    vertexIndices.push_back(3);
-    vertexIndices.push_back(7);
-    materialIndices.push_back(2);
-
-    vertexIndices.push_back(5);
-    vertexIndices.push_back(7);
-    vertexIndices.push_back(4);
-    materialIndices.push_back(0);
-
-    vertexIndices.push_back(7);
-    vertexIndices.push_back(6);
-    vertexIndices.push_back(4);
-    materialIndices.push_back(0);
-
-    vertexIndices.push_back(2);
-    vertexIndices.push_back(0);
-    vertexIndices.push_back(6);
-    materialIndices.push_back(1);
-
-    vertexIndices.push_back(0);
-    vertexIndices.push_back(4);
-    vertexIndices.push_back(6);
-    materialIndices.push_back(1);
-
-    vertexIndices.push_back(3);
-    vertexIndices.push_back(2);
-    vertexIndices.push_back(6);
-    materialIndices.push_back(0);
-
-    vertexIndices.push_back(3);
-    vertexIndices.push_back(6);
-    vertexIndices.push_back(7);
-    materialIndices.push_back(0);
-
-    vertexIndices.push_back(0);
-    vertexIndices.push_back(1);
-    vertexIndices.push_back(4);
-    materialIndices.push_back(0);
-
-    vertexIndices.push_back(5);
-    vertexIndices.push_back(4);
-    vertexIndices.push_back(1);
-    materialIndices.push_back(0);
-
-    vertices.emplace_back(4, 5.5, 0.01, 0);
-    vertices.emplace_back(6, 5.5, 0.01, 0);
-    vertices.emplace_back(6, 7.5, 0.01, 0);
-    vertices.emplace_back(4, 7.5, 0.01, 0);
-
-    vertexIndices.push_back(8);
-    vertexIndices.push_back(9);
-    vertexIndices.push_back(10);
-    materialIndices.push_back(3);
-
-    vertexIndices.push_back(11);
-    vertexIndices.push_back(8);
-    vertexIndices.push_back(10);
-    materialIndices.push_back(3);
-
-    vertices.emplace_back(8 + 1.414f, 0, 8, 0);
-    vertices.emplace_back(8, 0, 8 - 1.414f, 0);
-    vertices.emplace_back(8 - 1.414f, 0, 8, 0);
-    vertices.emplace_back(8, 0, 8 + 1.414f, 0);
-
-    vertices.emplace_back(8 + 1.414f, 4, 8, 0);
-    vertices.emplace_back(8, 4, 8 - 1.414f, 0);
-    vertices.emplace_back(8 - 1.414f, 4, 8, 0);
-    vertices.emplace_back(8, 4, 8 + 1.414f, 0);
-
-    vertexIndices.push_back(15);
-    vertexIndices.push_back(14);
-    vertexIndices.push_back(12);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(14);
-    vertexIndices.push_back(13);
-    vertexIndices.push_back(12);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(16);
-    vertexIndices.push_back(18);
-    vertexIndices.push_back(19);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(16);
-    vertexIndices.push_back(17);
-    vertexIndices.push_back(18);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(19);
-    vertexIndices.push_back(14);
-    vertexIndices.push_back(18);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(19);
-    vertexIndices.push_back(15);
-    vertexIndices.push_back(14);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(17);
-    vertexIndices.push_back(14);
-    vertexIndices.push_back(13);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(17);
-    vertexIndices.push_back(18);
-    vertexIndices.push_back(14);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(16);
-    vertexIndices.push_back(17);
-    vertexIndices.push_back(13);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(16);
-    vertexIndices.push_back(13);
-    vertexIndices.push_back(12);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(19);
-    vertexIndices.push_back(16);
-    vertexIndices.push_back(15);
-    materialIndices.push_back(4);
-
-    vertexIndices.push_back(16);
-    vertexIndices.push_back(12);
-    vertexIndices.push_back(15);
-    materialIndices.push_back(4);
-
-    vertices.emplace_back(7 + 1.5 * 0.866f, 0, 3 + 1.5 * 0.5f, 0);
-    vertices.emplace_back(7 - 1.5 * 0.5f, 0, 3 + 1.5 * 0.866f, 0);
-    vertices.emplace_back(7 - 1.5 * 0.866f, 0, 3 - 1.5 * 0.5f, 0);
-    vertices.emplace_back(7 + 1.5 * 0.5f, 0, 3 - 1.5 * 0.866f, 0);
-
-    vertices.emplace_back(7 + 1.5 * 0.866f, 3, 3 + 1.5 * 0.5f, 0);
-    vertices.emplace_back(7 - 1.5 * 0.5f, 3, 3 + 1.5 * 0.866f, 0);
-    vertices.emplace_back(7 - 1.5 * 0.866f, 3, 3 - 1.5 * 0.5f, 0);
-    vertices.emplace_back(7 + 1.5 * 0.5f, 3, 3 - 1.5 * 0.866f, 0);
-
-    vertexIndices.push_back(23);
-    vertexIndices.push_back(22);
-    vertexIndices.push_back(20);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(22);
-    vertexIndices.push_back(21);
-    vertexIndices.push_back(20);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(27);
-    vertexIndices.push_back(26);
-    vertexIndices.push_back(24);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(26);
-    vertexIndices.push_back(25);
-    vertexIndices.push_back(24);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(27);
-    vertexIndices.push_back(22);
-    vertexIndices.push_back(26);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(27);
-    vertexIndices.push_back(23);
-    vertexIndices.push_back(22);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(25);
-    vertexIndices.push_back(22);
-    vertexIndices.push_back(21);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(25);
-    vertexIndices.push_back(26);
-    vertexIndices.push_back(22);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(24);
-    vertexIndices.push_back(25);
-    vertexIndices.push_back(21);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(24);
-    vertexIndices.push_back(21);
-    vertexIndices.push_back(20);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(27);
-    vertexIndices.push_back(24);
-    vertexIndices.push_back(23);
-    materialIndices.push_back(5);
-
-    vertexIndices.push_back(24);
-    vertexIndices.push_back(20);
-    vertexIndices.push_back(23);
-    materialIndices.push_back(5);
+        for (int i = 0; i < mesh.vertexIndices.size() / 3; i++) {
+            meshData.vertexIndices.push_back(mesh.vertexIndices[i] + indexOffset);
+            meshData.vertexIndices.push_back(mesh.vertexIndices[i + 1] + indexOffset);
+            meshData.vertexIndices.push_back(mesh.vertexIndices[i + 2] + indexOffset);
+            meshData.materialIndices.push_back(mesh.materialId);
+        }
+    }
 }
+
+const MeshData& Scene::getMeshData() const noexcept { return meshData; }
+
+Camera Scene::getCamera() const noexcept { return camera; }
+glm::vec4 Scene::getbackgroundColor() const noexcept { return backgroundColor; }

@@ -5,6 +5,7 @@
 
 #include "bvh.hpp"
 #include "denoiser.hpp"
+#include "glm/ext/vector_float4.hpp"
 #include "render-target.hpp"
 #include "scene.hpp"
 
@@ -26,13 +27,15 @@ class RenderEngine {
 
    public:
     RenderEngine();
-    void renderFrame(RenderTarget& target, const Scene& scene, const BVH& bvh);
+    void renderFrame(RenderTarget& target, const MeshData& meshData, const Camera& camera,
+                     const glm::vec4& backgroundColor, const BVH& bvh);
     ~RenderEngine();
 
    private:
-    void pathTracing(RenderTarget& target, const Scene& scene);
-    void fillGbuffer(RenderTarget& target, const Scene& scene);
+    void pathTracing(RenderTarget& target, const MeshData& meshData, const Camera& camera,
+                     const glm::vec4& backgroundColor);
+    void fillGbuffer(RenderTarget& target, const MeshData& meshData, const Camera& camera);
     void postProcess(RenderTarget& target) const;
-    void loadSceneToGPU(const Scene& scene, const BVH& bvh);
+    void loadDataToGPU(const MeshData& meshData, const BVH& bvh);
     GLuint compileShader(const std::string& source);
 };
