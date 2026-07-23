@@ -1,5 +1,7 @@
 FROM ubuntu:22.04
 
+ENV ENV DEBIAN_FRONTEND=noninteractive 
+
 WORKDIR /renderer
 
 RUN apt-get update && \
