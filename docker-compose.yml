@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: renderer/Dockerfile
+      ignorefile: renderer/.dockerignore
     container_name: renderer
     hostname: renderer
     depends_on:
