@@ -13,17 +13,10 @@ RUN apk update && \
     mesa \
     mesa-utils \
     mesa-dev \
-    mesa-egl \
-    glu \
-    glu-dev \
+    mesa-gl \
     py3-jinja2 \
     ispc \
     openimagedenoise-dev \
-    libx11-dev \
-    libxrandr-dev \
-    libxinerama-dev \
-    libxcursor-dev \
-    libxi-dev \
     valgrind \
     && rm -rf /var/cache/apk/*
 
