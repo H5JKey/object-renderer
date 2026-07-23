@@ -1,29 +1,32 @@
-FROM archlinux:latest
+FROM alpine:latest
 
 WORKDIR /renderer
 
 ENV DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
-RUN pacman -Syu --noconfirm && \
-    pacman -S --noconfirm \
+RUN apk update && \
+    apk add --no-cache \
     gcc \
+    g++ \
     make \
     cmake \
     git \
     mesa \
     mesa-utils \
-    python-jinja \
+    mesa-dev \
+    mesa-dri-gallium \
+    glu \
+    py3-jinja2 \
     ispc \
-    openimagedenoise \
-    libglvnd \
-    libx11 \
-    libxrandr \
-    libxinerama \
-    libxcursor \
-    libxi \
+    openimagedenoise-dev \
+    libx11-dev \
+    libxrandr-dev \
+    libxinerama-dev \
+    libxcursor-dev \
+    libxi-dev \
     valgrind \
-&& pacman -Scc --noconfirm
+    && rm -rf /var/cache/apk/*
 
-COPY renderer/ .
+COPY ./ .
 RUN mkdir build && cd build && cmake ..
 RUN cd build && make -j$(nproc)
 
