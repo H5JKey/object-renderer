@@ -14,6 +14,7 @@ RUN apk update && \
     mesa-utils \
     mesa-dev \
     mesa-gl \
+    mesa-glapi \
     py3-jinja2 \
     ispc \
     openimagedenoise-dev \
