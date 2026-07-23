@@ -1,10 +1,6 @@
-FROM ubuntu:latest
+FROM ubuntu:22.04
 
 WORKDIR /renderer
-
-RUN apt-get update && apt-get install --no-install-recommends -y software-properties-common
-
-RUN add-apt-repository universe
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -20,8 +16,25 @@ RUN apt-get update && \
     libxcb1-dev \
     libdrm-dev \
     pkg-config \
-    libtbb-dev  \
     && rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/uxlfoundation/onetbb.git && \
+    cd onetbb && \
+    git checkout v2023.1.0 && \
+    mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && rm -rf tbb
+
+RUN git clone https://github.com/ispc/ispc.git && \
+    cd ispc && \
+    git checkout v1.31.0 && \
+    mkdir build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && rm -rf ispc
 
 RUN git clone --recursive https://github.com/RenderKit/oidn.git && \
     cd oidn && \
