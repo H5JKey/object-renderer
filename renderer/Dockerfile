@@ -8,7 +8,6 @@ RUN apt-get update && \
     cmake \
     git \
     python3-jinja2 \
-    ispc \
     valgrind \
     libgl1-mesa-dev \
     libglvnd-dev \
