@@ -6,9 +6,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y software-proper
 
 RUN add-apt-repository universe
 
-RUN add-apt-repository ppa:openimagedenoise/ppa -y && \
-    apt-get update
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
@@ -25,6 +22,18 @@ RUN apt-get update && \
     libopenimagedenoise-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --recursive https://github.com/RenderKit/oidn.git && \
+    cd oidn && \
+    mkdir build && cd build && \
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib/x86_64-linux-gnu \
+        -DCMAKE_INSTALL_INCLUDEDIR=include && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && rm -rf oidn
 
 COPY renderer/ .
 
