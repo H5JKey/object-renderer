@@ -19,7 +19,6 @@ RUN apt-get update && \
     libx11-dev \
     libxcb1-dev \
     libdrm-dev \
-    libopenimagedenoise-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
