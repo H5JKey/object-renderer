@@ -13,13 +13,12 @@ RUN apk update && \
     mesa \
     mesa-utils \
     mesa-dev \
-    mesa-dri-gallium \
+    mesa-egl \
     glu \
     glu-dev \
     py3-jinja2 \
     ispc \
     openimagedenoise-dev \
-    libglvnd-dev \
     libx11-dev \
     libxrandr-dev \
     libxinerama-dev \
