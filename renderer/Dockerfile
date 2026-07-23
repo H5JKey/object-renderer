@@ -1,4 +1,4 @@
-FROM alpine:3.24
+FROM alpine:latest
 
 WORKDIR /renderer
 
@@ -21,6 +21,22 @@ RUN apk update && \
     openimagedenoise-dev \
     valgrind \
     && rm -rf /var/cache/apk/*
+
+RUN apk add --no-cache \
+    libgl \
+    libgl-dev \
+    libgles \
+    libgles-dev \
+    libegl \
+    libegl-dev \
+    mesa-dev \
+    mesa-gl \
+    mesa-egl \
+    mesa-gles \
+    libglvnd \
+    libglvnd-dev \
+    glu \
+    glu-dev
 
 COPY renderer/ .
 RUN mkdir build && cd build && cmake ..
