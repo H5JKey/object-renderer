@@ -1,11 +1,13 @@
 FROM ubuntu:22.04
 
-ENV DEBIAN_FRONTEND=noninteractive 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
 
 WORKDIR /renderer
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    ca-certificates \
     build-essential \
     cmake \
     git \
