@@ -20,6 +20,7 @@ RUN apt-get update && \
     libxcb1-dev \
     libdrm-dev \
     pkg-config \
+    libtbb-dev  \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone --recursive https://github.com/RenderKit/oidn.git && \
