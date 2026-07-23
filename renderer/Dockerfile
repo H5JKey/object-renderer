@@ -1,19 +1,19 @@
-FROM alpine:latest
+FROM alpine:3.24
 
 WORKDIR /renderer
 
 ENV DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
 RUN apk update && \
     apk add --no-cache \
-    gcc \
-    g++ \
-    make \
+    build-base \
     cmake \
     git \
     mesa \
-    mesa-utils \
     mesa-dev \
     mesa-egl \
+    mesa-egl-dev \
+    mesa-gles \
+    mesa-dri-gallium \
     mesa-gl \
     py3-jinja2 \
     ispc \
