@@ -11,7 +11,6 @@ RUN apk update && \
     mesa \
     mesa-dev \
     mesa-egl \
-    mesa-egl-dev \
     mesa-gles \
     mesa-dri-gallium \
     mesa-gl \
