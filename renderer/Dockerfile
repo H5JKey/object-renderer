@@ -26,7 +26,7 @@ RUN apk update && \
     valgrind \
     && rm -rf /var/cache/apk/*
 
-COPY ./ .
+COPY renderer/ .
 RUN mkdir build && cd build && cmake ..
 RUN cd build && make -j$(nproc)
 
