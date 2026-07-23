@@ -13,10 +13,12 @@ RUN apk update && \
     mesa \
     mesa-utils \
     mesa-dev \
+    mesa-egl \
     mesa-gl \
-    mesa-glapi \
     py3-jinja2 \
     ispc \
+    libxcb \
+    libx11-dev \
     openimagedenoise-dev \
     valgrind \
     && rm -rf /var/cache/apk/*
