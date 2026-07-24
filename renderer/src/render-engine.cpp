@@ -52,7 +52,7 @@ GLuint RenderEngine::compileShader(const std::string& source) {
     return program;
 }
 
-void RenderEngine::pathTracing(RenderTarget& target, const MeshData& meshData, const Camera& camera,
+void RenderEngine::pathTracing(RenderTarget& target, const Scene::MeshData& meshData, const Scene::Camera& camera,
                                const glm::vec4& backgroundColor) {
     std::clog << std::format("===Path tracing started===") << std::endl;
 
@@ -70,7 +70,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const MeshData& meshData, c
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uBackgroundColor"), backgroundColor.r, backgroundColor.g,
                 backgroundColor.b);
-    glUniform1f(glGetUniformLocation(pathTracingProgram, "uFov"), camera.fov);
+    glUniform1f(glGetUniformLocation(pathTracingProgram, "uFov"), tan(camera.fov / 2.0f));
 
     glBindImageTexture(0, target.getRawTexture(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
@@ -94,7 +94,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const MeshData& meshData, c
     glUseProgram(0);
 }
 
-void RenderEngine::fillGbuffer(RenderTarget& target, const MeshData& meshData, const Camera& camera) {
+void RenderEngine::fillGbuffer(RenderTarget& target, const Scene::MeshData& meshData, const Scene::Camera& camera) {
     std::clog << std::format("===Filling gbuffer===") << std::endl;
     glUseProgram(gbufferProgram);
     glBindImageTexture(0, target.getNormalMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
@@ -108,7 +108,7 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const MeshData& meshData, c
     glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), meshData.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
-    glUniform1f(glGetUniformLocation(gbufferProgram, "uFov"), camera.fov);
+    glUniform1f(glGetUniformLocation(gbufferProgram, "uFov"), tan(camera.fov / 2.0f));
 
     int groupsX = (target.getWidth() + 15) / 16;
     int groupsY = (target.getHeight() + 15) / 16;
@@ -140,7 +140,7 @@ void RenderEngine::postProcess(RenderTarget& target) const {
     glUseProgram(0);
 }
 
-void RenderEngine::loadDataToGPU(const MeshData& meshData, const BVH& bvh) {
+void RenderEngine::loadDataToGPU(const Scene::MeshData& meshData, const BVH& bvh) {
     std::clog << "Loading geometry to GPU" << std::endl;
     const auto& vertices = meshData.vertices;
     const auto& vertexIndices = meshData.vertexIndices;
@@ -175,7 +175,8 @@ void RenderEngine::loadDataToGPU(const MeshData& meshData, const BVH& bvh) {
         throw std::runtime_error("failed to create materialsSSBO. Error: " + std::to_string(error));
     }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialSSBO);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, materials.size() * sizeof(Material), materials.data(), GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, materials.size() * sizeof(Scene::Material), materials.data(),
+                 GL_STATIC_DRAW);
 
     glGenBuffers(1, &materialIndexSSBO);
     error = glGetError();
@@ -203,7 +204,7 @@ void RenderEngine::loadDataToGPU(const MeshData& meshData, const BVH& bvh) {
     glBufferData(GL_SHADER_STORAGE_BUFFER, bvhTriangles.size() * sizeof(int), bvhTriangles.data(), GL_STATIC_DRAW);
 }
 
-void RenderEngine::renderFrame(RenderTarget& target, const MeshData& meshData, const Camera& camera,
+void RenderEngine::renderFrame(RenderTarget& target, const Scene::MeshData& meshData, const Scene::Camera& camera,
                                const glm::vec4& backgroundColor, const BVH& bvh) {
     if (postProcessingProgram == 0) {
         throw std::runtime_error("Shader not compiled");

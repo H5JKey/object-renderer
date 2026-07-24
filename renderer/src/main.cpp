@@ -14,9 +14,9 @@ int main(int argc, char* argv[]) {
     SceneLoader loader;
     Scene scene = loader.loadGltf("../scene.gltf");
     scene.buildMeshData();
-    MeshData meshData = scene.getMeshData();
+    Scene::MeshData meshData = scene.getMeshData();
 
-    MedianBuilder builder(-1, 32);
+    MedianBuilder builder(-1, 3);
     BVH bvh = builder.build(meshData.vertices, meshData.vertexIndices);
     engine.renderFrame(*egl, meshData, scene.getCamera(), scene.getbackgroundColor(), bvh);
 
