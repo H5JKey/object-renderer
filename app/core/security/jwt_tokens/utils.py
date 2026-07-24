@@ -11,7 +11,7 @@ from core.constants import (
     REFRESH_TOKEN_FIELD,
     TOKEN_TYPE,
 )
-from core.exceptions import InvalidTokenPayloadError
+from core.exceptions.token import InvalidTokenPayloadError
 
 
 def encode_jwt(
