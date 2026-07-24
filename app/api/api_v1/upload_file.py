@@ -20,6 +20,6 @@ async def upload_file(
 ) -> FileResponse:
     return await file_uploader.upload(
         user_id=user_id,
-        file_name=uploaded_file.file,  # type: ignore[arg-type]
+        file_name=uploaded_file.filename,  # type: ignore[arg-type]
         file=uploaded_file.file,
     )
