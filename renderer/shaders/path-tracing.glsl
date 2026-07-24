@@ -44,7 +44,7 @@ layout(std430, binding = 6) buffer bvhTrianglesBuffer {
 
 uniform int uCount;
 uniform vec3 uOrigin;
-uniform float uFovDegrees;
+uniform float uFov;
 uniform vec3 uLookAt;
 uniform vec3 uSunDirection;
 uniform vec3 uBackgroundColor;
@@ -141,7 +141,6 @@ float AABBIntersection(vec3 origin, vec3 direction, vec3 boxMin, vec3 boxMax) {
 
     float tMin = max(max(tNear.x, tNear.y), max(tNear.z, 0.0f));
     float tMax = min(min(tFar.x, tFar.y), tFar.z);
-    const float EPSILON = 1e-6f;
     if (tMax >= 0.0 && tMin <= tMax + EPSILON)
         return tMin;
     else
@@ -389,7 +388,6 @@ void main() {
     } else {
         oldColor = imageLoad(outputImage, pixel).rgb;
     }
-    float fov = tan(uFovDegrees * 0.5 * 3.141592 / 180.0);
 
     vec3 forward = normalize(uLookAt - uOrigin);
     vec3 right = cross(vec3(0.0, 1.0, 0.0), forward);
@@ -400,7 +398,7 @@ void main() {
     vec2 uv = (2.0*vec2(pixel) + jitter - vec2(size)) / vec2(size).y;
     uv.y = -uv.y;
 
-    vec3 direction = normalize(forward + right * fov * uv.x + up * fov * uv.y);
+    vec3 direction = normalize(forward + right * uFov * uv.x + up * uFov * uv.y);
 
     vec3 color = traceRay(uOrigin, direction, seed);
 

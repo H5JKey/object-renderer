@@ -2,6 +2,7 @@
 
 #include "bvh-builder.hpp"
 #include "render-engine.hpp"
+#include "scene-loader.hpp"
 #include "scene.hpp"
 #include "target-manager.hpp"
 #include "utils.hpp"
@@ -10,8 +11,8 @@ int main(int argc, char* argv[]) {
     TargetManager::init();
     RenderEngine engine;
     std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(1600, 1200);
-
-    Scene scene;
+    SceneLoader loader;
+    Scene scene = loader.loadGltf("../scene.gltf");
     scene.buildMeshData();
     MeshData meshData = scene.getMeshData();
 

@@ -8,6 +8,7 @@ add_library(renderer_core STATIC
     bvh.cpp
     bvh-builder.cpp
     utils.cpp
+    stb-implementation.cpp
 )
 
 target_link_libraries(renderer_core PUBLIC

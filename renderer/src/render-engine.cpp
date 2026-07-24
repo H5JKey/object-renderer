@@ -70,7 +70,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const MeshData& meshData, c
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uBackgroundColor"), backgroundColor.r, backgroundColor.g,
                 backgroundColor.b);
-    glUniform1f(glGetUniformLocation(pathTracingProgram, "uFovDegrees"), camera.fov);
+    glUniform1f(glGetUniformLocation(pathTracingProgram, "uFov"), camera.fov);
 
     glBindImageTexture(0, target.getRawTexture(), 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
@@ -108,7 +108,7 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const MeshData& meshData, c
     glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), meshData.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
-    glUniform1f(glGetUniformLocation(gbufferProgram, "uFovDegrees"), 90.0f);
+    glUniform1f(glGetUniformLocation(gbufferProgram, "uFov"), camera.fov);
 
     int groupsX = (target.getWidth() + 15) / 16;
     int groupsY = (target.getHeight() + 15) / 16;

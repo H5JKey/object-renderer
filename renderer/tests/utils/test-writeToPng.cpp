@@ -1,10 +1,8 @@
 #include <gtest/gtest.h>
+#include <stb_image.h>
 
 #include <stdexcept>
 #include <utils.hpp>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 void readPng(const std::string& filename, int& width, int& height, int& channels, std::vector<uint8_t>& result) {
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, 0);

@@ -45,7 +45,7 @@ layout(std430, binding = 7) buffer bvhTrianglesBuffer {
 
 uniform int uCount;
 uniform vec3 uOrigin;
-uniform float uFovDegrees;
+uniform float uFov;
 uniform vec3 uLookAt;
 
 layout(local_size_x = 16, local_size_y = 16) in;
@@ -216,8 +216,6 @@ void main() {
         return;
     }
 
-    float fov = tan(uFovDegrees * 0.5 * 3.141592 / 180.0);
-
     vec3 forward = normalize(uLookAt - uOrigin);
     vec3 right = cross(vec3(0.0, 1.0, 0.0), forward);
     vec3 up = cross(forward, right);
@@ -226,7 +224,7 @@ void main() {
 
     uv.y = -uv.y;
 
-    vec3 direction = normalize(forward + right * fov * uv.x + up * fov * uv.y);
+    vec3 direction = normalize(forward + right * uFov * uv.x + up * uFov * uv.y);
 
     HitInfo hit = castRayThroughBVH(uOrigin, direction);
 

@@ -1,16 +1,11 @@
 #pragma once
-#include <nlohmann/json.hpp>
+#include <string>
 
 #include "scene.hpp"
 
 class SceneLoader {
    public:
-    virtual Scene load(const std::string& path) = 0;
+    virtual Scene loadGltf(const std::string& path);
 
-    virtual ~SceneLoader() = default;
-};
-
-class JsonLoader : public SceneLoader {
-   public:
-    Scene load(const std::string& path) override;
+    ~SceneLoader() = default;
 };

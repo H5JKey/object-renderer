@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+class SceneLoader;
+
 struct Mesh {
     glm::vec4 position;
     glm::mat4 transform;
@@ -44,6 +46,8 @@ struct MeshData {
 };
 
 class Scene {
+    friend class SceneLoader;
+
    private:
     Camera camera;
     std::vector<Mesh> meshes;
