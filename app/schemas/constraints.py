@@ -14,7 +14,7 @@ from core.constants import (
     USER_USERNAME_MAX_LENGTH,
     USER_USERNAME_MIN_LENGTH,
 )
-from pydantic import EmailStr
+from pydantic import EmailStr, Field
 
 SurnameConstraint = Annotated[
     str,
@@ -61,4 +61,20 @@ PasswordConstraint = Annotated[
         min_length=USER_PASSWORD_MIN_LENGTH,
         max_length=USER_PASSWORD_MAX_LENGTH,
     ),
+]
+
+SizeConstraint = Annotated[
+    int,
+    Field(ge=1),
+]
+
+
+SampleConstraint = Annotated[
+    int,
+    Field(ge=1),
+]
+
+FovConstraint = Annotated[
+    int,
+    Field(gt=0),
 ]

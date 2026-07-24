@@ -27,7 +27,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     """
-    Модель для создания пользователя.
+    Схема для создания пользователя.
     """
 
     encrypted_password: EncryptedPasswordConstraint
