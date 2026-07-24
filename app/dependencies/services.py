@@ -9,6 +9,7 @@ from repositories.file import FileRepository
 from repositories.user import UserRepository
 from services.auth import AuthService
 from services.file_uploader import FileUploader
+from services.user import UserService
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.minio import get_minio_client
@@ -65,3 +66,13 @@ async def get_auth_service(
 ) -> AsyncGenerator[AuthService]:
     auth_service = AuthService(user_repository)
     yield auth_service
+
+
+async def get_user_service(
+    user_repository: Annotated[
+        UserRepository,
+        Depends(get_user_repository),
+    ],
+) -> AsyncGenerator[UserService]:
+    user_service = UserService(user_repository)
+    yield user_service
