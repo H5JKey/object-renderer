@@ -1,5 +1,3 @@
-
-
 class BaseApplicationError(Exception):
     """
     Базовое исключение приложения.

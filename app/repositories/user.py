@@ -1,5 +1,6 @@
 from core.interfaces.repositories import AbstractUserRepository
 from models import User
+from pydantic import EmailStr
 from schemas.user import UserCreate
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,6 +18,11 @@ class UserRepository(AbstractUserRepository):
 
     async def get_by_username(self, username: str) -> User | None:
         stmt = select(User).where(User.username == username)
+        result = await self.session.execute(stmt)
+        return result.scalar()
+
+    async def get_by_email(self, email: EmailStr) -> User | None:
+        stmt = select(User).filter_by(email=email)
         result = await self.session.execute(stmt)
         return result.scalar()
 

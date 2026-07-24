@@ -13,7 +13,7 @@ def include_routers(app: FastAPI) -> None:
 def create_app() -> FastAPI:
     app = FastAPI(
         title="Renderer",
-        lifespan=lifespan, # type[arg-type]
+        lifespan=lifespan,  # type[arg-type]
     )
     include_routers(app)
     register_exception_handlers(app)
