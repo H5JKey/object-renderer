@@ -58,14 +58,10 @@ async def get_user_repository(
 
 
 async def get_auth_service(
-    session: Annotated[
-        AsyncSession,
-        Depends(get_session),
-    ],
     user_repository: Annotated[
         UserRepository,
         Depends(get_user_repository),
     ],
 ) -> AsyncGenerator[AuthService]:
-    auth_service = AuthService(session, user_repository)
+    auth_service = AuthService(user_repository)
     yield auth_service

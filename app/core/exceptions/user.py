@@ -23,6 +23,17 @@ class UserIdNotFoundError(NotFoundError):
         super().__init__(detail)
 
 
+class UserUsernameNotFoundError(NotFoundError):
+    """
+    Ошибка, связанная с ненахождением пользователя по username.
+    """
+
+    def __init__(self, username: str) -> None:
+        self.username = username
+        detail = f"User with username = {username} not found."
+        super().__init__(detail)
+
+
 class UserAlreadyExistsError(ConflictError):
     """
     Ошибка, связанная с существованием переданных данных.

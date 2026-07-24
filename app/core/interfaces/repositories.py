@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from models import File, User
+from pydantic import EmailStr
 from schemas.file import FileCreate
 from schemas.user import UserCreate
 
@@ -44,6 +45,12 @@ class AbstractUserRepository(ABC):
     async def get_by_username(self, username: str) -> User | None:
         """
         Метод для поиска пользователя по username.
+        """
+
+    @abstractmethod
+    async def get_by_email(self, email: EmailStr) -> User | None:
+        """
+        Метод для поиска пользователя по email.
         """
 
     @abstractmethod
