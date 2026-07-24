@@ -46,9 +46,7 @@ uniform int uCount;
 uniform vec3 uOrigin;
 uniform float uFov;
 uniform vec3 uLookAt;
-uniform vec3 uSunDirection;
 uniform vec3 uBackgroundColor;
-uniform vec3 uSunColor;
 uniform uint uSeed;
 uniform uint uFrameIndex;
 
@@ -147,9 +145,6 @@ float AABBIntersection(vec3 origin, vec3 direction, vec3 boxMin, vec3 boxMax) {
         return -1.0;
 }
 
-vec3 getBackgroundColor(vec3 direction) {
-    return uBackgroundColor + uSunColor * pow(max(0.0, dot(direction, normalize(uSunDirection))), 256.0);
-}
 
 uint pcg(uint seed) {
     uint state = seed * uint(747796405) + uint(2891336453u);
@@ -292,7 +287,7 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
         seed = pcg(seed);
         HitInfo hit = castRayThroughBVH(origin, direction);
         if (hit.distance == MAX_DIST) {
-            return throughput * getBackgroundColor(direction);
+            return throughput * uBackgroundColor;
         }
         Material material = materials[hit.material_id];
         if (length(material.emission.rgb) > 0.01) {

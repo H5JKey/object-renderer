@@ -27,15 +27,15 @@ class RenderEngine {
 
    public:
     RenderEngine();
-    void renderFrame(RenderTarget& target, const MeshData& meshData, const Camera& camera,
+    void renderFrame(RenderTarget& target, const Scene::MeshData& meshData, const Scene::Camera& camera,
                      const glm::vec4& backgroundColor, const BVH& bvh);
     ~RenderEngine();
 
    private:
-    void pathTracing(RenderTarget& target, const MeshData& meshData, const Camera& camera,
+    void pathTracing(RenderTarget& target, const Scene::MeshData& meshData, const Scene::Camera& camera,
                      const glm::vec4& backgroundColor);
-    void fillGbuffer(RenderTarget& target, const MeshData& meshData, const Camera& camera);
+    void fillGbuffer(RenderTarget& target, const Scene::MeshData& meshData, const Scene::Camera& camera);
     void postProcess(RenderTarget& target) const;
-    void loadDataToGPU(const MeshData& meshData, const BVH& bvh);
+    void loadDataToGPU(const Scene::MeshData& meshData, const BVH& bvh);
     GLuint compileShader(const std::string& source);
 };

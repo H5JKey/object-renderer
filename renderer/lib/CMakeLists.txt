@@ -4,6 +4,7 @@ add_subdirectory(json)
 add_subdirectory(glad)
 add_subdirectory(stb)
 add_subdirectory(glm)
+add_subdirectory(fastgltf)
 
 find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
 find_package(OpenImageDenoise REQUIRED)
@@ -17,4 +18,5 @@ target_link_libraries(renderer_deps INTERFACE
     glm::glm
     OpenImageDenoise
     glad
+    fastgltf::fastgltf
 )
