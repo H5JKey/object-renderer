@@ -1,38 +1,50 @@
-class NotFoundError(Exception):
+
+
+class BaseApplicationError(Exception):
+    """
+    Базовое исключение приложения.
+    """
+
+    def __init__(self, detail: str) -> None:
+        self.detail = detail
+        super().__init__(detail)
+
+
+class NotFoundError(BaseApplicationError):
     """
     Ошибка, связанная с ненахождением объекта.
     """
 
     def __init__(self, detail: str) -> None:
-        self.detail = detail
+        # self.detail = detail
         super().__init__(detail)
 
 
-class ConflictError(Exception):
+class ConflictError(BaseApplicationError):
     """
     Ошибка, связанная с конфликтами данных.
     """
 
     def __init__(self, detail: str) -> None:
-        self.detail = detail
+        # self.detail = detail
         super().__init__(detail)
 
 
-class AuthenticationError(Exception):
+class AuthenticationError(BaseApplicationError):
     """
     Ошибка, связанная с аутентификацией.
     """
 
     def __init__(self, detail: str) -> None:
-        self.detail = detail
+        # self.detail = detail
         super().__init__(detail)
 
 
-class ForbiddenError(Exception):
+class ForbiddenError(BaseApplicationError):
     """
     Ошибка, связанная с авторизацией.
     """
 
     def __init__(self, detail: str) -> None:
-        self.detail = detail
+        # self.detail = detail
         super().__init__(detail)

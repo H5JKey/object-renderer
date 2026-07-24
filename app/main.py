@@ -1,9 +1,3 @@
-from api import router as api_router
-from api.main_views import router as main_router
-from fastapi import FastAPI
+from application_factory import create_app
 
-app = FastAPI(
-    title="Renderer",
-)
-app.include_router(main_router)
-app.include_router(api_router)
+app = create_app()
