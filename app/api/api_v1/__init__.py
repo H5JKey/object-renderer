@@ -3,6 +3,7 @@ __all__ = ("router",)
 from fastapi import APIRouter
 
 from .auth import router as auth_router
+from .render import router as render_router
 from .upload_file import router as upload_file_router
 from .user import router as user_router
 
@@ -12,4 +13,5 @@ router = APIRouter(
 
 router.include_router(auth_router)
 router.include_router(upload_file_router)
+router.include_router(render_router)
 router.include_router(user_router)
