@@ -1,12 +1,11 @@
 #include "utils.hpp"
 
+#include <stb_image_write.h>
+
 #include <format>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 
 std::string utils::readFromFile(const std::string& path) {
     std::string source;
