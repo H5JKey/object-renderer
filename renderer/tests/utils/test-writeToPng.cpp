@@ -1,12 +1,14 @@
 #include <gtest/gtest.h>
 #include <stb_image.h>
 
+#include <format>
 #include <stdexcept>
 #include <utils.hpp>
 
-void readPng(const std::string& filename, int& width, int& height, int& channels, std::vector<uint8_t>& result) {
+void readPng(const std::filesystem::path& filename, int& width, int& height, int& channels,
+             std::vector<uint8_t>& result) {
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, 0);
-    if (!data) throw std::runtime_error("Failed to load");
+    if (!data) throw std::runtime_error(std::format("Failed to load file {}", filename.string()));
     result.assign(data, data + width * height * channels);
     stbi_image_free(data);
 };
@@ -14,7 +16,7 @@ void readPng(const std::string& filename, int& width, int& height, int& channels
 template <typename T>
 void testWriteToPng() {
     std::vector<T> pixels;
-    std::string filename = "test.png";
+    std::filesystem::path filename = "test.png";
     std::vector<uint8_t> expected;
     size_t size;
 
@@ -39,14 +41,14 @@ void testWriteToPng() {
 
     int width, height, channels;
     std::vector<uint8_t> result;
-    EXPECT_NO_THROW(readPng("test.png", width, height, channels, result));
+    EXPECT_NO_THROW(readPng(filename, width, height, channels, result));
     EXPECT_EQ(result.size(), expected.size());
     EXPECT_EQ(width, 3);
     EXPECT_EQ(height, 1);
     EXPECT_EQ(channels, 4);
     for (int i = 0; i < result.size(); i++) EXPECT_NEAR(result[i], expected[i], 1);
 
-    std::remove("test.png");
+    std::remove(filename.c_str());
 }
 
 TEST(WriteToPng, uint8_t) { testWriteToPng<uint8_t>(); }

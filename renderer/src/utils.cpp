@@ -2,21 +2,22 @@
 
 #include <stb_image_write.h>
 
+#include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 
-std::string utils::readFromFile(const std::string& path) {
+std::string utils::readFromFile(const std::filesystem::path& path) {
     std::string source;
-    std::fstream shaderFile(path);
-    if (!shaderFile.is_open()) {
-        throw std::runtime_error(std::format("failed to open file. Path: {}", path));
+    std::fstream file(path);
+    if (!file.is_open()) {
+        throw std::runtime_error(std::format("failed to open file {}", path.string()));
     }
     std::stringstream buffer;
-    buffer << shaderFile.rdbuf();
+    buffer << file.rdbuf();
     source = buffer.str();
-    shaderFile.close();
+    file.close();
     return source;
 }
 
@@ -95,22 +96,22 @@ void utils::rgbToRgba(const std::vector<uint8_t>& rgb, std::vector<uint8_t>& rgb
 }
 
 void utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels,
-                       const std::string& filename) {
+                       const std::filesystem::path& path) {
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
         throw std::runtime_error("Pixel data size mismatch");
     }
-    std::clog << std::format("Writing into {}", filename) << std::endl;
-    stbi_write_png(filename.c_str(), width, height, channels, pixels.data(), width * channels);
+    std::clog << std::format("Writing into {}", path.string()) << std::endl;
+    stbi_write_png(path.c_str(), width, height, channels, pixels.data(), width * channels);
 }
 
 void utils::writeToPng(const std::vector<float>& pixels, int width, int height, int channels,
-                       const std::string& filename) {
+                       const std::filesystem::path& path) {
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
         throw std::runtime_error("Pixel data size mismatch");
     }
-    std::clog << std::format("Writing into {}", filename) << std::endl;
+    std::clog << std::format("Writing into {}", path.string()) << std::endl;
     std::vector<unsigned char> normalizedPixels(width * height * channels);
     for (int i = 0; i < pixels.size(); i++)
         normalizedPixels[i] = static_cast<unsigned char>(std::min(std::max(pixels[i], 0.0f), 1.0f) * 255);
-    stbi_write_png(filename.c_str(), width, height, channels, normalizedPixels.data(), width * channels);
+    stbi_write_png(path.c_str(), width, height, channels, normalizedPixels.data(), width * channels);
 }
