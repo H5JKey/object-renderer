@@ -8,14 +8,14 @@ class KafkaProducer(ABC):
     """
 
     @abstractmethod
-    async def produce(
+    def produce(
         self,
         topic: str,
         value: str | bytes | None,
         key: str | bytes | None,
         partition: int,
-        callback: Callable,  # type:ignore[type-arg]
-        on_delivery: Callable,  # type:ignore[type-arg]
+        callback: Callable | None,  # type:ignore[type-arg]
+        on_delivery: Callable | None,  # type:ignore[type-arg]
         timestamp: int,
     ) -> None:
         """
