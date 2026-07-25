@@ -19,7 +19,10 @@ class RenderEngine {
         float roughness;
         float transmission;
         float ior;
-        GLuint albedoTextureID;
+        int albedoTextureID;
+
+       private:
+        float padding[3];
     };
 
     struct GPUData {
@@ -43,6 +46,7 @@ class RenderEngine {
     GLuint materialIndexSSBO;
     GLuint bvhNodesSSBO;
     GLuint bvhTrianglesSSBO;
+    GLuint texCoordSSBO;
     std::random_device rd;
     std::mt19937 gen;
     std::uniform_int_distribution<uint> uniformDistr;

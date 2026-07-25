@@ -10,9 +10,10 @@
 int main(int argc, char* argv[]) {
     TargetManager::init();
     RenderEngine engine;
-    std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(1600, 1200);
+    std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(400, 300);
     SceneLoader loader;
     Scene scene = loader.loadGltf(argv[1]);
+    // loader.addPlane(scene);
     engine.renderFrame(*egl, scene);
 
     auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());

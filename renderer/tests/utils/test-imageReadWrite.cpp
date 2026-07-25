@@ -32,7 +32,7 @@ void testPngReadWrite() {
 
     int width, height, channels;
     std::vector<uint8_t> result;
-    EXPECT_NO_THROW(utils::readPng(filename, width, height, channels, result));
+    EXPECT_NO_THROW(utils::readImage(filename, width, height, channels, result));
     EXPECT_EQ(result.size(), expected.size());
     EXPECT_EQ(width, 3);
     EXPECT_EQ(height, 1);

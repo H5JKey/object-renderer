@@ -7,6 +7,7 @@ struct Material {
     float roughness;
     float transmission;
     float ior;
+    int albedoTextureID;
 };
 
 struct Node {
@@ -22,25 +23,49 @@ layout(std430, binding = 1) buffer vertexBuffer {
     vec4 vertices[];
 };
 
-layout(std430, binding = 2) buffer vertexIndexBuffer {
+layout(std430, binding = 2) buffer texCoordBuffer {
+    vec4 texCoords[];
+};
+
+layout(std430, binding = 3) buffer vertexIndexBuffer {
     int verticesIndices[];
 };
 
-layout(std430, binding = 3) buffer materialBuffer {
+layout(std430, binding = 4) buffer materialBuffer {
     Material materials[];
 };
 
-layout(std430, binding = 4) buffer materialIndexBuffer {
+layout(std430, binding = 5) buffer materialIndexBuffer {
     int materialsIndices[];
 };
 
-layout(std430, binding = 5) buffer bvhNodesBuffer {
+layout(std430, binding = 6) buffer bvhNodesBuffer {
     Node bvhNodes[];
 };
 
-layout(std430, binding = 6) buffer bvhTrianglesBuffer {
+layout(std430, binding = 7) buffer bvhTrianglesBuffer {
     int bvhTriangles[];
 };
+
+layout(binding = 8) uniform sampler2D texture0;
+layout(binding = 9) uniform sampler2D texture1;
+layout(binding = 10) uniform sampler2D texture2;
+layout(binding = 11) uniform sampler2D texture3;
+layout(binding = 12) uniform sampler2D texture4;
+layout(binding = 13) uniform sampler2D texture5;
+layout(binding = 14) uniform sampler2D texture6;
+layout(binding = 15) uniform sampler2D texture7;
+layout(binding = 16) uniform sampler2D texture8;
+layout(binding = 17) uniform sampler2D texture9;
+layout(binding = 18) uniform sampler2D texture10;
+layout(binding = 19) uniform sampler2D texture11;
+layout(binding = 20) uniform sampler2D texture12;
+layout(binding = 21) uniform sampler2D texture13;
+layout(binding = 22) uniform sampler2D texture14;
+layout(binding = 23) uniform sampler2D texture15;
+layout(binding = 24) uniform sampler2D texture16;
+layout(binding = 25) uniform sampler2D texture17;
+layout(binding = 26) uniform sampler2D texture18;
 
 uniform int uCount;
 uniform vec3 uOrigin;
@@ -58,6 +83,7 @@ struct HitInfo {
     vec3 position;
     int material_id;
     vec3 normal;
+    vec2 texCoord; 
 };
 
 HitInfo triangleIntersection(vec3 ro, vec3 rd, int triangle_idx) {
@@ -112,6 +138,11 @@ HitInfo triangleIntersection(vec3 ro, vec3 rd, int triangle_idx) {
         info.material_id = 0;
         return info;
     }
+    vec2 uv0 = texCoords[verticesIndices[3*triangle_idx]].xy;
+    vec2 uv1 = texCoords[verticesIndices[3*triangle_idx+1]].xy;
+    vec2 uv2 = texCoords[verticesIndices[3*triangle_idx+2]].xy;
+
+    info.texCoord = (1.0 - u - v) * uv0 + u * uv1 + v * uv2;
     info.distance = t;
     info.position = ro + rd * t;
     info.normal = normalize(cross(v1 - v0, v2 - v0));
@@ -272,6 +303,32 @@ float smith(vec3 N, vec3 V, vec3 L, float roughness) {
     return schlickGGX(N, V, roughness) * schlickGGX(N, L, roughness);
 }
 
+vec3 getAlbedo(Material material, vec2 texCoord) {
+    switch (material.albedoTextureID) {
+        case -1: return material.albedo.rgb;
+        case 0:  return texture(texture0, texCoord).rgb;
+        case 1:  return texture(texture1, texCoord).rgb;
+        case 2:  return texture(texture2, texCoord).rgb;
+        case 3:  return texture(texture3, texCoord).rgb;
+        case 4:  return texture(texture4, texCoord).rgb;
+        case 5:  return texture(texture5, texCoord).rgb;
+        case 6:  return texture(texture6, texCoord).rgb;
+        case 7:  return texture(texture7, texCoord).rgb;
+        case 8:  return texture(texture8, texCoord).rgb;
+        case 9:  return texture(texture9, texCoord).rgb;
+        case 10:  return texture(texture10, texCoord).rgb;
+        case 11:  return texture(texture11, texCoord).rgb;
+        case 12:  return texture(texture12, texCoord).rgb;
+        case 13:  return texture(texture13, texCoord).rgb;
+        case 14:  return texture(texture14, texCoord).rgb;
+        case 15:  return texture(texture15, texCoord).rgb;
+        case 16:  return texture(texture16, texCoord).rgb;
+        case 17:  return texture(texture17, texCoord).rgb;
+        case 18:  return texture(texture18, texCoord).rgb;
+        default: return vec3(1.0);
+    }
+}
+
 vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
     vec3 color = vec3(0,0,0);
     vec3 throughput = vec3(1.0);
@@ -287,7 +344,7 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
         seed = pcg(seed);
         HitInfo hit = castRayThroughBVH(origin, direction);
         if (hit.distance == MAX_DIST) {
-            return throughput * uBackgroundColor;
+            return throughput * (uBackgroundColor + vec3(100.0, 90.0, 70.0) * pow(max(0.0, dot(direction, normalize(vec3(1,1,1)))), 64.0));
         }
         Material material = materials[hit.material_id];
         if (length(material.emission.rgb) > 0.01) {
@@ -302,7 +359,7 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
             L = reflect(-V, H);
             seed = pcg(seed);
         } while (dot(L, N) <= 0.0);
-        vec3 F0 = mix(vec3(pow((material.ior - 1) / (material.ior + 1), 2.0)), material.albedo.xyz, material.metalness);
+        vec3 F0 = mix(vec3(pow((material.ior - 1) / (material.ior + 1), 2.0)), getAlbedo(material, hit.texCoord), material.metalness);
         vec3 F = schlickFresnel(V, H, F0);
         if (material.metalness > 0.0) {
             if (material.roughness < 0.01) {
@@ -326,7 +383,7 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
                 if (material.roughness < 0.01) {
                     origin = hit.position + N * 0.001;
                     direction = reflect(direction, N);
-                    throughput *= material.albedo.rgb;
+                    throughput *= getAlbedo(material, hit.texCoord) / F.x;
                     continue;
                 }
                 float G = smith(N, V, L, material.roughness);
@@ -348,10 +405,12 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
                     if (length(T) == 0.0) {
                         direction = reflect(direction, N);
                         origin = hit.position + N * 0.001;
+                        throughput *= (material.transmission * material.transmission) / (1 - F.x);
                     }
                     else {
                         direction = T;
                         origin = hit.position - N * 0.001;
+                        throughput *= getAlbedo(material, hit.texCoord) / (1 - F.x);
                     }
                 }
                 else {
@@ -361,7 +420,7 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
                     }
                     direction = cosineHemisphere(seed, N);
                     origin = hit.position + N * 0.001;
-                    throughput *= material.albedo.rgb / (1 - F.x);
+                    throughput *= getAlbedo(material, hit.texCoord) / (1 - F.x);
                 }
             }
         }

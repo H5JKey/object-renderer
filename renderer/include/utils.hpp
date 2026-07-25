@@ -16,6 +16,9 @@ void writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int c
 void writeToPng(const std::vector<float>& pixels, int width, int height, int channels,
                 const std::filesystem::path& path);
 
-void readPng(const std::filesystem::path& filename, int& width, int& height, int& channels,
-             std::vector<uint8_t>& result);
+void readImage(const std::filesystem::path& filename, int& width, int& height, int& channels,
+               std::vector<uint8_t>& result);
+
+void readImageFromMemory(const std::byte* memoryBuffer, size_t size, int& width, int& height, int& channels,
+                         std::vector<uint8_t>& result);
 }  // namespace utils
