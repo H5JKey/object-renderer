@@ -1,5 +1,6 @@
+from dependencies.annotations import RenderServiceDep
 from fastapi import APIRouter, status
-from schemas.render import RenderCreate, RenderResponse
+from schemas.render import RenderCreate
 
 router = APIRouter(
     prefix="/render",
@@ -9,8 +10,10 @@ router = APIRouter(
 
 @router.post(
     "/create",
-    response_model=RenderResponse,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_render(create_render_data: RenderCreate) -> RenderResponse:
-    return RenderResponse(**create_render_data.model_dump())
+async def create_render(
+    create_render_data: RenderCreate,
+    render_service: RenderServiceDep,
+) -> None:
+    await render_service.create_render(create_render_data)

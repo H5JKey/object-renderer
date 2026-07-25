@@ -4,11 +4,13 @@ from typing import Annotated
 from core.constants import s3_bucket
 from fastapi import Depends
 from infrastructure.database import session_factory
+from infrastructure.kafka import ConfluentKafkaProducer
 from infrastructure.minio.client import MinioClient
 from repositories.file import FileRepository
 from repositories.user import UserRepository
 from services.auth import AuthService
 from services.file_uploader import FileUploader
+from services.renderservice import RenderService
 from services.user import UserService
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -76,3 +78,28 @@ async def get_user_service(
 ) -> AsyncGenerator[UserService]:
     user_service = UserService(user_repository)
     yield user_service
+
+
+def get_producer_config() -> dict:
+    config = {"bootstrap.servers": "kafka:9092"}
+    return config
+
+
+async def get_confluent_kafka_producer(
+    config: Annotated[
+        dict,
+        Depends(get_producer_config),
+    ],
+) -> AsyncGenerator[ConfluentKafkaProducer]:
+    producer = ConfluentKafkaProducer(config)
+    yield producer
+
+
+async def get_render_service(
+    producer: Annotated[
+        ConfluentKafkaProducer,
+        Depends(get_confluent_kafka_producer),
+    ],
+) -> AsyncGenerator[RenderService]:
+    render_service = RenderService(producer)
+    yield render_service
