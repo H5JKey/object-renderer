@@ -25,8 +25,6 @@ class Scene {
         std::vector<uint8_t> pixels;
         int width = 0;
         int height = 0;
-        int channels = 0;
-        bool isSRGB = false;
         int id = -1;
     };
 
@@ -39,20 +37,14 @@ class Scene {
         float ior;
         int albedoTextureID = -1;
 
-        Material(glm::vec3 albedo, glm::vec3 emission, float metalness, float roughness, float transmission, float ior)
-            : albedo(albedo),
-              emission(emission),
-              metalness(metalness),
-              roughness(roughness),
-              transmission(transmission),
-              ior(ior) {}
         Material()
-            : albedo(glm::vec3(0.8)),
+            : albedo(glm::vec3(0.3)),
               emission(glm::vec3(0.0)),
               metalness(0.0),
               roughness(0.5),
               transmission(0.0),
-              ior(1.5) {}
+              ior(1.5),
+              albedoTextureID(-1) {}
     };
 
     struct Camera {

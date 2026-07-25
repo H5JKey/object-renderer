@@ -10,7 +10,7 @@ enable_testing()
 
 add_executable(test
     utils/test-rgb-rgba.cpp
-    utils/test-pngReadWrite.cpp
+    utils/test-imageReadWrite.cpp
     utils/test-readFromFile.cpp
     bvh/test-building.cpp
     bvh/test-intersections.cpp

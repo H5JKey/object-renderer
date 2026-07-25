@@ -8,11 +8,70 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <stdexcept>
+#include <variant>
 #include <vector>
+
+#include "utils.hpp"
 
 SceneLoader::SceneLoader() : parser(supportedExtensions) {}
 
-Scene::Material SceneLoader::loadMaterial(const fastgltf::Material& gltfMaterial) const {
+Scene::TextureData SceneLoader::loadTexture(const fastgltf::Image& image, const fastgltf::Asset& asset) const {
+    return std::visit(
+        fastgltf::visitor{
+            [&](const fastgltf::sources::URI& filePath) -> Scene::TextureData {
+                std::clog << std::format("Loading texture from URI") << std::endl;
+                assert(filePath.fileByteOffset == 0);
+                if (!filePath.uri.isLocalPath()) {
+                    throw std::runtime_error("Non-local URI not supported");
+                }
+
+                const std::string path(filePath.uri.path().begin(), filePath.uri.path().end());
+                std::vector<uint8_t> result;
+                int width, height, channels;
+                utils::readImage(path, width, height, channels, result);
+
+                return Scene::TextureData{.pixels = std::move(result), .width = width, .height = height};
+            },
+            [&](const fastgltf::sources::Array& vector) -> Scene::TextureData {
+                std::clog << std::format("Loading texture from Array") << std::endl;
+                std::vector<uint8_t> result;
+                int width, height, channels;
+
+                utils::readImageFromMemory(vector.bytes.data(), vector.bytes.size(), width, height, channels, result);
+
+                return Scene::TextureData{.pixels = std::move(result), .width = width, .height = height};
+            },
+            [&](const fastgltf::sources::BufferView& view) -> Scene::TextureData {
+                std::clog << std::format("Loading texture from BufferView") << std::endl;
+                auto& bufferView = asset.bufferViews[view.bufferViewIndex];
+                auto& buffer = asset.buffers[bufferView.bufferIndex];
+                return std::visit(
+                    fastgltf::visitor{
+                        [&](const fastgltf::sources::Array& vector) -> Scene::TextureData {
+                            std::vector<uint8_t> result;
+                            int width, height, channels;
+                            const auto* data = vector.bytes.data() + bufferView.byteOffset;
+                            const auto size = bufferView.byteLength;
+
+                            utils::readImageFromMemory(data, size, width, height, channels, result);
+                            return Scene::TextureData{.pixels = std::move(result), .width = width, .height = height};
+                        },
+                        [](auto& arg) -> Scene::TextureData {
+                            throw std::runtime_error(std::string("Unsupported format: ") + typeid(arg).name());
+                        },
+                    },
+                    buffer.data);
+            },
+            [](auto& arg) -> Scene::TextureData {
+                throw std::runtime_error(std::string("Unsupported format: ") + typeid(arg).name());
+            },
+        },
+        image.data);
+}
+
+Scene::Material SceneLoader::loadMaterial(const fastgltf::Material& gltfMaterial,
+                                          std::vector<Scene::TextureData>& textures,
+                                          const fastgltf::Asset& asset) const {
     Scene::Material material;
 
     material.metalness = gltfMaterial.pbrData.metallicFactor;
@@ -28,6 +87,26 @@ Scene::Material SceneLoader::loadMaterial(const fastgltf::Material& gltfMaterial
     glm::vec3 emissiveColor = glm::make_vec3(gltfMaterial.emissiveFactor.data());
     float emissiveStrength = gltfMaterial.emissiveStrength;
     glm::vec4 emission = glm::vec4(emissiveColor * emissiveStrength, 1.0f);
+
+    material.albedoTextureID = -1;
+    if (gltfMaterial.pbrData.baseColorTexture.has_value()) {
+        auto& texInfo = gltfMaterial.pbrData.baseColorTexture.value();
+        auto textureIndex = texInfo.textureIndex;
+
+        if (textureIndex < asset.textures.size()) {
+            auto& gltfTexture = asset.textures[textureIndex];
+            auto imageIndex = gltfTexture.imageIndex;
+
+            if (imageIndex.has_value() && imageIndex.value() < asset.images.size()) {
+                auto& image = asset.images[imageIndex.value()];
+                Scene::TextureData texture = loadTexture(image, asset);
+                texture.id = static_cast<int>(textures.size());
+
+                textures.push_back(std::move(texture));
+                material.albedoTextureID = texture.id;
+            }
+        }
+    }
     return material;
 }
 
@@ -161,8 +240,31 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
     }
 
     /* Loading materials */
-    for (const auto& material : asset.get().materials) {
-        scene.materials.push_back(loadMaterial(material));
+    for (const auto& material : asset->materials) {
+        scene.materials.push_back(loadMaterial(material, scene.textures, asset.get()));
     }
     return scene;
+}
+
+/* Add plane for better ligting visualization*/
+#include <print>
+void SceneLoader::addPlane(Scene& scene, float Ylevel) {
+    Scene::Mesh planeMesh;
+    planeMesh.vertices = {glm::vec3(-100.0f, Ylevel, 100.0f), glm::vec3(-100.0f, Ylevel, -100.0f),
+                          glm::vec3(100.0f, Ylevel, -100.0f), glm::vec3(100.0f, Ylevel, 100.0f)};
+    planeMesh.vertexIndices = {3, 1, 0, 2, 1, 3};
+
+    Scene::Mesh::Primitive primitive1, primitive2;
+    primitive1.startVertexIndex = 0;
+    primitive1.vertexIndicesCount = 3;
+    primitive2.startVertexIndex = 3;
+    primitive2.vertexIndicesCount = 3;
+    scene.materials.push_back(Scene::Material());
+    primitive1.materialId = scene.materials.size() - 1;
+    primitive2.materialId = scene.materials.size() - 1;
+
+    planeMesh.primitives.push_back(primitive1);
+    planeMesh.primitives.push_back(primitive2);
+
+    scene.meshes.push_back(planeMesh);
 }
