@@ -9,23 +9,37 @@ class SceneLoader;
 class Scene {
    public:
     struct Mesh {
-        glm::vec4 position;
-        glm::mat4 transform;
-
+        struct Primitive {
+            int startVertexIndex;
+            int vertexIndicesCount;
+            int materialId;
+        };
         std::vector<int> vertexIndices;
-        std::vector<glm::vec4> vertices;
-        int materialId;
+        std::vector<glm::vec3> vertices;
+        std::vector<glm::vec2> texCoords;
+
+        std::vector<Primitive> primitives;
+    };
+
+    struct TextureData {
+        std::vector<uint8_t> pixels;
+        int width = 0;
+        int height = 0;
+        int channels = 0;
+        bool isSRGB = false;
+        int id = -1;
     };
 
     struct Material {
-        glm::vec4 albedo;
-        glm::vec4 emission;
+        glm::vec3 albedo;
+        glm::vec3 emission;
         float metalness;
         float roughness;
         float transmission;
         float ior;
+        int albedoTextureID = -1;
 
-        Material(glm::vec4 albedo, glm::vec4 emission, float metalness, float roughness, float transmission, float ior)
+        Material(glm::vec3 albedo, glm::vec3 emission, float metalness, float roughness, float transmission, float ior)
             : albedo(albedo),
               emission(emission),
               metalness(metalness),
@@ -33,24 +47,17 @@ class Scene {
               transmission(transmission),
               ior(ior) {}
         Material()
-            : albedo(glm::vec4(0.8)),
-              emission(glm::vec4(0.0)),
+            : albedo(glm::vec3(0.8)),
+              emission(glm::vec3(0.0)),
               metalness(0.0),
               roughness(0.5),
               transmission(0.0),
               ior(1.5) {}
     };
 
-    struct MeshData {
-        std::vector<glm::vec4> vertices;
-        std::vector<int> vertexIndices;
-        std::vector<Material> materials;
-        std::vector<int> materialIndices;
-    };
-
     struct Camera {
-        glm::vec4 origin;
-        glm::vec4 lookAt;
+        glm::vec3 origin;
+        glm::vec3 lookAt;
         float fov;
     };
 
@@ -60,13 +67,14 @@ class Scene {
     Camera camera;
     std::vector<Mesh> meshes;
     std::vector<Material> materials;
-    glm::vec4 backgroundColor;
-    MeshData meshData;
+    glm::vec3 backgroundColor;
+    std::vector<TextureData> textures;
 
    public:
     Scene();
-    const MeshData& getMeshData() const noexcept;
-    void buildMeshData();
     Camera getCamera() const noexcept;
-    glm::vec4 getbackgroundColor() const noexcept;
+    glm::vec3 getBackgroundColor() const noexcept;
+    const std::vector<Mesh>& getMeshes() const noexcept;
+    const std::vector<Material>& getMaterials() const noexcept;
+    const std::vector<TextureData>& getTexturesData() const noexcept;
 };

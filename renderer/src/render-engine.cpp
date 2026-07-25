@@ -6,7 +6,7 @@
 #include "render-target.hpp"
 #include "utils.hpp"
 
-RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0, 0xFFFFFFFF) {
+RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0, 0xFFFFFFFF), bvhBuilder(-1, 16) {
     std::clog << std::format("Compiling path tracing shader") << std::endl;
     pathTracingProgram = compileShader(utils::readFromFile("shaders/path-tracing.glsl"));
     std::clog << std::format("Compiling post processing shader") << std::endl;
@@ -52,8 +52,8 @@ GLuint RenderEngine::compileShader(const std::string& source) {
     return program;
 }
 
-void RenderEngine::pathTracing(RenderTarget& target, const Scene::MeshData& meshData, const Scene::Camera& camera,
-                               const glm::vec4& backgroundColor) {
+void RenderEngine::pathTracing(RenderTarget& target, const GPUData& gpuData, const Scene::Camera& camera,
+                               const glm::vec3 backgroundColor) {
     std::clog << std::format("===Path tracing started===") << std::endl;
 
     glUseProgram(pathTracingProgram);
@@ -65,7 +65,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene::MeshData& mesh
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, bvhNodesSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, bvhTrianglesSSBO);
 
-    glUniform1i(glGetUniformLocation(pathTracingProgram, "uCount"), meshData.vertexIndices.size() / 3);
+    glUniform1i(glGetUniformLocation(pathTracingProgram, "uCount"), gpuData.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uBackgroundColor"), backgroundColor.r, backgroundColor.g,
@@ -94,7 +94,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const Scene::MeshData& mesh
     glUseProgram(0);
 }
 
-void RenderEngine::fillGbuffer(RenderTarget& target, const Scene::MeshData& meshData, const Scene::Camera& camera) {
+void RenderEngine::fillGbuffer(RenderTarget& target, const GPUData& gpuData, const Scene::Camera& camera) {
     std::clog << std::format("===Filling gbuffer===") << std::endl;
     glUseProgram(gbufferProgram);
     glBindImageTexture(0, target.getNormalMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
@@ -105,7 +105,7 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const Scene::MeshData& mesh
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, materialIndexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, bvhNodesSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, bvhTrianglesSSBO);
-    glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), meshData.vertexIndices.size() / 3);
+    glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), gpuData.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
     glUniform1f(glGetUniformLocation(gbufferProgram, "uFov"), tan(camera.fov / 2.0f));
@@ -140,12 +140,12 @@ void RenderEngine::postProcess(RenderTarget& target) const {
     glUseProgram(0);
 }
 
-void RenderEngine::loadDataToGPU(const Scene::MeshData& meshData, const BVH& bvh) {
-    std::clog << "Loading geometry to GPU" << std::endl;
-    const auto& vertices = meshData.vertices;
-    const auto& vertexIndices = meshData.vertexIndices;
-    const auto& materials = meshData.materials;
-    const auto& materialIndices = meshData.materialIndices;
+void RenderEngine::createGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
+    std::clog << "Creating and filling buffers" << std::endl;
+    const auto& vertices = gpuData.vertices;
+    const auto& vertexIndices = gpuData.vertexIndices;
+    const auto& materials = gpuData.materials;
+    const auto& materialIndices = gpuData.materialIndices;
     const auto& bvhNodes = bvh.getNodes();
     const auto& bvhTriangles = bvh.getTriangles();
     std::clog << std::format("- Total triangles: {}", vertexIndices.size() / 3) << std::endl;
@@ -175,8 +175,7 @@ void RenderEngine::loadDataToGPU(const Scene::MeshData& meshData, const BVH& bvh
         throw std::runtime_error("failed to create materialsSSBO. Error: " + std::to_string(error));
     }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialSSBO);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, materials.size() * sizeof(Scene::Material), materials.data(),
-                 GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, materials.size() * sizeof(GPUMaterial), materials.data(), GL_STATIC_DRAW);
 
     glGenBuffers(1, &materialIndexSSBO);
     error = glGetError();
@@ -204,17 +203,81 @@ void RenderEngine::loadDataToGPU(const Scene::MeshData& meshData, const BVH& bvh
     glBufferData(GL_SHADER_STORAGE_BUFFER, bvhTriangles.size() * sizeof(int), bvhTriangles.data(), GL_STATIC_DRAW);
 }
 
-void RenderEngine::renderFrame(RenderTarget& target, const Scene::MeshData& meshData, const Scene::Camera& camera,
-                               const glm::vec4& backgroundColor, const BVH& bvh) {
+RenderEngine::GPUData RenderEngine::uploadSceneToGPU(const Scene& scene) {
+    std::clog << "Uploading scene to GPU" << std::endl;
+    GPUData data;
+
+    for (const auto& mesh : scene.getMeshes()) {
+        int indexOffset = data.vertices.size();
+        for (const auto& v : mesh.vertices) data.vertices.push_back(glm::vec4(v, 1.0));
+        for (const auto& uv : mesh.texCoords) data.texCoords.push_back(glm::vec4(uv, 1.0, 1.0));
+
+        for (const auto& primitive : mesh.primitives) {
+            for (int i = primitive.startVertexIndex; i < primitive.vertexIndicesCount + primitive.startVertexIndex;
+                 i++) {
+                data.vertexIndices.push_back(mesh.vertexIndices[i] + indexOffset);
+            }
+            data.materialIndices.push_back(primitive.materialId);
+        }
+    }
+    for (const auto& texture : scene.getTexturesData()) {
+        loadedTextures[texture.id] = loadTexture(texture);
+    }
+    for (const auto& material : scene.getMaterials()) {
+        GPUMaterial gpuMaterial;
+        gpuMaterial.albedo = glm::vec4(material.albedo, 1.0);
+        gpuMaterial.emission = glm::vec4(material.emission, 1.0);
+        gpuMaterial.metalness = material.metalness;
+        gpuMaterial.roughness = material.roughness;
+        gpuMaterial.transmission = material.transmission;
+        gpuMaterial.ior = material.ior;
+        gpuMaterial.albedoTextureID = loadedTextures[material.albedoTextureID];
+        data.materials.push_back(gpuMaterial);
+    }
+    return data;
+}
+
+GLuint RenderEngine::loadTexture(const Scene::TextureData& texture) {
+    if (loadedTextures.find(texture.id) != loadedTextures.end()) return loadedTextures[texture.id];
+    std::clog << std::format("Loading texture {} to GPU", texture.id);
+    if (texture.pixels.empty()) {
+        throw std::runtime_error("Failed to load texture. Texture has no data");
+    }
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    if (texture.isSRGB)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB_ALPHA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     texture.pixels.data());
+    else
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     texture.pixels.data());
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return textureID;
+}
+
+void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) {
     if (postProcessingProgram == 0) {
         throw std::runtime_error("Shader not compiled");
     }
     RenderTarget::ContextGuard context(target);
+    GPUData gpuData = uploadSceneToGPU(scene);
+    BVH bvh = bvhBuilder.build(gpuData.vertices, gpuData.vertexIndices);
+    auto camera = scene.getCamera();
+    auto backgroundColor = scene.getBackgroundColor();
+    createGPUBuffers(gpuData, bvh);
+    pathTracing(target, gpuData, camera, backgroundColor);
 
-    loadDataToGPU(meshData, bvh);
-    pathTracing(target, meshData, camera, backgroundColor);
-
-    fillGbuffer(target, meshData, camera);
+    fillGbuffer(target, gpuData, camera);
     std::clog << "===Denoising===" << std::endl;
     denoiser.denoise(target);
     postProcess(target);
