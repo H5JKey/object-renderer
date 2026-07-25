@@ -1,5 +1,7 @@
 #include "scene-loader.hpp"
 
+#include <stb_image.h>
+
 #include <filesystem>
 #include <format>
 #include <glm/glm.hpp>
@@ -54,9 +56,15 @@ Scene::Camera SceneLoader::loadCamera(const fastgltf::Camera::Perspective& gltfC
 
 Scene::Mesh SceneLoader::loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf::Asset& asset) const {
     Scene::Mesh mesh;
-    for (auto& primitive : gltfMesh.primitives) {
-        const auto* positionIt = primitive.findAttribute("POSITION");
-        if (positionIt == primitive.attributes.end()) {
+    for (auto& gltPrimitive : gltfMesh.primitives) {
+        Scene::Mesh::Primitive primitive;
+        if (gltPrimitive.materialIndex.has_value())
+            primitive.materialId = gltPrimitive.materialIndex.value();
+        else
+            primitive.materialId = 0;
+
+        const auto* positionIt = gltPrimitive.findAttribute("POSITION");
+        if (positionIt == gltPrimitive.attributes.end()) {
             throw std::runtime_error("Failed to find POSITION attribute");
         }
         const auto& positionAccessor = asset.accessors[positionIt->accessorIndex];
@@ -65,6 +73,7 @@ Scene::Mesh SceneLoader::loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf
         }
         size_t vertexCount = positionAccessor.count;
         size_t startVertex = mesh.vertices.size();
+
         mesh.vertices.resize(startVertex + vertexCount);
         fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(
             asset, positionAccessor, [&](fastgltf::math::fvec3 pos, std::size_t idx) {
@@ -72,11 +81,28 @@ Scene::Mesh SceneLoader::loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf
                 mesh.vertices[vertexIdx] = glm::vec4(pos.x(), pos.y(), pos.z(), 1.0f);
             });
 
-        if (!primitive.indicesAccessor.has_value()) {
+        const auto* texCoordIt = gltPrimitive.findAttribute("TEXCOORD_0");
+        if (texCoordIt != gltPrimitive.attributes.end()) {
+            const auto& texCoordAccessor = asset.accessors[texCoordIt->accessorIndex];
+            if (!texCoordAccessor.bufferViewIndex.has_value()) {
+                throw std::runtime_error("No value at bufferViewIndex");
+            }
+            size_t startTexCoord = mesh.texCoords.size();
+
+            mesh.texCoords.resize(startTexCoord + texCoordAccessor.count);
+            fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec2>(
+                asset, texCoordAccessor, [&](fastgltf::math::fvec2 uv, std::size_t idx) {
+                    size_t texIdx = startTexCoord + idx;
+                    mesh.texCoords[texIdx] = glm::vec4(uv.x(), uv.y(), 1.0f, 1.0f);
+                });
+        }
+        if (!gltPrimitive.indicesAccessor.has_value()) {
             throw std::runtime_error("No value at indicesAccessor");
         }
-        const auto& indexAccessor = asset.accessors[primitive.indicesAccessor.value()];
+        const auto& indexAccessor = asset.accessors[gltPrimitive.indicesAccessor.value()];
         size_t startIndex = mesh.vertexIndices.size();
+        primitive.startVertexIndex = startIndex;
+        primitive.vertexIndicesCount = indexAccessor.count;
         mesh.vertexIndices.resize(startIndex + indexAccessor.count);
 
         if (indexAccessor.componentType == fastgltf::ComponentType::UnsignedShort) {
@@ -92,9 +118,7 @@ Scene::Mesh SceneLoader::loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf
                 mesh.vertexIndices[startIndex + i] = tmp[i] + startVertex;
             }
         }
-        if (primitive.materialIndex.has_value()) {
-            mesh.materialId = primitive.materialIndex.value();
-        }
+        mesh.primitives.push_back(std::move(primitive));
     }
     return mesh;
 }

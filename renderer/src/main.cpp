@@ -12,13 +12,8 @@ int main(int argc, char* argv[]) {
     RenderEngine engine;
     std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(1600, 1200);
     SceneLoader loader;
-    Scene scene = loader.loadGltf("../scene.gltf");
-    scene.buildMeshData();
-    Scene::MeshData meshData = scene.getMeshData();
-
-    MedianBuilder builder(-1, 3);
-    BVH bvh = builder.build(meshData.vertices, meshData.vertexIndices);
-    engine.renderFrame(*egl, meshData, scene.getCamera(), scene.getbackgroundColor(), bvh);
+    Scene scene = loader.loadGltf(argv[1]);
+    engine.renderFrame(*egl, scene);
 
     auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());
     if (eglTarget) {
