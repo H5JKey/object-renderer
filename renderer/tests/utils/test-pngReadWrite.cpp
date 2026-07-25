@@ -1,20 +1,11 @@
 #include <gtest/gtest.h>
-#include <stb_image.h>
 
 #include <format>
 #include <stdexcept>
 #include <utils.hpp>
 
-void readPng(const std::filesystem::path& filename, int& width, int& height, int& channels,
-             std::vector<uint8_t>& result) {
-    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, 0);
-    if (!data) throw std::runtime_error(std::format("Failed to load file {}", filename.string()));
-    result.assign(data, data + width * height * channels);
-    stbi_image_free(data);
-};
-
 template <typename T>
-void testWriteToPng() {
+void testPngReadWrite() {
     std::vector<T> pixels;
     std::filesystem::path filename = "test.png";
     std::vector<uint8_t> expected;
@@ -41,7 +32,7 @@ void testWriteToPng() {
 
     int width, height, channels;
     std::vector<uint8_t> result;
-    EXPECT_NO_THROW(readPng(filename, width, height, channels, result));
+    EXPECT_NO_THROW(utils::readPng(filename, width, height, channels, result));
     EXPECT_EQ(result.size(), expected.size());
     EXPECT_EQ(width, 3);
     EXPECT_EQ(height, 1);
@@ -51,5 +42,5 @@ void testWriteToPng() {
     std::remove(filename.c_str());
 }
 
-TEST(WriteToPng, uint8_t) { testWriteToPng<uint8_t>(); }
-TEST(WriteToPng, float) { testWriteToPng<float>(); }
+TEST(PngReadWrite, uint8_t) { testPngReadWrite<uint8_t>(); }
+TEST(PngReadWrite, float) { testPngReadWrite<float>(); }

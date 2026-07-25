@@ -1,5 +1,6 @@
 #include "utils.hpp"
 
+#include <stb_image.h>
 #include <stb_image_write.h>
 
 #include <filesystem>
@@ -114,4 +115,14 @@ void utils::writeToPng(const std::vector<float>& pixels, int width, int height, 
     for (int i = 0; i < pixels.size(); i++)
         normalizedPixels[i] = static_cast<unsigned char>(std::min(std::max(pixels[i], 0.0f), 1.0f) * 255);
     stbi_write_png(path.c_str(), width, height, channels, normalizedPixels.data(), width * channels);
+}
+
+void utils::readPng(const std::filesystem::path& filename, int& width, int& height, int& channels,
+                    std::vector<uint8_t>& result) {
+    if (!std::filesystem::exists(filename))
+        throw std::runtime_error(std::format("Failed to find {} ", filename.string()));
+    uint8_t* data = stbi_load(filename.c_str(), &width, &height, &channels, 0);
+    if (!data) throw std::runtime_error(std::format("Failed to load file {}", filename.string()));
+    result.assign(data, data + width * height * channels);
+    stbi_image_free(data);
 }
