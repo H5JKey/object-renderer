@@ -2,6 +2,7 @@
 #include <glad/gl.h>
 
 #include <map>
+#include <print>
 #include <random>
 
 #include "bvh-builder.hpp"
@@ -10,11 +11,13 @@
 #include "glm/ext/vector_float4.hpp"
 #include "render-target.hpp"
 #include "scene.hpp"
-
 class RenderEngine {
     struct GPUMaterial {
         glm::vec4 albedo;
         glm::vec4 emission;
+        glm::vec4 attenuationColor;
+        float thicknessFactor;
+        float attenuationDistance;
         float metalness;
         float roughness;
         float transmission;
@@ -22,7 +25,7 @@ class RenderEngine {
         int albedoTextureID;
 
        private:
-        float padding[3];
+        float padding;
     };
 
     struct GPUData {

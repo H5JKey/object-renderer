@@ -79,6 +79,12 @@ Scene::Material SceneLoader::loadMaterial(const fastgltf::Material& gltfMaterial
     material.roughness = gltfMaterial.pbrData.roughnessFactor;
     material.ior = gltfMaterial.ior;
 
+    if (gltfMaterial.volume) {
+        material.attenuationColor = glm::make_vec4(gltfMaterial.volume->attenuationColor.data());
+        material.attenuationDistance = gltfMaterial.volume->attenuationDistance;
+        material.thicknessFactor = gltfMaterial.volume->thicknessFactor;
+    }
+
     material.transmission = 0.0f;
     if (gltfMaterial.transmission) {
         material.transmission = gltfMaterial.transmission->transmissionFactor;

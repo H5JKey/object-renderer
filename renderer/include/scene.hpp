@@ -3,7 +3,6 @@
 #include <glm/ext/vector_float4.hpp>
 #include <glm/glm.hpp>
 #include <vector>
-
 class SceneLoader;
 
 class Scene {
@@ -31,15 +30,21 @@ class Scene {
     struct Material {
         glm::vec3 albedo;
         glm::vec3 emission;
+        glm::vec3 attenuationColor;
+        float attenuationDistance;
+        float thicknessFactor;
         float metalness;
         float roughness;
         float transmission;
         float ior;
-        int albedoTextureID = -1;
+        int albedoTextureID;
 
         Material()
-            : albedo(glm::vec3(0.3)),
+            : albedo(glm::vec3(0.6, 0.6, 0.6)),
               emission(glm::vec3(0.0)),
+              thicknessFactor(0.0),
+              attenuationDistance(1.0),
+              attenuationColor(glm::vec3(0.0)),
               metalness(0.0),
               roughness(0.5),
               transmission(0.0),
