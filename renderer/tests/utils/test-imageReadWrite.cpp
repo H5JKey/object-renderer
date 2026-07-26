@@ -1,46 +1,64 @@
 #include <gtest/gtest.h>
 
-#include <format>
 #include <stdexcept>
 #include <utils.hpp>
 
 template <typename T>
-void testPngReadWrite() {
-    std::vector<T> pixels;
-    std::filesystem::path filename = "test.png";
+class ImageReadWriteTest : public ::testing::Test {
+   protected:
+    int width, height, channels;
+    int resultWidth, resultHeight, resultChannels;
+    std::vector<uint8_t> result;
     std::vector<uint8_t> expected;
-    size_t size;
+    std::vector<T> pixels;
+    std::filesystem::path path;
 
-    if constexpr (std::is_same_v<T, float>) {
-        pixels = {-0.5f, 0.0f, 0.5f, 1.0f, 1.5f, 2.0f, 0.2f, 0.5f, 0.8f};
+    void TearDown() override { std::filesystem::remove(path); }
+};
+
+using MyTypes = ::testing::Types<uint8_t, float>;
+TYPED_TEST_SUITE(ImageReadWriteTest, MyTypes);
+
+TYPED_TEST(ImageReadWriteTest, roundTripWriteRead) {
+    this->path = "test.png";
+    this->width = 3;
+    this->height = 1;
+    this->channels = 4;
+    if constexpr (std::is_same_v<TypeParam, float>) {
+        this->pixels = {-0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 1.5f, 2.0f, 1.0f, 0.2f, 0.5f, 0.8f, 0.5f};
+        this->expected = {0, 0, 127, 0, 255, 255, 255, 255, 51, 127, 204, 127};
     } else {
-        pixels = {0, 0, 128, 255, 255, 255, 51, 128, 204};
+        this->pixels = {0, 0, 128, 0, 255, 255, 255, 255, 51, 128, 204, 128};
+        this->expected = {0, 0, 128, 0, 255, 255, 255, 255, 51, 128, 204, 128};
     }
     /* Pixel data size mismatch */
-    EXPECT_THROW(utils::writeToPng(pixels, 3, 3, 3, filename), std::runtime_error);
-    EXPECT_THROW(utils::writeToPng(pixels, 3, 1, 4, filename), std::runtime_error);
-    EXPECT_THROW(utils::writeToPng(pixels, 1, 1, 3, filename), std::runtime_error);
+    EXPECT_THROW(utils::writeToPng(this->pixels, this->width + 1, this->height, this->channels, this->path),
+                 std::runtime_error);
+    EXPECT_THROW(utils::writeToPng(this->pixels, this->width, this->height + 1, this->channels, this->path),
+                 std::runtime_error);
+    EXPECT_THROW(utils::writeToPng(this->pixels, this->width, this->height, (this->channels == 3) ? 4 : 3, this->path),
+                 std::runtime_error);
 
-    if constexpr (std::is_same_v<T, float>) {
-        pixels = {-0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 1.5f, 2.0f, 1.0f, 0.2f, 0.5f, 0.8f, 0.5f};
-    } else {
-        pixels = {0, 0, 128, 0, 255, 255, 255, 255, 51, 128, 204, 128};
-    }
-    expected = {0, 0, 128, 0, 255, 255, 255, 255, 51, 128, 204, 128};
+    EXPECT_NO_THROW(utils::writeToPng(this->pixels, this->width, this->height, this->channels, this->path));
+    EXPECT_NO_THROW(
+        utils::readImage(this->path, this->resultWidth, this->resultHeight, this->resultChannels, this->result));
 
-    EXPECT_NO_THROW(utils::writeToPng(pixels, 3, 1, 4, filename));
-
-    int width, height, channels;
-    std::vector<uint8_t> result;
-    EXPECT_NO_THROW(utils::readImage(filename, width, height, channels, result));
-    EXPECT_EQ(result.size(), expected.size());
-    EXPECT_EQ(width, 3);
-    EXPECT_EQ(height, 1);
-    EXPECT_EQ(channels, 4);
-    for (int i = 0; i < result.size(); i++) EXPECT_NEAR(result[i], expected[i], 1);
-
-    std::remove(filename.c_str());
+    EXPECT_EQ(this->result.size(), this->pixels.size());
+    EXPECT_EQ(this->resultWidth, this->width);
+    EXPECT_EQ(this->resultHeight, this->height);
+    EXPECT_EQ(this->result.size(), this->expected.size());
+    for (int i = 0; i < this->result.size(); i++) EXPECT_NEAR(this->result[i], this->expected[i], 1);
 }
 
-TEST(PngReadWrite, uint8_t) { testPngReadWrite<uint8_t>(); }
-TEST(PngReadWrite, float) { testPngReadWrite<float>(); }
+TYPED_TEST(ImageReadWriteTest, emptyImageWriteThrows) {
+    this->path = "test.png";
+    this->width = 0;
+    this->height = 0;
+    this->channels = 4;
+    this->pixels = {};
+    this->expected = {};
+
+    /* Writing to empty file */
+    EXPECT_THROW(utils::writeToPng(this->pixels, this->width, this->height, this->channels, this->path),
+                 std::runtime_error);
+}

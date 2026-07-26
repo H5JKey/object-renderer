@@ -119,7 +119,7 @@ class BVHIntersectionsTest : public ::testing::Test {
     }
 };
 
-TEST_F(BVHIntersectionsTest, DifferentDepthLimits) {
+TEST_F(BVHIntersectionsTest, differentDepthLimits) {
     glm::vec3 origin(0.5, 0.5, 0.5);
     glm::vec3 direction(0, -1, 0);
     direction = glm::normalize(direction);
@@ -133,7 +133,7 @@ TEST_F(BVHIntersectionsTest, DifferentDepthLimits) {
     }
 }
 
-TEST_F(BVHIntersectionsTest, DifferentTriangleLimits) {
+TEST_F(BVHIntersectionsTest, differentTriangleLimits) {
     glm::vec3 origin(2, 1.8, 2);
     glm::vec3 direction(-1, -1, -1);
     direction = glm::normalize(direction);
@@ -147,7 +147,7 @@ TEST_F(BVHIntersectionsTest, DifferentTriangleLimits) {
     }
 }
 
-TEST_F(BVHIntersectionsTest, DifferentRays) {
+TEST_F(BVHIntersectionsTest, differentRaysIntersect) {
     MedianBuilder builder(-1, 3);
     BVH bvh = builder.build(vertices, vertexIndices);
     float R = 2;
@@ -168,7 +168,7 @@ TEST_F(BVHIntersectionsTest, DifferentRays) {
     }
 }
 
-TEST_F(BVHIntersectionsTest, DifferentRaysRotated) {
+TEST_F(BVHIntersectionsTest, differentRaysIntersectRotated) {
     rotate(glm::radians(30.f), glm::radians(60.f), 0);
     MedianBuilder builder(-1, 1);
     BVH bvh = builder.build(vertices, vertexIndices);

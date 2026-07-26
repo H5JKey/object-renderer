@@ -56,7 +56,7 @@ class BVHBuildingTest : public ::testing::Test {
     }
 };
 
-TEST_F(BVHBuildingTest, BuildingSingleTrianglePerNode) {
+TEST_F(BVHBuildingTest, buildsSingleTrianglePerNode) {
     MedianBuilder builder(-1, 1);
 
     BVH bvh = builder.build(vertices, vertexIndices);
@@ -66,7 +66,7 @@ TEST_F(BVHBuildingTest, BuildingSingleTrianglePerNode) {
     EXPECT_EQ(leaf, bvh.getTriangles().size());
 }
 
-TEST_F(BVHBuildingTest, BuildingDepthLimitOne) {
+TEST_F(BVHBuildingTest, buildsDepthLimitOne) {
     MedianBuilder builder(1, -1);
 
     BVH bvh = builder.build(vertices, vertexIndices);
@@ -74,7 +74,7 @@ TEST_F(BVHBuildingTest, BuildingDepthLimitOne) {
     BVHTraversal(bvh, 1, -1, leaf);
 }
 
-TEST_F(BVHBuildingTest, EmptyScene) {
+TEST_F(BVHBuildingTest, handlesEmptyScene) {
     std::vector<glm::vec4> vertices = {};
     std::vector<int> vertexIndices = {};
     MedianBuilder builder(-1, -1);
@@ -84,7 +84,7 @@ TEST_F(BVHBuildingTest, EmptyScene) {
     EXPECT_EQ(bvh.getTriangles().size(), 0);
 }
 
-TEST_F(BVHBuildingTest, InvalidVertexIndicies) {
+TEST_F(BVHBuildingTest, handlesInvalidVertexIndices) {
     std::vector<int> vertexIndices;
     std::vector<glm::vec4> vertices = {glm::vec4(0, 0, 0, 0), glm::vec4(0, 0, 1, 0), glm::vec4(0, 1, 0, 0)};
     MedianBuilder builder(-1, -1);
