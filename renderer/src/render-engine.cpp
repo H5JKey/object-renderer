@@ -67,7 +67,6 @@ void RenderEngine::pathTracing(RenderTarget& target, const GPUData& gpuData, con
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, bvhTrianglesSSBO);
     glBindTextureUnit(8, textureArray);
 
-    glUniform1i(glGetUniformLocation(pathTracingProgram, "uCount"), gpuData.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uBackgroundColor"), backgroundColor.r, backgroundColor.g,
@@ -110,7 +109,6 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const GPUData& gpuData, con
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, bvhTrianglesSSBO);
     glBindTextureUnit(9, textureArray);
 
-    glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), gpuData.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
     glUniform1f(glGetUniformLocation(gbufferProgram, "uFov"), tan(camera.fov / 2.0f));

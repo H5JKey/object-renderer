@@ -1,5 +1,9 @@
 #include <gtest/gtest.h>
+#include <stb_image.h>
+#include <stb_image_write.h>
 
+#include <cstddef>
+#include <cstdlib>
 #include <stdexcept>
 #include <utils.hpp>
 
@@ -40,13 +44,13 @@ TYPED_TEST(ImageReadWriteTest, roundTripWriteRead) {
                  std::runtime_error);
 
     EXPECT_NO_THROW(utils::writeToPng(this->pixels, this->width, this->height, this->channels, this->path));
-    EXPECT_NO_THROW(
+    ASSERT_NO_THROW(
         utils::readImage(this->path, this->resultWidth, this->resultHeight, this->resultChannels, this->result));
 
-    EXPECT_EQ(this->result.size(), this->pixels.size());
-    EXPECT_EQ(this->resultWidth, this->width);
-    EXPECT_EQ(this->resultHeight, this->height);
-    EXPECT_EQ(this->result.size(), this->expected.size());
+    ASSERT_EQ(this->resultWidth, this->width);
+    ASSERT_EQ(this->resultHeight, this->height);
+    ASSERT_EQ(this->resultChannels, this->channels);
+    ASSERT_EQ(this->result.size(), this->expected.size());
     for (int i = 0; i < this->result.size(); i++) EXPECT_NEAR(this->result[i], this->expected[i], 1);
 }
 
@@ -61,4 +65,59 @@ TYPED_TEST(ImageReadWriteTest, emptyImageWriteThrows) {
     /* Writing to empty file */
     EXPECT_THROW(utils::writeToPng(this->pixels, this->width, this->height, this->channels, this->path),
                  std::runtime_error);
+}
+
+TEST(ImageReadWriteTest, readFromUnexistentFileThrows) {
+    std::vector<uint8_t> result;
+    int width, height, channels;
+    EXPECT_THROW(utils::readImage("non/existent.png", width, height, channels, result), std::runtime_error);
+}
+
+TEST(ImageReadWriteTest, readRealImageWorks) {
+    std::filesystem::path path = "tests/data/test-image.jpg";
+    int width = 250;
+    int height = 250;
+    int channels = 3;
+    int resultWidth, resultHeight, resultChannels;
+    std::vector<uint8_t> result;
+
+    ASSERT_NO_THROW(utils::readImage(path, resultWidth, resultHeight, resultChannels, result));
+
+    ASSERT_EQ(resultWidth, width);
+    ASSERT_EQ(resultHeight, height);
+    ASSERT_EQ(resultChannels, channels);
+}
+
+TEST(ImageReadWriteTest, readImageFromMemoryWorks) {
+    std::filesystem::path path = "tests/data/test-image.jpg";
+    int width;
+    int height;
+    int channels;
+    int resultWidth, resultHeight, resultChannels;
+    std::vector<uint8_t> result;
+    std::vector<uint8_t> resultRGB;
+    std::vector<uint8_t> expected;
+    int size;
+    std::vector<std::byte> memoryBuffer;
+
+    ASSERT_NO_THROW(utils::readImage(path, width, height, channels, expected));
+    ASSERT_NE(stbi_write_png_to_func(
+                  [](void* context, void* data, int size) {
+                      auto* vec = static_cast<std::vector<std::byte>*>(context);
+                      std::byte* bytes = static_cast<std::byte*>(data);
+                      vec->insert(vec->end(), bytes, bytes + size);
+                  },
+                  &memoryBuffer, width, height, channels, expected.data(), width * channels),
+              0);
+
+    ASSERT_NO_THROW(utils::readImageFromMemory(memoryBuffer.data(), memoryBuffer.size(), resultWidth, resultHeight,
+                                               resultChannels, resultRGB));
+    ASSERT_EQ(resultWidth, width);
+    ASSERT_EQ(resultHeight, height);
+
+    /*Converts result to rgb, because of utils::readImageFromMemory always return result as RGBA*/
+    utils::rgbaToRgb(resultRGB, result);
+
+    ASSERT_EQ(result.size(), expected.size());
+    for (int i = 0; i < result.size(); i++) EXPECT_EQ(result[i], expected[i]);
 }

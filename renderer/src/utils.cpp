@@ -3,6 +3,7 @@
 #include <stb_image.h>
 #include <stb_image_write.h>
 
+#include <cstddef>
 #include <filesystem>
 #include <format>
 #include <fstream>
@@ -26,12 +27,7 @@ void utils::rgbaToRgb(const std::vector<float>& rgba, std::vector<float>& rgb) {
     if (rgba.size() % 4 != 0) {
         throw std::runtime_error("RGBA buffer size must be multiple of 4");
     }
-    if (rgb.size() % 3 != 0) {
-        throw std::runtime_error("RGB buffer size must be multiple of 3");
-    }
-    if (rgba.size() / 4 != rgb.size() / 3) {
-        throw std::runtime_error("Rgba and rgb buffers size mismatch");
-    }
+    rgb.resize((rgba.size() / 4) * 3);
     size_t pixels = rgba.size() / 4;
     for (int i = 0; i < pixels; i++) {
         rgb[i * 3] = rgba[i * 4];
@@ -41,15 +37,10 @@ void utils::rgbaToRgb(const std::vector<float>& rgba, std::vector<float>& rgb) {
 }
 
 void utils::rgbToRgba(const std::vector<float>& rgb, std::vector<float>& rgba) {
-    if (rgba.size() % 4 != 0) {
-        throw std::runtime_error("RGBA buffer size must be multiple of 4");
-    }
     if (rgb.size() % 3 != 0) {
         throw std::runtime_error("RGB buffer size must be multiple of 3");
     }
-    if (rgba.size() / 4 != rgb.size() / 3) {
-        throw std::runtime_error("Rgba and rgb buffers size mismatch");
-    }
+    rgba.resize((rgb.size() / 3) * 4);
     size_t pixels = rgb.size() / 3;
     for (int i = 0; i < pixels; i++) {
         rgba[i * 4] = rgb[i * 3];
@@ -63,12 +54,7 @@ void utils::rgbaToRgb(const std::vector<uint8_t>& rgba, std::vector<uint8_t>& rg
     if (rgba.size() % 4 != 0) {
         throw std::runtime_error("RGBA buffer size must be multiple of 4");
     }
-    if (rgb.size() % 3 != 0) {
-        throw std::runtime_error("RGB buffer size must be multiple of 3");
-    }
-    if (rgba.size() / 4 != rgb.size() / 3) {
-        throw std::runtime_error("RGBA and RGB buffers size mismatch");
-    }
+    rgb.resize((rgba.size() / 4) * 3);
     size_t pixels = rgba.size() / 4;
     for (int i = 0; i < pixels; i++) {
         rgb[i * 3] = rgba[i * 4];
@@ -78,15 +64,10 @@ void utils::rgbaToRgb(const std::vector<uint8_t>& rgba, std::vector<uint8_t>& rg
 }
 
 void utils::rgbToRgba(const std::vector<uint8_t>& rgb, std::vector<uint8_t>& rgba) {
-    if (rgba.size() % 4 != 0) {
-        throw std::runtime_error("RGBA buffer size must be multiple of 4");
-    }
     if (rgb.size() % 3 != 0) {
         throw std::runtime_error("RGB buffer size must be multiple of 3");
     }
-    if (rgba.size() / 4 != rgb.size() / 3) {
-        throw std::runtime_error("RGBA and RGB buffers size mismatch");
-    }
+    rgba.resize((rgb.size() / 3) * 4);
     size_t pixels = rgb.size() / 3;
     for (int i = 0; i < pixels; i++) {
         rgba[i * 4] = rgb[i * 3];
@@ -98,6 +79,8 @@ void utils::rgbToRgba(const std::vector<uint8_t>& rgb, std::vector<uint8_t>& rgb
 
 void utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels,
                        const std::filesystem::path& path) {
+    if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
+
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
         throw std::runtime_error("Pixel data size mismatch");
     }
@@ -107,6 +90,8 @@ void utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height
 
 void utils::writeToPng(const std::vector<float>& pixels, int width, int height, int channels,
                        const std::filesystem::path& path) {
+    if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
+
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
         throw std::runtime_error("Pixel data size mismatch");
     }
