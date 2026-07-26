@@ -253,7 +253,6 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
 }
 
 /* Add plane for better ligting visualization*/
-#include <print>
 void SceneLoader::addPlane(Scene& scene, float Ylevel) {
     Scene::Mesh planeMesh;
     planeMesh.vertices = {glm::vec3(-100.0f, Ylevel, 100.0f), glm::vec3(-100.0f, Ylevel, -100.0f),

@@ -40,7 +40,7 @@ class Scene {
         int albedoTextureID;
 
         Material()
-            : albedo(glm::vec3(0.6, 0.6, 0.6)),
+            : albedo(glm::vec3(0.3f, 0.45f, 0.3f)),
               emission(glm::vec3(0.0)),
               thicknessFactor(0.0),
               attenuationDistance(1.0),

@@ -6,7 +6,7 @@ Scene::Scene() {
     camera.origin = glm::vec3(-100.0, 120.0, 50);
     camera.lookAt = glm::vec3(-0.0, 0.0, 0.0);
     camera.fov = 1.57;
-    backgroundColor = glm::vec3(0.4f, 0.4f, 0.4f);
+    backgroundColor = glm::vec3(0.3f, 0.3f, 0.45f);
 };
 
 Scene::Camera Scene::getCamera() const noexcept { return camera; }

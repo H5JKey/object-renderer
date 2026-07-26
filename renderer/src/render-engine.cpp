@@ -65,10 +65,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const GPUData& gpuData, con
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, materialIndexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, bvhNodesSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, bvhTrianglesSSBO);
-
-    for (int i = 0; i < loadedTextures.size(); i++) {
-        glBindTextureUnit(i + 8, loadedTextures[i]);
-    }
+    glBindTextureUnit(8, textureArray);
 
     glUniform1i(glGetUniformLocation(pathTracingProgram, "uCount"), gpuData.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(pathTracingProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
@@ -111,9 +108,8 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const GPUData& gpuData, con
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, materialIndexSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, bvhNodesSSBO);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 8, bvhTrianglesSSBO);
-    for (int i = 0; i < loadedTextures.size(); i++) {
-        glBindTextureUnit(i + 9, loadedTextures[i]);
-    }
+    glBindTextureUnit(9, textureArray);
+
     glUniform1i(glGetUniformLocation(gbufferProgram, "uCount"), gpuData.vertexIndices.size() / 3);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
@@ -149,7 +145,7 @@ void RenderEngine::postProcess(RenderTarget& target) const {
     glUseProgram(0);
 }
 
-void RenderEngine::createGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
+void RenderEngine::uploadGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
     std::clog << "Creating and filling buffers" << std::endl;
     const auto& vertices = gpuData.vertices;
     const auto& texCoords = gpuData.texCoords;
@@ -221,8 +217,8 @@ void RenderEngine::createGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
     glBufferData(GL_SHADER_STORAGE_BUFFER, bvhTriangles.size() * sizeof(int), bvhTriangles.data(), GL_STATIC_DRAW);
 }
 
-RenderEngine::GPUData RenderEngine::uploadSceneToGPU(const Scene& scene) {
-    std::clog << "Uploading scene to GPU" << std::endl;
+RenderEngine::GPUData RenderEngine::convertSceneToGPUData(const Scene& scene) {
+    std::clog << "Converting scene to GPU data" << std::endl;
     GPUData data;
     for (const auto& mesh : scene.getMeshes()) {
         int indexOffset = data.vertices.size();
@@ -239,9 +235,7 @@ RenderEngine::GPUData RenderEngine::uploadSceneToGPU(const Scene& scene) {
             }
         }
     }
-    for (const auto& texture : scene.getTexturesData()) {
-        loadedTextures[texture.id] = loadTexture(texture);
-    }
+
     for (const auto& material : scene.getMaterials()) {
         GPUMaterial gpuMaterial;
         gpuMaterial.albedo = glm::vec4(material.albedo, 1.0);
@@ -259,28 +253,39 @@ RenderEngine::GPUData RenderEngine::uploadSceneToGPU(const Scene& scene) {
     return data;
 }
 
-GLuint RenderEngine::loadTexture(const Scene::TextureData& texture) {
-    if (loadedTextures.find(texture.id) != loadedTextures.end()) return loadedTextures[texture.id];
-    std::clog << std::format("Loading texture {} to GPU", texture.id) << std::endl;
-    if (texture.pixels.empty()) {
-        throw std::runtime_error("Failed to load texture. Texture has no data");
+void RenderEngine::loadTextures(const std::vector<Scene::TextureData>& textures) {
+    int maxWidth = 0;
+    int maxHeight = 0;
+    for (const auto& texture : textures) {
+        maxWidth = std::max(maxWidth, texture.width);
+        maxHeight = std::max(maxHeight, texture.height);
     }
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    if (textureArray != 0) {
+        glDeleteTextures(1, &textureArray);
+        textureArray = 0;
+    }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.width, texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                 texture.pixels.data());
+    glGenTextures(1, &textureArray);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
 
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, maxWidth, maxHeight, textures.size());
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    for (const auto& texture : textures) {
+        std::clog << std::format("Loading texture {} to GPU", texture.id) << std::endl;
+        if (texture.pixels.empty()) {
+            throw std::runtime_error("Failed to load texture. Texture has no data");
+        }
+        int layer = loadedTextures.size();
+        loadedTextures[texture.id] = layer;
 
-    return textureID;
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, texture.width, texture.height, 1, GL_RGBA,
+                        GL_UNSIGNED_BYTE, texture.pixels.data());
+    }
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
 void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) {
@@ -288,11 +293,12 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) {
         throw std::runtime_error("Shader not compiled");
     }
     RenderTarget::ContextGuard context(target);
-    GPUData gpuData = uploadSceneToGPU(scene);
+    GPUData gpuData = convertSceneToGPUData(scene);
+    loadTextures(scene.getTexturesData());
     BVH bvh = bvhBuilder.build(gpuData.vertices, gpuData.vertexIndices);
     auto camera = scene.getCamera();
     auto backgroundColor = scene.getBackgroundColor();
-    createGPUBuffers(gpuData, bvh);
+    uploadGPUBuffers(gpuData, bvh);
     pathTracing(target, gpuData, camera, backgroundColor);
 
     fillGbuffer(target, gpuData, camera);
@@ -309,4 +315,9 @@ RenderEngine::~RenderEngine() {
     glDeleteBuffers(1, &bvhNodesSSBO);
     glDeleteBuffers(1, &bvhTrianglesSSBO);
     glDeleteBuffers(1, &texCoordSSBO);
+    glDeleteTextures(1, &textureArray);
+
+    glDeleteProgram(pathTracingProgram);
+    glDeleteProgram(postProcessingProgram);
+    glDeleteProgram(gbufferProgram);
 }
