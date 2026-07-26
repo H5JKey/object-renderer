@@ -6,12 +6,14 @@ layout(rgba32f, binding = 1) uniform writeonly image2D albedoMap;
 struct Material {
     vec4 albedo;
     vec4 emission;
+    vec4 attenuationColor;
+    float thicknessFactor;
+    float attenuationDistance;
     float metalness;
     float roughness;
     float transmission;
     float ior;
     int albedoTextureID;
-     float padding[3];
 };
 
 

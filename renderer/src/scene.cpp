@@ -3,10 +3,10 @@
 #include <print>
 
 Scene::Scene() {
-    camera.origin = glm::vec3(-2.0, -2.0, 1);
-    camera.lookAt = glm::vec3(-0.0, 0.0, 0.6);
+    camera.origin = glm::vec3(-100.0, 120.0, 50);
+    camera.lookAt = glm::vec3(-0.0, 0.0, 0.0);
     camera.fov = 1.57;
-    backgroundColor = glm::vec3(0.7f, 0.7f, 1.0f);
+    backgroundColor = glm::vec3(0.4f, 0.4f, 0.4f);
 };
 
 Scene::Camera Scene::getCamera() const noexcept { return camera; }

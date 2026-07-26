@@ -82,7 +82,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const GPUData& gpuData, con
     int groupsX = (target.getWidth() + 15) / 16;
     int groupsY = (target.getHeight() + 15) / 16;
 
-    const int samples = 1;
+    const int samples = 40;
     for (int i = 0; i < samples; i++) {
         if (i % 5 == 0) std::clog << std::format("{}/{}", i, samples) << std::endl;
         glUniform1ui(glGetUniformLocation(pathTracingProgram, "uSeed"), uniformDistr(gen));
@@ -224,15 +224,10 @@ void RenderEngine::createGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
 RenderEngine::GPUData RenderEngine::uploadSceneToGPU(const Scene& scene) {
     std::clog << "Uploading scene to GPU" << std::endl;
     GPUData data;
-
     for (const auto& mesh : scene.getMeshes()) {
         int indexOffset = data.vertices.size();
         for (const auto& v : mesh.vertices) data.vertices.push_back(glm::vec4(v, 1.0));
-        if (mesh.texCoords.empty())
-            for (size_t i = 0; i < mesh.vertices.size(); i++)
-                data.texCoords.push_back(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-        else
-            for (const auto& uv : mesh.texCoords) data.texCoords.push_back(glm::vec4(uv.x, uv.y, 1.0f, 1.0f));
+        for (const auto& uv : mesh.texCoords) data.texCoords.push_back(glm::vec4(uv.x, uv.y, 1.0f, 1.0f));
 
         for (const auto& primitive : mesh.primitives) {
             for (int i = primitive.startVertexIndex; i < primitive.vertexIndicesCount + primitive.startVertexIndex;
@@ -252,6 +247,9 @@ RenderEngine::GPUData RenderEngine::uploadSceneToGPU(const Scene& scene) {
         gpuMaterial.albedo = glm::vec4(material.albedo, 1.0);
         gpuMaterial.emission = glm::vec4(material.emission, 1.0);
         gpuMaterial.metalness = material.metalness;
+        gpuMaterial.thicknessFactor = material.thicknessFactor;
+        gpuMaterial.attenuationColor = glm::vec4(material.attenuationColor, 1.0);
+        gpuMaterial.attenuationDistance = material.attenuationDistance;
         gpuMaterial.roughness = material.roughness;
         gpuMaterial.transmission = material.transmission;
         gpuMaterial.ior = material.ior;
