@@ -333,7 +333,8 @@ vec3 getAlbedo(Material material, vec2 texCoord) {
 }
 
 vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
-    vec3 color = vec3(0,0,0);
+    float pathDistance = 0;
+    bool insideTransparent = false;
     vec3 throughput = vec3(1.0);
     const int bounces = 8;
     for (int i=0; i<bounces; i++) {
@@ -367,6 +368,9 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
         if (material.metalness > 0.0) {
             if (material.roughness < 0.01) {
                 throughput *= schlickFresnel(-direction, hit.normal, F0);
+                if (!insideTransparent)
+                    pathDistance = 0.0;
+                pathDistance+=distance(hit.position, origin);
                 origin = hit.position + hit.normal * 0.001;
                 direction = reflect(direction, hit.normal);
                 continue;
@@ -376,14 +380,21 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
             vec3 fr = (D * F * G) / (4 * dot(N,V) * dot(N, L));
             float pdf = D * dot(N,H) / (4 * dot(V,H));
             throughput *= fr * dot (N, L) / pdf;
-            origin = hit.position + N * 0.001; 
+            if (!insideTransparent)
+                pathDistance = 0.0;
+            pathDistance+=distance(hit.position, origin);
+            origin = hit.position + N * 0.001;
             direction = L;
+            continue;
         }
         else {
             seed = pcg(seed+2);
             float r = random(seed);
             if (r < F.x) {
                 if (material.roughness < 0.01) {
+                    if (!insideTransparent)
+                        pathDistance = 0.0;
+                    pathDistance+=distance(hit.position, origin);
                     origin = hit.position + N * 0.001;
                     direction = reflect(direction, N);
                     throughput *= getAlbedo(material, hit.texCoord) / F.x;
@@ -394,7 +405,10 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
                 vec3 fr = (D * F * G) / (4 * dot(N,V) * dot(N, L));
                 float pdf = D * dot(N,H) / (4 * dot(V,H));
                 throughput *= fr * dot (N, L) / (pdf * F.x);
-                origin = hit.position + hit.normal * 0.001; 
+                if (!insideTransparent)
+                    pathDistance = 0.0;
+                pathDistance+=distance(hit.position, origin);
+                origin = hit.position + hit.normal * 0.001;
                 direction = L;
             }
             else {
@@ -408,12 +422,24 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
                     if (length(T) == 0.0) {
                         direction = reflect(direction, N);
                         origin = hit.position + N * 0.001;
-                        throughput *= (material.transmission * material.transmission) / (1 - F.x);
+                       if (!insideTransparent)
+                            pathDistance = 0.0;
+                        pathDistance+=distance(hit.position, origin);
                     }
                     else {
+                        pathDistance = distance(origin, hit.position);
                         direction = T;
                         origin = hit.position - N * 0.001;
-                        throughput *= getAlbedo(material, hit.texCoord) / (1 - F.x);
+                        if (!frontFace) {
+                            vec3 attenuation = exp(-material.attenuationColor.rgb * material.attenuationDistance * material.thicknessFactor * pathDistance);
+                            throughput *= attenuation / (1 - F.x);
+                            insideTransparent = false;
+                            pathDistance = 0.0;
+                        }
+                        else {
+                            insideTransparent = true;
+                            pathDistance = 0.0;
+                        }
                     }
                 }
                 else {
@@ -422,6 +448,9 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
                         N = -N;
                     }
                     direction = cosineHemisphere(seed, N);
+                    if (!insideTransparent)
+                        pathDistance = 0.0;
+                    pathDistance+=distance(hit.position, origin);
                     origin = hit.position + N * 0.001;
                     throughput *= getAlbedo(material, hit.texCoord) / (1 - F.x);
                 }
