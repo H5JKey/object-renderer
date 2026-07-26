@@ -10,7 +10,7 @@
 int main(int argc, char* argv[]) {
     TargetManager::init();
     RenderEngine engine;
-    std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(400, 300);
+    std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(1600, 1200);
     SceneLoader loader;
     Scene scene = loader.loadGltf(argv[1]);
     loader.addPlane(scene);
