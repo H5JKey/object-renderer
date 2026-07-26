@@ -8,6 +8,7 @@
 #include "utils.hpp"
 
 int main(int argc, char* argv[]) {
+    if (argc != 2) return EXIT_FAILURE;
     TargetManager::init();
     RenderEngine engine;
     std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(1600, 1200);

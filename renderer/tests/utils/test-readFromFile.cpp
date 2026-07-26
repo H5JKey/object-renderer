@@ -6,9 +6,6 @@
 #include "utils.hpp"
 
 TEST(FileReadTest, roundTripReadWrite) {
-    /* Failed to open file. Path: non/existent/file.txt*/
-    EXPECT_THROW(utils::readFromFile("non/existent/file.txt"), std::runtime_error);
-
     std::string text = R"(
     #include <iostream>
 
@@ -28,4 +25,9 @@ TEST(FileReadTest, roundTripReadWrite) {
     EXPECT_EQ(result, text);
 
     std::remove("test.txt");
+}
+
+TEST(FileReadTest, readFromUnexistentFileThrows) {
+    /* Failed to open file. Path: non/existent/file.txt*/
+    EXPECT_THROW(utils::readFromFile("non/existent/file.txt"), std::runtime_error);
 }

@@ -55,7 +55,6 @@ layout(std430, binding = 8) buffer bvhTrianglesBuffer {
 layout(binding = 9) uniform sampler2DArray textureArray;
 
 
-uniform int uCount;
 uniform vec3 uOrigin;
 uniform float uFov;
 uniform vec3 uLookAt;

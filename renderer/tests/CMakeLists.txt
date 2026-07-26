@@ -30,6 +30,14 @@ target_link_libraries(test PRIVATE
     GTest::gtest_main
 )
 
+add_custom_command(
+    TARGET test POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/tests/data
+        ${CMAKE_BINARY_DIR}/tests/data
+    COMMENT "Copying tests data to build directory"
+)
+
 include(GoogleTest)
 add_test(NAME test COMMAND test)
 gtest_discover_tests(test)
