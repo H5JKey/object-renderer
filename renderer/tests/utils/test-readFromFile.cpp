@@ -5,7 +5,7 @@
 
 #include "utils.hpp"
 
-TEST(Utils, ReadFromFile) {
+TEST(FileReadTest, roundTripReadWrite) {
     /* Failed to open file. Path: non/existent/file.txt*/
     EXPECT_THROW(utils::readFromFile("non/existent/file.txt"), std::runtime_error);
 
