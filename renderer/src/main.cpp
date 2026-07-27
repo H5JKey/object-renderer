@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(1600, 1200);
     SceneLoader loader;
     Scene scene = loader.loadGltf(argv[1]);
-    loader.addPlane(scene);
+    // loader.addPlane(scene);
     engine.renderFrame(*egl, scene);
 
     auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());

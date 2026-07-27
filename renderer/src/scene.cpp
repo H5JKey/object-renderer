@@ -3,8 +3,8 @@
 #include <print>
 
 Scene::Scene() {
-    camera.origin = glm::vec3(-100.0, 120.0, 50);
-    camera.lookAt = glm::vec3(-0.0, 0.0, 0.0);
+    camera.origin = glm::vec3(2.0, 3.0, 0.0);
+    camera.lookAt = glm::vec3(2.0, 0.0, 0.0);
     camera.fov = 1.57;
     backgroundColor = glm::vec3(0.3f, 0.3f, 0.45f);
 };

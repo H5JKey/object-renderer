@@ -220,7 +220,7 @@ RenderEngine::GPUData RenderEngine::convertSceneToGPUData(const Scene& scene) {
     GPUData data;
     for (const auto& mesh : scene.getMeshes()) {
         int indexOffset = data.vertices.size();
-        for (const auto& v : mesh.vertices) data.vertices.push_back(glm::vec4(v, 1.0));
+        for (const auto& v : mesh.vertices) data.vertices.push_back(mesh.transform * glm::vec4(v, 1.0));
         for (const auto& uv : mesh.texCoords) data.texCoords.push_back(glm::vec4(uv.x, uv.y, 1.0f, 1.0f));
 
         for (const auto& primitive : mesh.primitives) {
