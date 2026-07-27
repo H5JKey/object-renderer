@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import StrEnum
 
 USER_SURNAME_MIN_LENGTH = 3
 USER_SURNAME_MAX_LENGTH = 20
@@ -17,6 +18,10 @@ USER_PASSWORD_MAX_LENGTH = 40
 
 USER_ENCRYPTED_PASSWORD_MAX_LENGTH = 128
 
+RENDER_PROJECT_NAME_MIN_LENGTH = 5
+RENDER_PROJECT_NAME_MAX_LENGTH = 30
+RENDER_PROJECT_DESCRIPTION_MAX_LENGTH = 512
+
 
 FILE_BUCKET_LENGTH = 25
 FILE_KEY_LENGTH = 128
@@ -27,6 +32,16 @@ TOKEN_TYPE = "type"
 BEARER_TOKEN_TYPE = "Bearer"
 ACCESS_TOKEN_FIELD = "access"
 REFRESH_TOKEN_FIELD = "refresh"
+
+
+class RenderStatus(StrEnum):
+    rendering = "rendering"
+    completed = "completed"
+
+
+class ProjectVisibility(StrEnum):
+    public = "public"
+    private = "private"
 
 
 @dataclass
