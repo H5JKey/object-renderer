@@ -43,10 +43,6 @@ EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config
     std::clog << std::format("EGl target created") << std::endl;
 }
 
-void EglTarget::output() const {
-    utils::writeToPng(getBufferData<uint8_t>(getOutputTexture()), width, height, 4, "output.png");
-}
-
 void EglTarget::makeCurrent() const {
     eglMakeCurrent(display, surface, surface, context);
     EGLint error = eglGetError();

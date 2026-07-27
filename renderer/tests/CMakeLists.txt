@@ -15,6 +15,7 @@ add_executable(test
     bvh/test-building.cpp
     bvh/test-intersections.cpp
     scene-loader/test-scene-loader.cpp
+    renderer-pipeline/test-renderer-pipeline.cpp
     test-main.cpp
 )
 
