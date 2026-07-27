@@ -6,7 +6,7 @@ class RenderProjectNotFoundError(NotFoundError):
     Ошибка, связанная с ненахождением проекта.
     """
 
-    def __init__(self, detail) -> None:
+    def __init__(self, detail: str) -> None:
         super().__init__(detail)
 
 
