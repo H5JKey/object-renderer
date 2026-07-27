@@ -4,7 +4,7 @@ from fastapi import Depends
 from schemas.auth import LoginRequest
 from services.auth import AuthService
 from services.file_uploader import FileUploader
-from services.renderservice import RenderService
+from services.render import RenderService
 from services.user import UserService
 
 from dependencies.auth import (

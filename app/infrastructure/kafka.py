@@ -1,8 +1,8 @@
 import asyncio
 from collections.abc import Callable
 
-from confluent_kafka import Producer
-from core.interfaces.kafka import KafkaProducer
+from confluent_kafka import Consumer, Producer
+from core.interfaces.kafka import KafkaConsumer, KafkaProducer
 
 
 class ConfluentKafkaProducer(KafkaProducer):
@@ -34,3 +34,17 @@ class ConfluentKafkaProducer(KafkaProducer):
 
     async def flush(self) -> None:
         await asyncio.to_thread(self._producer.flush)
+
+
+class ConfluentKafkaConsumer(KafkaConsumer):
+    def __init__(
+        self,
+        config: dict,  # type:ignore[type-arg]
+    ) -> None:
+        self._consumer = Consumer(config)
+
+    def subscribe(self, topics: list[str]) -> None:
+        self._consumer.subscribe(topics=topics)
+
+    async def poll(self, timeout: int = 0) -> None:  # noqa: ASYNC109
+        await asyncio.to_thread(self._consumer.poll, timeout)

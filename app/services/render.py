@@ -12,5 +12,5 @@ class RenderService:
     async def create_render(self, create_render_data: RenderCreate) -> None:
         render_data = create_render_data.model_dump()
         serialized_value = json.dumps(render_data)
-        self.producer.produce(topic=self.topic, value=serialized_value)
+        self.producer.produce(topic=self.topic, value=serialized_value)  # type: ignore[call-arg]
         await self.producer.flush()

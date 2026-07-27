@@ -10,7 +10,7 @@ from repositories.file import FileRepository
 from repositories.user import UserRepository
 from services.auth import AuthService
 from services.file_uploader import FileUploader
-from services.renderservice import RenderService
+from services.render import RenderService
 from services.user import UserService
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -80,13 +80,13 @@ async def get_user_service(
     yield user_service
 
 
-def get_producer_config() -> dict:
+def get_producer_config() -> dict:  # type: ignore[type-arg]
     config = {"bootstrap.servers": "kafka:9092"}
     return config
 
 
 async def get_confluent_kafka_producer(
-    config: Annotated[
+    config: Annotated[  # type: ignore[type-arg]
         dict,
         Depends(get_producer_config),
     ],
