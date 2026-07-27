@@ -81,8 +81,23 @@ std::shared_ptr<RenderTarget> TargetManager::createEGLTarget(int width, int heig
 
 TargetManager::~TargetManager() {
     if (initialized) {
-        eglTerminate(display);
-        display = EGL_NO_DISPLAY;
+        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+        if (dummySurface != EGL_NO_SURFACE) {
+            eglDestroySurface(display, dummySurface);
+            dummySurface = EGL_NO_SURFACE;
+        }
+
+        if (context != EGL_NO_CONTEXT) {
+            eglDestroyContext(display, context);
+            context = EGL_NO_CONTEXT;
+        }
+
+        if (display != EGL_NO_DISPLAY) {
+            eglTerminate(display);
+            display = EGL_NO_DISPLAY;
+        }
+
         initialized = false;
         std::clog << std::format("EGL released") << std::endl;
     }

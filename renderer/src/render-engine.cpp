@@ -150,6 +150,7 @@ GLuint RenderEngine::compileShader(const std::string& source) {
 
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success) {
+        glDeleteShader(shader);
         throw std::runtime_error("Program linking failed");
     }
 

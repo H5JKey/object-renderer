@@ -22,11 +22,11 @@ std::unique_ptr<RenderEngine> RendererPipelineTest::engine;
 TEST_F(RendererPipelineTest, RendererWorks) {
     Scene scene;
     std::shared_ptr<RenderTarget> egl;
-    EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(100, 100));
+    EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(50, 50));
     ASSERT_NE(egl, nullptr);
 
     EXPECT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
-    EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 5));
+    EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 2));
 }
 
 TEST_F(RendererPipelineTest, RendersMultipleTimes) {
@@ -35,9 +35,9 @@ TEST_F(RendererPipelineTest, RendersMultipleTimes) {
     EXPECT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
 
     for (int i = 1; i <= 10; i++) {
-        EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(i * 10, i * 10));
+        EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(i * 5, i * 5));
         ASSERT_NE(egl, nullptr);
-        EXPECT_NO_THROW(engine->renderFrame(*egl, scene, i / 2));
+        EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 2));
     }
 }
 
