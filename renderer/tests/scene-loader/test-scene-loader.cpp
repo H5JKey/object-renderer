@@ -16,28 +16,79 @@ TEST(SceneLoaderTest, throwsOnInvalidFile) {
     /* Failed to load data/test-image.png */
     EXPECT_THROW(loader.loadGltf("tests/data/test-image.jpg"), std::runtime_error);
 }
-#include <print>
+
 TEST(SceneLoaderTest, loadSceneCorrectly) {
     SceneLoader loader;
 
     Scene scene;
     EXPECT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
 
+    /* Testing geometry */
     const auto& meshes = scene.getMeshes();
     ASSERT_EQ(meshes.size(), 1);
     const auto& mesh = meshes[0];
 
-    std::vector<glm::vec3> expectedVertices = {glm::vec3(0.0, 0.0, 0.0)};
-    std::println("Vertex");
-    for (int i = 0; i < mesh.vertices.size(); i++) {
-        std::println("{} {} {}", mesh.vertices[i].x, mesh.vertices[i].y, mesh.vertices[i].z);
+    std::vector<glm::vec3> expectedVertices = {
+        glm::vec3(0.5, -0.5, 0.5),  glm::vec3(-0.5, -0.5, 0.5),  glm::vec3(0.5, 0.5, 0.5),
+        glm::vec3(-0.5, 0.5, 0.5),  glm::vec3(-0.5, 0.5, 0.5),   glm::vec3(-0.5, -0.5, 0.5),
+        glm::vec3(-0.5, 0.5, -0.5), glm::vec3(-0.5, -0.5, -0.5), glm::vec3(0.5, 0.5, 0.5),
+        glm::vec3(-0.5, 0.5, 0.5),  glm::vec3(0.5, 0.5, -0.5),   glm::vec3(-0.5, 0.5, -0.5),
+        glm::vec3(-0.5, -0.5, 0.5), glm::vec3(0.5, -0.5, 0.5),   glm::vec3(-0.5, -0.5, -0.5),
+        glm::vec3(0.5, -0.5, -0.5), glm::vec3(0.5, -0.5, 0.5),   glm::vec3(0.5, 0.5, 0.5),
+        glm::vec3(0.5, -0.5, -0.5), glm::vec3(0.5, 0.5, -0.5),   glm::vec3(0.5, -0.5, -0.5),
+        glm::vec3(0.5, 0.5, -0.5),  glm::vec3(-0.5, -0.5, -0.5), glm::vec3(-0.5, 0.5, -0.5)};
+
+    std::vector<int> expectedIndices = {0,  2,  1,  3,  1,  2,  4,  6,  5,  7,  5,  6,  8,  10, 9,  11, 9,  10,
+                                        12, 14, 13, 15, 13, 14, 16, 18, 17, 19, 17, 18, 20, 22, 21, 23, 21, 22};
+    ASSERT_EQ(expectedVertices.size(), mesh.vertices.size());
+    for (int i = 0; i < expectedVertices.size(); i++) {
+        EXPECT_NEAR(expectedVertices[i].x, mesh.vertices[i].x, 0.001);
+        EXPECT_NEAR(expectedVertices[i].y, mesh.vertices[i].y, 0.001);
+        EXPECT_NEAR(expectedVertices[i].z, mesh.vertices[i].z, 0.001);
     }
-    std::println("Index");
-    for (int i = 0; i < mesh.vertexIndices.size(); i++) {
-        std::println("{}", mesh.vertexIndices[i]);
+    EXPECT_EQ(expectedVertices, mesh.vertices);
+
+    std::vector<glm::vec2> expectedTexCoords = {
+        glm::vec2(6, 0), glm::vec2(5, 0), glm::vec2(6, 1), glm::vec2(5, 1), glm::vec2(4, 0), glm::vec2(5, 0),
+        glm::vec2(4, 1), glm::vec2(5, 1), glm::vec2(2, 0), glm::vec2(1, 0), glm::vec2(2, 1), glm::vec2(1, 1),
+        glm::vec2(3, 0), glm::vec2(4, 0), glm::vec2(3, 1), glm::vec2(4, 1), glm::vec2(3, 0), glm::vec2(2, 0),
+        glm::vec2(3, 1), glm::vec2(2, 1), glm::vec2(0, 0), glm::vec2(0, 1), glm::vec2(1, 0), glm::vec2(1, 1)};
+    ASSERT_EQ(expectedTexCoords.size(), mesh.texCoords.size());
+    for (int i = 0; i < expectedVertices.size(); i++) {
+        EXPECT_NEAR(expectedTexCoords[i].x, mesh.texCoords[i].x, 0.001);
+        EXPECT_NEAR(expectedTexCoords[i].y, mesh.texCoords[i].y, 0.001);
     }
-    std::println("TexCoord");
-    for (int i = 0; i < mesh.texCoords.size(); i++) {
-        std::println("{} {}", mesh.texCoords[i].x, mesh.texCoords[i].y);
+    std::vector<std::vector<float>> expectedTransform = {
+        {0.9397, 0.6840, 0, 2}, {0, 0, 1, 0}, {0.3420, -1.8794, 0, 0}, {0, 0, 0, 1}};
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            EXPECT_NEAR(mesh.transform[i][j], expectedTransform[j][i], 0.001);
+        }
     }
+
+    ASSERT_EQ(mesh.primitives.size(), 1);
+    EXPECT_EQ(mesh.primitives[0].startVertexIndex, 0);
+    EXPECT_EQ(mesh.primitives[0].vertexIndicesCount, 36);
+    EXPECT_EQ(mesh.primitives[0].materialId, 0);
+
+    /* Testing Material */
+    const auto materials = scene.getMaterials();
+    ASSERT_EQ(materials.size(), 1);
+    EXPECT_NEAR(materials[0].roughness, 1, 0.0001);
+    EXPECT_NEAR(materials[0].metalness, 0, 0.0001);
+    EXPECT_NEAR(materials[0].ior, 1.5, 0.0001);
+    EXPECT_NEAR(materials[0].albedo.r, 1, 0.0001);
+    EXPECT_NEAR(materials[0].albedo.g, 1, 0.0001);
+    EXPECT_NEAR(materials[0].albedo.b, 1, 0.0001);
+    EXPECT_NEAR(materials[0].emission.r, 0, 0.0001);
+    EXPECT_NEAR(materials[0].emission.g, 0, 0.0001);
+    EXPECT_NEAR(materials[0].emission.b, 0, 0.0001);
+    EXPECT_EQ(materials[0].albedoTextureID, 0);
+
+    /* Testing texture loading */
+    const auto textures = scene.getTexturesData();
+    ASSERT_EQ(textures.size(), 1);
+    EXPECT_EQ(textures[0].width, 256);
+    EXPECT_EQ(textures[0].height, 256);
+    EXPECT_EQ(textures[0].id, 0);
 }
