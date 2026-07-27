@@ -18,9 +18,11 @@ class File(Base):
 
     project_as_source_file: Mapped["RenderProject"] = relationship(
         "RenderProject",
+        foreign_keys="RenderProject.source_file_id",
         back_populates="source_file",
     )
     project_as_rendered_file: Mapped["RenderProject"] = relationship(
         "RenderProject",
+        foreign_keys="RenderProject.rendered_file_id",
         back_populates="rendered_file",
     )

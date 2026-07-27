@@ -26,4 +26,3 @@ class FileResponse(FileBase):
     """
 
     id: int
-    user_id: int

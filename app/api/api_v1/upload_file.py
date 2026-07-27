@@ -1,10 +1,12 @@
-from dependencies.annotations import AuthUserByAccessTokenDep, InputFileUploaderDep
-from fastapi import APIRouter, UploadFile, status
+from dependencies.annotations import InputFileUploaderDep
+from dependencies.auth import get_auth_user_by_access_token
+from fastapi import APIRouter, Depends, UploadFile, status
 from schemas.file import FileResponse
 
 router = APIRouter(
     tags=["Upload File"],
     prefix="/file",
+    dependencies=[Depends(get_auth_user_by_access_token)],
 )
 
 
@@ -14,12 +16,10 @@ router = APIRouter(
     response_model=FileResponse,
 )
 async def upload_file(
-    file_uploader: InputFileUploaderDep,
     uploaded_file: UploadFile,
-    user_id: AuthUserByAccessTokenDep,
+    file_uploader: InputFileUploaderDep,
 ) -> FileResponse:
     return await file_uploader.upload(
-        user_id=user_id,
         file_name=uploaded_file.filename,  # type: ignore[arg-type]
         file=uploaded_file.file,
     )
