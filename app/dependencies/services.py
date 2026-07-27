@@ -7,10 +7,12 @@ from infrastructure.database import session_factory
 from infrastructure.kafka import ConfluentKafkaProducer
 from infrastructure.minio.client import MinioClient
 from repositories.file import FileRepository
+from repositories.render_project import RenderProjectRepository
 from repositories.user import UserRepository
 from services.auth import AuthService
 from services.file_uploader import FileUploader
 from services.render import RenderService
+from services.render_project import RenderProjectService
 from services.user import UserService
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -103,3 +105,23 @@ async def get_render_service(
 ) -> AsyncGenerator[RenderService]:
     render_service = RenderService(producer)
     yield render_service
+
+
+async def get_render_project_repository(
+    session: Annotated[
+        AsyncSession,
+        Depends(get_session),
+    ],
+) -> AsyncGenerator[RenderProjectRepository]:
+    render_project_repository = RenderProjectRepository(session)
+    yield render_project_repository
+
+
+async def get_render_project_service(
+    render_project_repository: Annotated[
+        RenderProjectRepository,
+        Depends(get_render_project_repository),
+    ],
+) -> AsyncGenerator[RenderProjectService]:
+    render_project_service = RenderProjectService(render_project_repository)
+    yield render_project_service
