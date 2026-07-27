@@ -1,7 +1,10 @@
+from typing import cast
+
 from core.constants import ProjectVisibility
 from core.exceptions.auth import PermissionDeniedError
 from core.exceptions.render_project import RenderProjectIdNotFoundError
 from core.interfaces.repositories import AbstractRenderProjectRepository
+from models import User
 from schemas.render_project import RenderProjectCreate, RenderProjectResponse
 
 
@@ -23,15 +26,16 @@ class RenderProjectService:
         if render_project is None:
             raise RenderProjectIdNotFoundError(render_project_id)
 
-        owner = await self.render_project_repository.get_render_project_owner(
+        get_owner_coroutine = self.render_project_repository.get_render_project_owner(
             render_project_id,
         )
-
+        owner = cast(User, await get_owner_coroutine)
         if (
             render_project.visibility == ProjectVisibility.private.value
             and owner.id != user_id
         ):
-            raise PermissionDeniedError("You are not allowed to watch this project.")
+            detail = "You are not allowed to watch this project."
+            raise PermissionDeniedError(detail)
 
         return RenderProjectResponse.model_validate(render_project)
 
@@ -50,4 +54,19 @@ class RenderProjectService:
         self,
         render_project_id: int,
         user_id: int,
-    ) -> None: ...
+    ) -> None:
+        render_project = await self.render_project_repository.get_by_id(
+            render_project_id,
+        )
+        if render_project is None:
+            raise RenderProjectIdNotFoundError(render_project_id)
+
+        get_owner_coroutine = self.render_project_repository.get_render_project_owner(
+            render_project_id,
+        )
+        owner = cast(User, await get_owner_coroutine)
+        if owner.id != user_id:
+            detail = "You are not allowed to watch this project."
+            raise PermissionDeniedError(detail)
+
+        await self.render_project_repository.delete_by_id(render_project_id)
