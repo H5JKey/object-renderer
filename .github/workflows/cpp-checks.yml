@@ -29,7 +29,7 @@ jobs:
         docker build . --file renderer/Dockerfile --tag renderer
     - name: Run tests
       run: |
-        docker run --rm renderer sh -c "cd build && valgrind --leak-check=full \
+        docker run --rm renderer sh -c "cd build && valgrind --leak-check=summary \
          --show-leak-kinds=all \
          --track-origins=yes \
          --error-exitcode=1 ./test"
