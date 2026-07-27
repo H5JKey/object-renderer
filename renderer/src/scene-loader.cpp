@@ -139,6 +139,33 @@ Scene::Camera SceneLoader::loadCamera(const fastgltf::Camera::Perspective& gltfC
     return camera;
 }
 
+void SceneLoader::loadNode(const fastgltf::Node& node, const fastgltf::Asset& asset, Scene& scene,
+                           glm::mat4 parentTransform) {
+    glm::mat4 localTransform = glm::mat4(1.0f);
+
+    if (auto* trs = std::get_if<fastgltf::TRS>(&node.transform)) {
+        auto translation = glm::vec3(trs->translation.x(), trs->translation.y(), trs->translation.z());
+        auto rotation = glm::quat(trs->rotation.w(), trs->rotation.x(), trs->rotation.y(), trs->rotation.z());
+        auto scale = glm::vec3(trs->scale.x(), trs->scale.y(), trs->scale.z());
+        localTransform = glm::translate(glm::mat4(1.0f), translation) * glm::mat4_cast(rotation) *
+                         glm::scale(glm::mat4(1.0f), scale);
+    }
+
+    glm::mat4 transform = parentTransform * localTransform;
+
+    /* Loading meshes*/
+    if (node.meshIndex.has_value()) {
+        const auto& gltfMesh = asset.meshes[node.meshIndex.value()];
+        Scene::Mesh mesh = loadMesh(gltfMesh, asset);
+        mesh.transform = transform;
+        scene.meshes.push_back(std::move(mesh));
+    }
+
+    for (const auto& child : node.children) {
+        loadNode(asset.nodes[child], asset, scene, transform);
+    }
+}
+
 Scene::Mesh SceneLoader::loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf::Asset& asset) const {
     Scene::Mesh mesh;
     for (auto& gltPrimitive : gltfMesh.primitives) {
@@ -225,8 +252,8 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
         throw std::runtime_error(
             std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(asset.error())));
 
-    /* Loading meshes*/
-    for (const auto& mesh : asset->meshes) scene.meshes.push_back(std::move(loadMesh(mesh, asset.get())));
+    /* Loading nodes recursively*/
+    loadNode(asset->nodes[0], asset.get(), scene);
 
     /* Loading camera */
     bool cameraFound = false;

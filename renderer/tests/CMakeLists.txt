@@ -14,6 +14,7 @@ add_executable(test
     utils/test-readFromFile.cpp
     bvh/test-building.cpp
     bvh/test-intersections.cpp
+    scene-loader/test-scene-loader.cpp
     test-main.cpp
 )
 

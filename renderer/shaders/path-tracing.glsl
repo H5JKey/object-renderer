@@ -438,8 +438,15 @@ void main() {
     }
 
     vec3 forward = normalize(uLookAt - uOrigin);
-    vec3 right = cross(vec3(0.0, 1.0, 0.0), forward);
-    vec3 up = cross(forward, right);
+    vec3 right;
+    vec3 up;
+    if (abs(dot(forward, vec3(0.0, 1.0, 0.0))) > 0.999) {
+        right = vec3(1.0, 0.0, 0.0);
+        up = cross(forward, right);
+    } else {
+        right = normalize(cross(vec3(0.0, 1.0, 0.0), forward));
+        up = normalize(cross(forward, right));
+    }
 
     uint seed = uSeed + 6732 * uint(pixel.x) + 8157 * uint(pixel.y);
     vec2 jitter = random2(seed) - vec2(0.5, 0.5);

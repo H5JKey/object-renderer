@@ -16,6 +16,7 @@ class Scene {
         std::vector<int> vertexIndices;
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec2> texCoords;
+        glm::mat4 transform;
 
         std::vector<Primitive> primitives;
     };
