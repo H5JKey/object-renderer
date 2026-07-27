@@ -39,18 +39,18 @@ class RenderEngine {
 
     Denoiser denoiser;
     MedianBuilder bvhBuilder;
-    GLuint pathTracingProgram;
-    GLuint postProcessingProgram;
-    GLuint gbufferProgram;
+    GLuint pathTracingProgram = 0;
+    GLuint postProcessingProgram = 0;
+    GLuint gbufferProgram = 0;
 
-    GLuint vertexSSBO;
-    GLuint vertexIndexSSBO;
-    GLuint materialSSBO;
-    GLuint materialIndexSSBO;
-    GLuint bvhNodesSSBO;
-    GLuint bvhTrianglesSSBO;
-    GLuint texCoordSSBO;
-    GLuint textureArray;
+    GLuint vertexSSBO = 0;
+    GLuint vertexIndexSSBO = 0;
+    GLuint materialSSBO = 0;
+    GLuint materialIndexSSBO = 0;
+    GLuint bvhNodesSSBO = 0;
+    GLuint bvhTrianglesSSBO = 0;
+    GLuint texCoordSSBO = 0;
+    GLuint textureArray = 0;
 
     std::random_device rd;
     std::mt19937 gen;
