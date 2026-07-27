@@ -14,8 +14,8 @@ class KafkaProducer(ABC):
         value: str | bytes | None,
         key: str | bytes | None,
         partition: int,
-        callback: Callable | None,  # type:ignore[type-arg]
-        on_delivery: Callable | None,  # type:ignore[type-arg]
+        callback: Callable | None,  # type: ignore[type-arg]
+        on_delivery: Callable | None,  # type: ignore[type-arg]
         timestamp: int,
     ) -> None:
         """
@@ -35,7 +35,7 @@ class KafkaConsumer(ABC):
     """
 
     @abstractmethod
-    async def subscribe(self, topics: list[str]) -> None:
+    def subscribe(self, topics: list[str]) -> None:
         """
         Метод для подписки консьюмера на события в списке топиков.
         """
@@ -43,7 +43,7 @@ class KafkaConsumer(ABC):
     @abstractmethod
     async def poll(
         self,
-        timeout: int | None = None,  # noqa:ASYNC109
+        timeout: int,  # noqa:ASYNC109
     ) -> None:
         """
         Получение сообщений с таймаутом в случае пустых топиков.
