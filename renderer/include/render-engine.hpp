@@ -60,16 +60,18 @@ class RenderEngine {
 
    public:
     RenderEngine();
-    void renderFrame(RenderTarget& target, const Scene& scene);
+    void renderFrame(RenderTarget& target, const Scene& scene, int samples);
+    void destroy();
     ~RenderEngine();
 
    private:
     void pathTracing(RenderTarget& target, const GPUData& gpuData, const Scene::Camera& camera,
-                     const glm::vec3 backgroundColor);
+                     const glm::vec3 backgroundColor, int samples);
     void fillGbuffer(RenderTarget& target, const GPUData& gpuData, const Scene::Camera& camera);
     void postProcess(RenderTarget& target) const;
     void uploadGPUBuffers(const GPUData& gpuData, const BVH& bvh);
     GLuint compileShader(const std::string& source);
     void loadTextures(const std::vector<Scene::TextureData>& textures);
     GPUData convertSceneToGPUData(const Scene& scene);
+    void resetState();
 };

@@ -1,6 +1,3 @@
-#include <memory>
-
-#include "bvh-builder.hpp"
 #include "render-engine.hpp"
 #include "scene-loader.hpp"
 #include "scene.hpp"
@@ -11,16 +8,16 @@ int main(int argc, char* argv[]) {
     if (argc != 2) return EXIT_FAILURE;
     TargetManager::init();
     RenderEngine engine;
-    std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(1600, 1200);
     SceneLoader loader;
     Scene scene = loader.loadGltf(argv[1]);
-    // loader.addPlane(scene);
-    engine.renderFrame(*egl, scene);
+    std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(1600, 1200);
+    engine.renderFrame(*egl, scene, 10);
 
     auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());
     if (eglTarget) {
         RenderTarget::ContextGuard guard(*egl);
-        egl->output();
+        utils::writeToPng(egl->getBufferData<uint8_t>(egl->getOutputTexture()), egl->getWidth(), egl->getHeight(), 4,
+                          "output.png");
         utils::writeToPng(egl->getBufferData<float>(egl->getRawTexture()), egl->getWidth(), egl->getHeight(), 4,
                           "output_raw.png");
         utils::writeToPng(egl->getBufferData<float>(egl->getAlbedoMap()), egl->getWidth(), egl->getHeight(), 4,
@@ -28,5 +25,4 @@ int main(int argc, char* argv[]) {
         utils::writeToPng(egl->getBufferData<float>(egl->getNormalMap()), egl->getWidth(), egl->getHeight(), 4,
                           "output_normal.png");
     }
-    return EXIT_SUCCESS;
 }

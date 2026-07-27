@@ -6,15 +6,120 @@
 #include "render-target.hpp"
 #include "utils.hpp"
 
+void RenderEngine::destroy() {
+    if (vertexSSBO) {
+        glDeleteBuffers(1, &vertexSSBO);
+        vertexSSBO = 0;
+    }
+    if (vertexIndexSSBO) {
+        glDeleteBuffers(1, &vertexIndexSSBO);
+        vertexIndexSSBO = 0;
+    }
+    if (materialSSBO) {
+        glDeleteBuffers(1, &materialSSBO);
+        materialSSBO = 0;
+    }
+    if (materialIndexSSBO) {
+        glDeleteBuffers(1, &materialIndexSSBO);
+        materialIndexSSBO = 0;
+    }
+    if (bvhNodesSSBO) {
+        glDeleteBuffers(1, &bvhNodesSSBO);
+        bvhNodesSSBO = 0;
+    }
+    if (bvhTrianglesSSBO) {
+        glDeleteBuffers(1, &bvhTrianglesSSBO);
+        bvhTrianglesSSBO = 0;
+    }
+    if (texCoordSSBO) {
+        glDeleteBuffers(1, &texCoordSSBO);
+        texCoordSSBO = 0;
+    }
+    if (textureArray) {
+        glDeleteTextures(1, &textureArray);
+        textureArray = 0;
+    }
+    if (pathTracingProgram) {
+        glDeleteProgram(pathTracingProgram);
+        pathTracingProgram = 0;
+    }
+    if (postProcessingProgram) {
+        glDeleteProgram(postProcessingProgram);
+        postProcessingProgram = 0;
+    }
+    if (gbufferProgram) {
+        glDeleteProgram(gbufferProgram);
+        gbufferProgram = 0;
+    }
+}
+
 RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0, 0xFFFFFFFF), bvhBuilder(-1, 32) {
     std::clog << std::format("Compiling path tracing shader") << std::endl;
     pathTracingProgram = compileShader(utils::readFromFile("shaders/path-tracing.glsl"));
-    std::clog << std::format("Compiling post processing shader") << std::endl;
+    try {
+        std::clog << std::format("Compiling post processing shader") << std::endl;
+        postProcessingProgram = compileShader(utils::readFromFile("shaders/post-processing.glsl"));
+    } catch (const std::exception& e) {
+        destroy();
+        throw;
+    }
+    try {
+        std::clog << std::format("Compiling gbuffer shader") << std::endl;
+        gbufferProgram = compileShader(utils::readFromFile("shaders/gbuffer.glsl"));
+    } catch (const std::exception& e) {
+        destroy();
+        throw;
+    }
 
-    postProcessingProgram = compileShader(utils::readFromFile("shaders/post-processing.glsl"));
-    std::clog << std::format("Compiling gbuffer shader") << std::endl;
+    GLuint error;
+    glGenBuffers(1, &vertexSSBO);
+    error = glGetError();
+    if (error != 0) {
+        destroy();
+        throw std::runtime_error("failed to create vertexSSBO. Error: " + std::to_string(error));
+    }
 
-    gbufferProgram = compileShader(utils::readFromFile("shaders/gbuffer.glsl"));
+    glGenBuffers(1, &texCoordSSBO);
+    error = glGetError();
+    if (error != 0) {
+        destroy();
+        throw std::runtime_error("failed to create texCoordsSSBO. Error: " + std::to_string(error));
+    }
+
+    glGenBuffers(1, &vertexIndexSSBO);
+    error = glGetError();
+    if (error != 0) {
+        destroy();
+        throw std::runtime_error("failed to create vertexIndicesSSBO. Error: " + std::to_string(error));
+    }
+
+    glGenBuffers(1, &materialSSBO);
+    error = glGetError();
+    if (error != 0) {
+        destroy();
+        throw std::runtime_error("failed to create materialsSSBO. Error: " + std::to_string(error));
+    }
+
+    glGenBuffers(1, &materialIndexSSBO);
+    error = glGetError();
+    if (error != 0) {
+        destroy();
+        throw std::runtime_error("failed to create materialsIndiciesSSBO. Error: " + std::to_string(error));
+    }
+
+    glGenBuffers(1, &bvhNodesSSBO);
+    error = glGetError();
+    if (error != 0) {
+        destroy();
+        throw std::runtime_error("failed to create bvhNodesSSBO. Error: " + std::to_string(error));
+    }
+
+    glGenBuffers(1, &bvhTrianglesSSBO);
+    error = glGetError();
+    if (error != 0) {
+        destroy();
+        throw std::runtime_error("failed to create bvhTrianglesSSBO. Error: " + std::to_string(error));
+    }
 }
 
 GLuint RenderEngine::compileShader(const std::string& source) {
@@ -53,7 +158,7 @@ GLuint RenderEngine::compileShader(const std::string& source) {
 }
 
 void RenderEngine::pathTracing(RenderTarget& target, const GPUData& gpuData, const Scene::Camera& camera,
-                               const glm::vec3 backgroundColor) {
+                               const glm::vec3 backgroundColor, int samples) {
     std::clog << std::format("===Path tracing started===") << std::endl;
 
     glUseProgram(pathTracingProgram);
@@ -78,7 +183,6 @@ void RenderEngine::pathTracing(RenderTarget& target, const GPUData& gpuData, con
     int groupsX = (target.getWidth() + 15) / 16;
     int groupsY = (target.getHeight() + 15) / 16;
 
-    const int samples = 40;
     for (int i = 0; i < samples; i++) {
         if (i % 5 == 0) std::clog << std::format("{}/{}", i, samples) << std::endl;
         glUniform1ui(glGetUniformLocation(pathTracingProgram, "uSeed"), uniformDistr(gen));
@@ -157,60 +261,25 @@ void RenderEngine::uploadGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
     std::clog << std::format("- BVH depth: {}", bvh.getDepth()) << std::endl;
     GLenum error;
 
-    glGenBuffers(1, &vertexSSBO);
-    error = glGetError();
-    if (error != 0) {
-        throw std::runtime_error("failed to create vertexSSBO. Error: " + std::to_string(error));
-    }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, vertices.size() * sizeof(glm::vec4), vertices.data(), GL_STATIC_DRAW);
 
-    glGenBuffers(1, &texCoordSSBO);
-    error = glGetError();
-    if (error != 0) {
-        throw std::runtime_error("failed to create texCoordsSSBO. Error: " + std::to_string(error));
-    }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, texCoordSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, texCoords.size() * sizeof(glm::vec4), texCoords.data(), GL_STATIC_DRAW);
 
-    glGenBuffers(1, &vertexIndexSSBO);
-    error = glGetError();
-    if (error != 0) {
-        throw std::runtime_error("failed to create vertexIndicesSSBO. Error: " + std::to_string(error));
-    }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexIndexSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, vertexIndices.size() * sizeof(int), vertexIndices.data(), GL_STATIC_DRAW);
 
-    glGenBuffers(1, &materialSSBO);
-    error = glGetError();
-    if (error != 0) {
-        throw std::runtime_error("failed to create materialsSSBO. Error: " + std::to_string(error));
-    }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, materials.size() * sizeof(GPUMaterial), materials.data(), GL_STATIC_DRAW);
 
-    glGenBuffers(1, &materialIndexSSBO);
-    error = glGetError();
-    if (error != 0) {
-        throw std::runtime_error("failed to create materialsIndiciesSSBO. Error: " + std::to_string(error));
-    }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialIndexSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, materialIndices.size() * sizeof(int), materialIndices.data(),
                  GL_STATIC_DRAW);
 
-    glGenBuffers(1, &bvhNodesSSBO);
-    error = glGetError();
-    if (error != 0) {
-        throw std::runtime_error("failed to create bvhNodesSSBO. Error: " + std::to_string(error));
-    }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhNodesSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, bvhNodes.size() * sizeof(BVH::Node), bvhNodes.data(), GL_STATIC_DRAW);
 
-    glGenBuffers(1, &bvhTrianglesSSBO);
-    error = glGetError();
-    if (error != 0) {
-        throw std::runtime_error("failed to create bvhTrianglesSSBO. Error: " + std::to_string(error));
-    }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, bvhTrianglesSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, bvhTriangles.size() * sizeof(int), bvhTriangles.data(), GL_STATIC_DRAW);
 }
@@ -252,12 +321,13 @@ RenderEngine::GPUData RenderEngine::convertSceneToGPUData(const Scene& scene) {
 }
 
 void RenderEngine::loadTextures(const std::vector<Scene::TextureData>& textures) {
-    int maxWidth = 0;
-    int maxHeight = 0;
+    int maxWidth = 1;
+    int maxHeight = 1;
     for (const auto& texture : textures) {
         maxWidth = std::max(maxWidth, texture.width);
         maxHeight = std::max(maxHeight, texture.height);
     }
+    loadedTextures.clear();
     if (textureArray != 0) {
         glDeleteTextures(1, &textureArray);
         textureArray = 0;
@@ -266,38 +336,52 @@ void RenderEngine::loadTextures(const std::vector<Scene::TextureData>& textures)
     glGenTextures(1, &textureArray);
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
 
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, maxWidth, maxHeight, textures.size());
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, std::max(1, maxWidth), std::max(1, maxHeight),
+                   std::max(1zu, textures.size()));
 
+    int layer = 0;
     for (const auto& texture : textures) {
-        std::clog << std::format("Loading texture {} to GPU", texture.id) << std::endl;
+        std::clog << std::format("Loading texture {} to GPU ({}x{}), layer {}", texture.id, texture.width,
+                                 texture.height, layer)
+                  << std::endl;
         if (texture.pixels.empty()) {
             throw std::runtime_error("Failed to load texture. Texture has no data");
         }
-        int layer = loadedTextures.size();
+
         loadedTextures[texture.id] = layer;
 
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, texture.width, texture.height, 1, GL_RGBA,
                         GL_UNSIGNED_BYTE, texture.pixels.data());
+        layer++;
     }
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 0);
+
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
-void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) {
+void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, int samples) {
     if (postProcessingProgram == 0) {
         throw std::runtime_error("Shader not compiled");
     }
+
     RenderTarget::ContextGuard context(target);
+    glClearTexImage(target.getRawTexture(), 0, GL_RGBA, GL_FLOAT, nullptr);
+    glClearTexImage(target.getNormalMap(), 0, GL_RGBA, GL_FLOAT, nullptr);
+    glClearTexImage(target.getAlbedoMap(), 0, GL_RGBA, GL_FLOAT, nullptr);
+    glClearTexImage(target.getOutputTexture(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     GPUData gpuData = convertSceneToGPUData(scene);
-    loadTextures(scene.getTexturesData());
+
     BVH bvh = bvhBuilder.build(gpuData.vertices, gpuData.vertexIndices);
     auto camera = scene.getCamera();
     auto backgroundColor = scene.getBackgroundColor();
+    loadTextures(scene.getTexturesData());
     uploadGPUBuffers(gpuData, bvh);
-    pathTracing(target, gpuData, camera, backgroundColor);
+    pathTracing(target, gpuData, camera, backgroundColor, samples);
 
     fillGbuffer(target, gpuData, camera);
     std::clog << "===Denoising===" << std::endl;
@@ -305,17 +389,4 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene) {
     postProcess(target);
 }
 
-RenderEngine::~RenderEngine() {
-    glDeleteBuffers(1, &vertexSSBO);
-    glDeleteBuffers(1, &vertexIndexSSBO);
-    glDeleteBuffers(1, &materialSSBO);
-    glDeleteBuffers(1, &materialIndexSSBO);
-    glDeleteBuffers(1, &bvhNodesSSBO);
-    glDeleteBuffers(1, &bvhTrianglesSSBO);
-    glDeleteBuffers(1, &texCoordSSBO);
-    glDeleteTextures(1, &textureArray);
-
-    glDeleteProgram(pathTracingProgram);
-    glDeleteProgram(postProcessingProgram);
-    glDeleteProgram(gbufferProgram);
-}
+RenderEngine::~RenderEngine() { destroy(); }

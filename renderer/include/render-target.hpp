@@ -41,7 +41,6 @@ class RenderTarget {
     GLuint getOutputTexture() const noexcept { return outputTexture; }
     GLuint getNormalMap() const noexcept { return normalMap; }
     GLuint getAlbedoMap() const noexcept { return albedoMap; }
-    virtual void output() const = 0;
 
     template <typename T>
         requires std::is_same_v<T, uint8_t> || std::is_same_v<T, float>
@@ -66,8 +65,6 @@ class EglTarget : public RenderTarget {
     EGLContext context;
 
    public:
-    void output() const override;
-
     ~EglTarget();
 };
 
