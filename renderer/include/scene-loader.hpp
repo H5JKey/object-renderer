@@ -24,7 +24,7 @@ class SceneLoader {
     Scene::Material loadMaterial(const fastgltf::Material& gltfMaterial, std::vector<Scene::TextureData>& textures,
                                  const fastgltf::Asset& asset) const;
     void loadNode(const fastgltf::Node& node, const fastgltf::Asset& asset, Scene& scene,
-                  glm::mat4 parentTransform = glm::mat4(1.0f));
+                  glm::mat4 parentTransform = glm::mat4(1.0f)) const;
     Scene::Mesh loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf::Asset& asset) const;
     Scene loadGltf(const std::filesystem::path& path);
 

@@ -140,7 +140,7 @@ Scene::Camera SceneLoader::loadCamera(const fastgltf::Camera::Perspective& gltfC
 }
 
 void SceneLoader::loadNode(const fastgltf::Node& node, const fastgltf::Asset& asset, Scene& scene,
-                           glm::mat4 parentTransform) {
+                           glm::mat4 parentTransform) const {
     glm::mat4 localTransform = glm::mat4(1.0f);
 
     if (auto* trs = std::get_if<fastgltf::TRS>(&node.transform)) {
@@ -160,7 +160,6 @@ void SceneLoader::loadNode(const fastgltf::Node& node, const fastgltf::Asset& as
         mesh.transform = transform;
         scene.meshes.push_back(std::move(mesh));
     }
-
     for (const auto& child : node.children) {
         loadNode(asset.nodes[child], asset, scene, transform);
     }
@@ -253,7 +252,11 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
             std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(asset.error())));
 
     /* Loading nodes recursively*/
-    loadNode(asset->nodes[0], asset.get(), scene);
+    const fastgltf::Scene& gltfScene = asset->scenes[asset->defaultScene.value()];
+    for (std::size_t rootIdx : gltfScene.nodeIndices) {
+        fastgltf::Node& root = asset->nodes[rootIdx];
+        loadNode(root, asset.get(), scene);
+    }
 
     /* Loading camera */
     bool cameraFound = false;
@@ -270,6 +273,32 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
     }
     if (!cameraFound) {
         std::clog << "Camera was not found in file. Default camera will be applied" << std::endl;
+        glm::vec3 boxMax(-std::numeric_limits<float>::infinity()), boxMin(std::numeric_limits<float>::infinity());
+        for (const auto& mesh : scene.getMeshes()) {
+            for (auto v : mesh.vertices) {
+                v = glm::vec3(mesh.transform * glm::vec4(v, 1.0));
+                boxMax = glm::max(boxMax, v);
+                boxMin = glm::min(boxMin, v);
+            }
+        }
+        glm::vec3 center = (boxMin + boxMax) / 2.0f;
+        glm::vec3 size = boxMax - boxMin;
+        scene.camera.fov = glm::radians(45.0f);
+
+        float maxSize = std::max(size.x, std::max(size.y, size.z));
+
+        float distance = (maxSize * 0.5f) / std::tan(scene.camera.fov * 0.5f);
+
+        scene.camera.origin = center + glm::normalize(glm::vec3(1.0f, 0.7f, 1.0f)) * 2.0f * distance;
+        scene.camera.lookAt = center;
+
+        std::clog << std::format("Camera.origin: {} {} {}", scene.camera.origin.x, scene.camera.origin.y,
+                                 scene.camera.origin.z)
+                  << std::endl;
+        std::clog << std::format("Camera.lookAt: {} {} {}", scene.camera.lookAt.x, scene.camera.lookAt.y,
+                                 scene.camera.lookAt.z)
+                  << std::endl;
+        std::clog << std::format("Camera.fov: {}", scene.camera.fov) << std::endl;
     }
 
     /* Loading materials */
@@ -282,6 +311,7 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
 /* Add plane for better ligting visualization*/
 void SceneLoader::addPlane(Scene& scene, float Ylevel) {
     Scene::Mesh planeMesh;
+    planeMesh.transform = glm::mat4(1.0);
     planeMesh.vertices = {glm::vec3(-100.0f, Ylevel, 100.0f), glm::vec3(-100.0f, Ylevel, -100.0f),
                           glm::vec3(100.0f, Ylevel, -100.0f), glm::vec3(100.0f, Ylevel, 100.0f)};
     planeMesh.vertexIndices = {3, 1, 0, 2, 1, 3};
