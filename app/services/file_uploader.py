@@ -26,7 +26,6 @@ class FileUploader(AbstractFileUploader):
 
     async def upload(
         self,
-        user_id: int,
         file_name: str,
         file: BinaryIO,
     ) -> FileResponse:
@@ -41,7 +40,6 @@ class FileUploader(AbstractFileUploader):
             key=key,
         )
         created_file = await self.file_repository.create_file(
-            user_id=user_id,
             create_file_data=create_file_data,
         )
         return FileResponse.model_validate(created_file)

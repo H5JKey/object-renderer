@@ -12,8 +12,6 @@ from infrastructure.database import Base
 from sqlalchemy import CheckConstraint, Enum, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from models import User
-
 if TYPE_CHECKING:
     from models import File, User
 
@@ -51,10 +49,12 @@ class RenderProject(Base):
     )
     source_file: Mapped["File"] = relationship(
         "File",
+        foreign_keys=[source_file_id],
         back_populates="project_as_source_file",
     )
     rendered_file: Mapped["File"] = relationship(
         "File",
+        foreign_keys=[rendered_file_id],
         back_populates="project_as_rendered_file",
     )
 

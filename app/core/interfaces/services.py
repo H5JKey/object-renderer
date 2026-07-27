@@ -14,7 +14,6 @@ class AbstractFileUploader(ABC):
     @abstractmethod
     async def upload(
         self,
-        user_id: int,
         file_name: str,
         file: BinaryIO,
     ) -> FileResponse:

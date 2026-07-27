@@ -14,9 +14,8 @@ class FileRepository(AbstractFileRepository):
         result = await self.session.execute(stmt)
         return result.scalar()
 
-    async def create_file(self, user_id: int, create_file_data: FileCreate) -> File:
+    async def create_file(self, create_file_data: FileCreate) -> File:
         file = File(
-            user_id=user_id,
             **create_file_data.model_dump(),
         )
         self.session.add(file)

@@ -18,7 +18,7 @@ class AbstractFileRepository(ABC):
         """
 
     @abstractmethod
-    async def create_file(self, user_id: int, create_file_data: FileCreate) -> File:
+    async def create_file(self, create_file_data: FileCreate) -> File:
         """
         Метод для создания записи о файле.
         """
