@@ -333,11 +333,20 @@ void RenderEngine::loadTextures(const std::vector<Scene::TextureData>& textures)
         textureArray = 0;
     }
 
+    GLuint error;
     glGenTextures(1, &textureArray);
+    error = glGetError();
+    if (error) throw std::runtime_error("glGenTextures for textureArray failed. Error: " + std::to_string(error));
+
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
+    error = glGetError();
+    if (error) throw std::runtime_error("glBindTexture for textureArray failed. Error: " + std::to_string(error));
 
     glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, std::max(1, maxWidth), std::max(1, maxHeight),
                    std::max(1zu, textures.size()));
+
+    error = glGetError();
+    if (error) throw std::runtime_error("glTexStorage3D for textureArray failed. Error: " + std::to_string(error));
 
     int layer = 0;
     for (const auto& texture : textures) {
@@ -352,6 +361,8 @@ void RenderEngine::loadTextures(const std::vector<Scene::TextureData>& textures)
 
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, texture.width, texture.height, 1, GL_RGBA,
                         GL_UNSIGNED_BYTE, texture.pixels.data());
+        error = glGetError();
+        if (error) throw std::runtime_error("glTexSubImage3D for textureArray failed. Error: " + std::to_string(error));
         layer++;
     }
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
