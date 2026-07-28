@@ -2,6 +2,7 @@
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/vector_float4.hpp>
 #include <glm/glm.hpp>
+#include <print>
 #include <vector>
 class SceneLoader;
 
@@ -12,13 +13,16 @@ class Scene {
             int startVertexIndex;
             int vertexIndicesCount;
             int materialId;
+
+            Primitive() : startVertexIndex(0), vertexIndicesCount(0), materialId(-1) {}
         };
         std::vector<int> vertexIndices;
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec2> texCoords;
         glm::mat4 transform;
-
         std::vector<Primitive> primitives;
+
+        Mesh() : transform(glm::mat4(1.0f)) {}
     };
 
     struct TextureData {
@@ -54,6 +58,9 @@ class Scene {
     };
 
     struct Camera {
+        Camera() : origin(glm::vec3(1, 0, 0)), lookAt(glm::vec3(0, 0, 0)), fov(glm::radians(70.f)) {
+            std::println("ggg");
+        }
         glm::vec3 origin;
         glm::vec3 lookAt;
         float fov;
