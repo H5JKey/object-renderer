@@ -296,7 +296,7 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
             scene.camera.lookAt = center;
         } else {
             scene.camera.origin = glm::vec3(1, 0, 0);
-            scene.camera.lookAt = glm::vec3(0, 0.0, 0.0);
+            scene.camera.lookAt = glm::vec3(0, 0, 0);
             scene.camera.fov = glm::radians(70.f);
         }
         std::clog << std::format("Camera.origin: {} {} {}", scene.camera.origin.x, scene.camera.origin.y,
