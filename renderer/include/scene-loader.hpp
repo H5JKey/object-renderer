@@ -28,6 +28,6 @@ class SceneLoader {
     Scene::Mesh loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf::Asset& asset) const;
     Scene loadGltf(const std::filesystem::path& path);
 
-    void addPlane(Scene& scene, float Ylevel = 0);
+    void addPlane(Scene& scene);
     ~SceneLoader() = default;
 };

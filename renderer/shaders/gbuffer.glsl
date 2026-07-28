@@ -253,6 +253,7 @@ void main() {
     }
 
     vec2 uv = (2.0*vec2(pixel) - vec2(size)) / vec2(size).y;
+    uv.y = -uv.y;
 
     vec3 direction = normalize(forward + right * uFov * uv.x + up * uFov * uv.y);
 

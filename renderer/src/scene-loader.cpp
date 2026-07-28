@@ -283,7 +283,7 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
         }
         glm::vec3 center = (boxMin + boxMax) / 2.0f;
         glm::vec3 size = boxMax - boxMin;
-        scene.camera.fov = glm::radians(45.0f);
+        scene.camera.fov = glm::radians(70.0f);
 
         float maxSize = std::max(size.x, std::max(size.y, size.z));
 
@@ -309,11 +309,19 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
 }
 
 /* Add plane for better ligting visualization*/
-void SceneLoader::addPlane(Scene& scene, float Ylevel) {
+void SceneLoader::addPlane(Scene& scene) {
+    float lowest = std::numeric_limits<float>::infinity();
+    for (const auto& mesh : scene.getMeshes()) {
+        for (auto v : mesh.vertices) {
+            v = glm::vec3(mesh.transform * glm::vec4(v, 1.0));
+            lowest = std::min(lowest, v.y);
+        }
+    }
+
     Scene::Mesh planeMesh;
     planeMesh.transform = glm::mat4(1.0);
-    planeMesh.vertices = {glm::vec3(-100.0f, Ylevel, 100.0f), glm::vec3(-100.0f, Ylevel, -100.0f),
-                          glm::vec3(100.0f, Ylevel, -100.0f), glm::vec3(100.0f, Ylevel, 100.0f)};
+    planeMesh.vertices = {glm::vec3(-100.0f, lowest, 100.0f), glm::vec3(-100.0f, lowest, -100.0f),
+                          glm::vec3(100.0f, lowest, -100.0f), glm::vec3(100.0f, lowest, 100.0f)};
     planeMesh.vertexIndices = {3, 1, 0, 2, 1, 3};
 
     Scene::Mesh::Primitive primitive1, primitive2;
