@@ -257,10 +257,17 @@ void main() {
 
     vec3 direction = normalize(forward + right * uFov * uv.x + up * uFov * uv.y);
 
-    HitInfo hit = castRayThroughBVH(uOrigin, direction);
+    HitInfo hit;
+    if (bvhNodes.length() > 0) {
+        hit = castRayThroughBVH(uOrigin, direction);
+        imageStore(normalMap, pixel, vec4(hit.normal, 1.0));
+    }
+    else {
+        imageStore(normalMap, pixel, vec4(0.0,0.0,0.0, 1.0));
+        hit.distance = MAX_DIST;
+    }
 
-    imageStore(normalMap, pixel, vec4(hit.normal, 1.0));
-    if (hit.distance == MAX_DIST) {
+    if (hit.distance > MAX_DIST - 1) {
         imageStore(albedoMap, pixel, vec4(0,0,0, 1.0));
     }
     else {
