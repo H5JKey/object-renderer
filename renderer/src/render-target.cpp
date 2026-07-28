@@ -19,26 +19,31 @@ EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config
         glBindTexture(GL_TEXTURE_2D, rawTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         glBindTexture(GL_TEXTURE_2D, 0);
+        Logger::getInstance().log(std::format("Create rawTexture {}x{} HDR", width, height), Logger::Level::INFO);
 
         glGenTextures(1, &denoisedTexture);
         glBindTexture(GL_TEXTURE_2D, denoisedTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        glGenTextures(1, &outputTexture);
-        glBindTexture(GL_TEXTURE_2D, outputTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        Logger::getInstance().log(std::format("Create denoisedTexture {}x{} HDR", width, height), Logger::Level::INFO);
 
         glGenTextures(1, &normalMap);
         glBindTexture(GL_TEXTURE_2D, normalMap);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         glBindTexture(GL_TEXTURE_2D, 0);
+        Logger::getInstance().log(std::format("Create normalMap {}x{} HDR", width, height), Logger::Level::INFO);
 
         glGenTextures(1, &albedoMap);
         glBindTexture(GL_TEXTURE_2D, albedoMap);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
         glBindTexture(GL_TEXTURE_2D, 0);
+        Logger::getInstance().log(std::format("Create albedoMap {}x{} HDR", width, height), Logger::Level::INFO);
+
+        glGenTextures(1, &outputTexture);
+        glBindTexture(GL_TEXTURE_2D, outputTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        Logger::getInstance().log(std::format("Create outputTexture {}x{}", width, height), Logger::Level::INFO);
     }
     initialized = true;
     Logger::getInstance().log("EGl target created", Logger::Level::INFO);
