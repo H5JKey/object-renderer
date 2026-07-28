@@ -4,9 +4,9 @@
 
 class BVH {
     friend class MedianBuilder;
-    BVH();
 
    public:
+    BVH();
     struct Node {
         glm::vec4 min, max;
         int left, right;

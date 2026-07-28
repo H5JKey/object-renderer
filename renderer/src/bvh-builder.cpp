@@ -152,7 +152,6 @@ BVH MedianBuilder::build(const std::vector<glm::vec4>& vertices, const std::vect
     if (vertexIndices.size() % 3 != 0) {
         throw std::runtime_error("Vertex indicies array size must be multiple of 3");
     }
-    std::clog << "Building BVH" << std::endl;
     BVH bvh;
 
     glm::vec4 max(-std::numeric_limits<float>::infinity()), min(std::numeric_limits<float>::infinity());
