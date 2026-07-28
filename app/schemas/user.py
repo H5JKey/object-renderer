@@ -33,6 +33,12 @@ class UserCreate(UserBase):
     encrypted_password: EncryptedPasswordConstraint
 
 
+class UserUpdate(UserBase):
+    """
+    Схема для обновления данных о пользователе.
+    """
+
+
 class UserResponse(UserBase):
     """
     Схема для вывода информации о пользователе.

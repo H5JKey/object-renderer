@@ -5,7 +5,7 @@ from schemas.constraints import FovConstraint, SampleConstraint, SizeConstraint
 
 class RenderBase(BaseModel):
     """
-    Базовая схема для рендра.
+    Базовая схема для рендера.
     """
 
     width: SizeConstraint
@@ -19,7 +19,7 @@ class RenderBase(BaseModel):
 
 class RenderCreate(RenderBase):
     """
-    Схема для создания рендра.
+    Схема для создания рендера.
     """
 
     width: SizeConstraint = 600
@@ -33,5 +33,5 @@ class RenderCreate(RenderBase):
 
 class RenderResponse(RenderBase):
     """
-    Схема для вывода информации о рендре.
+    Схема для вывода информации о рендере.
     """

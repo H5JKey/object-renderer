@@ -8,9 +8,6 @@ class FileBase(BaseModel):
     Базовая схема для работы с фалами.
     """
 
-    bucket: str
-    key: str
-
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
 
@@ -18,6 +15,9 @@ class FileCreate(FileBase):
     """
     Схема для создания файла.
     """
+
+    bucket: str
+    key: str
 
 
 class FileResponse(FileBase):

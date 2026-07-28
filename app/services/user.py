@@ -1,6 +1,6 @@
 from core.exceptions.user import UserIdNotFoundError
 from core.interfaces.repositories import AbstractUserRepository
-from schemas.user import UserResponse
+from schemas.user import UserResponse, UserUpdate
 
 
 class UserService:
@@ -11,6 +11,22 @@ class UserService:
         user = await self.user_repository.get_by_id(user_id)
         if user is None:
             raise UserIdNotFoundError(user_id)
+
+        return UserResponse.model_validate(user)
+
+    async def update_user(
+        self,
+        user_id: int,
+        update_user_data: UserUpdate,
+    ) -> UserResponse:
+        user = await self.user_repository.get_by_id(user_id)
+        if user is None:
+            raise UserIdNotFoundError(user_id)
+
+        user = await self.user_repository.update_user(
+            user_id=user_id,
+            update_user_data=update_user_data,
+        )
 
         return UserResponse.model_validate(user)
 

@@ -1,7 +1,7 @@
 from core.interfaces.repositories import AbstractUserRepository
 from models import User
 from pydantic import EmailStr
-from schemas.user import UserCreate
+from schemas.user import UserCreate, UserUpdate
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,6 +31,21 @@ class UserRepository(AbstractUserRepository):
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
+        return user
+
+    async def update_user(
+        self,
+        user_id: int,
+        update_user_data: UserUpdate,
+    ) -> User | None:
+        user = await self.get_by_id(user_id)
+        for field, value in update_user_data.model_dump().items():
+            setattr(user, field, value)
+
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+
         return user
 
     async def delete_by_id(self, user_id: int) -> None:

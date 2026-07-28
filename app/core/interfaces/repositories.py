@@ -4,7 +4,7 @@ from models import File, Project, User
 from pydantic import EmailStr
 from schemas.file import FileCreate
 from schemas.project import ProjectCreate
-from schemas.user import UserCreate
+from schemas.user import UserCreate, UserUpdate
 
 
 class AbstractFileRepository(ABC):
@@ -58,6 +58,14 @@ class AbstractUserRepository(ABC):
     async def create_user(self, create_user_data: UserCreate) -> User:
         """
         Метод для создания пользователя.
+        """
+
+    @abstractmethod
+    async def update_user(
+        self, user_id: int, update_user_data: UserUpdate,
+    ) -> User | None:
+        """
+        Метод для обновления данных о пользователе.
         """
 
     @abstractmethod
