@@ -84,7 +84,6 @@ void utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
         throw std::runtime_error("Pixel data size mismatch");
     }
-    std::clog << std::format("Writing into {}", path.string()) << std::endl;
     stbi_write_png(path.c_str(), width, height, channels, pixels.data(), width * channels);
 }
 
@@ -95,7 +94,6 @@ void utils::writeToPng(const std::vector<float>& pixels, int width, int height, 
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
         throw std::runtime_error("Pixel data size mismatch");
     }
-    std::clog << std::format("Writing into {}", path.string()) << std::endl;
     std::vector<unsigned char> normalizedPixels(width * height * channels);
     for (int i = 0; i < pixels.size(); i++)
         normalizedPixels[i] = static_cast<unsigned char>(std::min(std::max(pixels[i], 0.0f), 1.0f) * 255);

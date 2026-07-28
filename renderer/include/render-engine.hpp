@@ -73,5 +73,6 @@ class RenderEngine {
     GLuint compileShader(const std::string& source);
     void loadTextures(const std::vector<Scene::TextureData>& textures);
     GPUData convertSceneToGPUData(const Scene& scene);
+    void createBuffers();
     void resetState();
 };

@@ -21,8 +21,6 @@ class TargetManager {
     EGLDisplay getDisplay() const noexcept { return display; }
     EGLDisplay getContext() const noexcept { return context; }
 
-    void initializeEGL();
-
    private:
     TargetManager() = default;
     ~TargetManager();
