@@ -5,7 +5,11 @@ from core.exceptions.auth import PermissionDeniedError
 from core.exceptions.render_project import RenderProjectIdNotFoundError
 from core.interfaces.repositories import AbstractRenderProjectRepository
 from models import User
-from schemas.render_project import RenderProjectCreate, RenderProjectResponse
+from schemas.render_project import (
+    RenderProjectCreate,
+    RenderProjectResponse,
+    RenderProjectResponseList,
+)
 
 
 class RenderProjectService:
@@ -38,6 +42,45 @@ class RenderProjectService:
             raise PermissionDeniedError(detail)
 
         return RenderProjectResponse.model_validate(render_project)
+
+    async def get_user_render_projects(
+        self,
+        user_id: int,
+        size: int,
+        page: int,
+    ) -> RenderProjectResponseList:
+        get_projects = self.render_project_repository.get_user_render_projects(
+            user_id,
+        )
+        render_projects = [
+            RenderProjectResponse.model_validate(render_project)
+            for render_project in await get_projects
+        ]
+        return RenderProjectResponseList(
+            render_projects=render_projects,
+            size=size,
+            page=page,
+        )
+
+    async def get_user_public_render_projects(
+        self,
+        user_id: int,
+        size: int,
+        page: int,
+    ) -> RenderProjectResponseList:
+        get_projects = self.render_project_repository.get_user_public_render_projects(
+            user_id,
+        )
+
+        render_projects = [
+            RenderProjectResponse.model_validate(render_project)
+            for render_project in await get_projects
+        ]
+        return RenderProjectResponseList(
+            render_projects=render_projects,
+            size=size,
+            page=page,
+        )
 
     async def create_render_project(
         self,
