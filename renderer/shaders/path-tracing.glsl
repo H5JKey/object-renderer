@@ -308,8 +308,12 @@ vec3 traceRay(vec3 origin, vec3 direction, uint seed) {
             throughput /= p;
         }
         seed = pcg(seed);
-        HitInfo hit = castRayThroughBVH(origin, direction);
-        if (hit.distance == MAX_DIST) {
+        HitInfo hit;
+        if (bvhNodes.length() > 0)
+            hit = castRayThroughBVH(origin, direction);
+        else
+            hit.distance = MAX_DIST;
+        if (hit.distance > MAX_DIST - 1) {
             return throughput * (uBackgroundColor + vec3(100.0, 90.0, 70.0) * pow(max(0.0, dot(direction, normalize(vec3(-1,1,1)))), 256.0));
         }
         Material material = materials[hit.material_id];
