@@ -274,24 +274,27 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
     if (!cameraFound) {
         std::clog << "Camera was not found in file. Default camera will be applied" << std::endl;
         glm::vec3 boxMax(-std::numeric_limits<float>::infinity()), boxMin(std::numeric_limits<float>::infinity());
+        bool empty = true;
         for (const auto& mesh : scene.getMeshes()) {
             for (auto v : mesh.vertices) {
                 v = glm::vec3(mesh.transform * glm::vec4(v, 1.0));
+                empty = false;
                 boxMax = glm::max(boxMax, v);
                 boxMin = glm::min(boxMin, v);
             }
         }
-        glm::vec3 center = (boxMin + boxMax) / 2.0f;
-        glm::vec3 size = boxMax - boxMin;
-        scene.camera.fov = glm::radians(70.0f);
+        if (!empty) {
+            glm::vec3 center = (boxMin + boxMax) / 2.0f;
+            glm::vec3 size = boxMax - boxMin;
+            scene.camera.fov = glm::radians(70.f);
 
-        float maxSize = std::max(size.x, std::max(size.y, size.z));
+            float maxSize = std::max(size.x, std::max(size.y, size.z));
 
-        float distance = (maxSize * 0.5f) / std::tan(scene.camera.fov * 0.5f);
+            float distance = (maxSize * 0.5f) / std::tan(scene.camera.fov * 0.5f);
 
-        scene.camera.origin = center + glm::normalize(glm::vec3(1.0f, 0.7f, 1.0f)) * 2.0f * distance;
-        scene.camera.lookAt = center;
-
+            scene.camera.origin = center + glm::normalize(glm::vec3(1.f, 0.7f, 1.0f)) * 2.0f * distance;
+            scene.camera.lookAt = center;
+        }
         std::clog << std::format("Camera.origin: {} {} {}", scene.camera.origin.x, scene.camera.origin.y,
                                  scene.camera.origin.z)
                   << std::endl;
