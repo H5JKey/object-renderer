@@ -1,6 +1,6 @@
 from dependencies.annotations import AuthUserByAccessTokenDep, UserServiceDep
 from fastapi import APIRouter, status
-from schemas.user import UserResponse
+from schemas.user import UserResponse, UserUpdate
 
 router = APIRouter(
     prefix="/user/about-me",
@@ -20,11 +20,25 @@ async def get_current_user_profile(
     return await user_service.get_by_id(user_id)
 
 
-@router.delete(
-    "/",
+@router.put(
+    "/update",
+    response_model=UserResponse,
     status_code=status.HTTP_200_OK,
 )
-async def delete_user_profile(
+async def update_current_user_profile(
+    user_id: AuthUserByAccessTokenDep,
+    user_service: UserServiceDep,
+    update_user_data: UserUpdate,
+) -> UserResponse:
+    return await user_service.update_user(user_id, update_user_data)
+
+
+@router.delete(
+    "/",
+    response_model=None,
+    status_code=status.HTTP_200_OK,
+)
+async def delete_current_user_profile(
     user_id: AuthUserByAccessTokenDep,
     user_service: UserServiceDep,
 ) -> None:
