@@ -17,7 +17,7 @@ from sqlalchemy import CheckConstraint, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from models import RenderProject
+    from models import Project
 
 
 class User(Base):
@@ -35,8 +35,8 @@ class User(Base):
         server_default=func.timezone("UTC", func.now()),
     )
 
-    render_projects: Mapped[list["RenderProject"]] = relationship(
-        "RenderProject",
+    projects: Mapped[list["Project"]] = relationship(
+        "Project",
         back_populates="user",
     )
 

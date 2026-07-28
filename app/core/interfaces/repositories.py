@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-from models import File, RenderProject, User
+from models import File, Project, User
 from pydantic import EmailStr
 from schemas.file import FileCreate
-from schemas.render_project import RenderProjectCreate
+from schemas.project import ProjectCreate
 from schemas.user import UserCreate
 
 
@@ -67,50 +67,50 @@ class AbstractUserRepository(ABC):
         """
 
 
-class AbstractRenderProjectRepository(ABC):
+class AbstractProjectRepository(ABC):
     """
     Интерфейс репозитория для работы с проектами.
     """
 
     @abstractmethod
-    async def get_by_id(self, render_project_id: int) -> RenderProject | None:
+    async def get_by_id(self, project_id: int) -> Project | None:
         """
         Получить информацию о проекте.
         """
 
     @abstractmethod
-    async def get_render_project_owner(self, render_project_id: int) -> User | None:
+    async def get_project_owner(self, project_id: int) -> User | None:
         """
         Получить информацию о владельце проекта.
         """
 
     @abstractmethod
-    async def get_user_render_projects(self, user_id: int) -> list[RenderProject]:
+    async def get_user_projects(self, user_id: int) -> list[Project]:
         """
         Посмотреть список проектов пользователя.
         """
 
     @abstractmethod
-    async def get_user_public_render_projects(
+    async def get_user_public_projects(
         self,
         user_id: int,
-    ) -> list[RenderProject]:
+    ) -> list[Project]:
         """
         Получить информацию о публичных проектах пользователя.
         """
 
     @abstractmethod
-    async def create_render_project(
+    async def create_project(
         self,
         user_id: int,
-        create_render_project_data: RenderProjectCreate,
-    ) -> RenderProject:
+        create_project_data: ProjectCreate,
+    ) -> Project:
         """
         Создать проект.
         """
 
     @abstractmethod
-    async def delete_by_id(self, render_project_id: int) -> None:
+    async def delete_by_id(self, project_id: int) -> None:
         """
         Удалить проект по id.
         """
