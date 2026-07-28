@@ -4,8 +4,8 @@ from fastapi import Depends
 from schemas.auth import LoginRequest
 from services.auth import AuthService
 from services.file_uploader import FileUploader
+from services.project import ProjectService
 from services.render import RenderService
-from services.render_project import RenderProjectService
 from services.user import UserService
 
 from dependencies.auth import (
@@ -16,7 +16,7 @@ from dependencies.auth import (
 from dependencies.services import (
     get_auth_service,
     get_input_file_uploader,
-    get_render_project_service,
+    get_project_service,
     get_render_service,
     get_user_service,
 )
@@ -57,7 +57,7 @@ RenderServiceDep = Annotated[
     Depends(get_render_service),
 ]
 
-RenderProjectServiceDep = Annotated[
-    RenderProjectService,
-    Depends(get_render_project_service),
+ProjectServiceDep = Annotated[
+    ProjectService,
+    Depends(get_project_service),
 ]

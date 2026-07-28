@@ -2,9 +2,9 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from core.constants import (
-    RENDER_PROJECT_DESCRIPTION_MAX_LENGTH,
-    RENDER_PROJECT_NAME_MAX_LENGTH,
-    RENDER_PROJECT_NAME_MIN_LENGTH,
+    PROJECT_DESCRIPTION_MAX_LENGTH,
+    PROJECT_NAME_MAX_LENGTH,
+    PROJECT_NAME_MIN_LENGTH,
     ProjectVisibility,
     RenderStatus,
 )
@@ -16,13 +16,13 @@ if TYPE_CHECKING:
     from models import File, User
 
 
-class RenderProject(Base):
-    __tablename__ = "render_project"
+class Project(Base):
+    __tablename__ = "projects"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(RENDER_PROJECT_NAME_MAX_LENGTH))
+    name: Mapped[str] = mapped_column(String(PROJECT_NAME_MAX_LENGTH))
     description: Mapped[str | None] = mapped_column(
-        String(RENDER_PROJECT_DESCRIPTION_MAX_LENGTH),
+        String(PROJECT_DESCRIPTION_MAX_LENGTH),
     )
     create_date: Mapped[datetime] = mapped_column(
         server_default=func.timezone("UTC", func.now()),
@@ -45,7 +45,7 @@ class RenderProject(Base):
 
     user: Mapped["User"] = relationship(
         "User",
-        back_populates="render_projects",
+        back_populates="projects",
     )
     source_file: Mapped["File"] = relationship(
         "File",
@@ -61,9 +61,9 @@ class RenderProject(Base):
     __table_args__ = (
         CheckConstraint(
             f"""
-            LENGTH(name) >= {RENDER_PROJECT_NAME_MIN_LENGTH}
-            AND LENGTH(name) <= {RENDER_PROJECT_NAME_MAX_LENGTH}
+            LENGTH(name) >= {PROJECT_NAME_MIN_LENGTH}
+            AND LENGTH(name) <= {PROJECT_NAME_MAX_LENGTH}
             """,
-            name="length_render_project_name",
+            name="length_project_name",
         ),
     )

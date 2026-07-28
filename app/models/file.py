@@ -6,7 +6,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from models import RenderProject
+    from models import Project
 
 
 class File(Base):
@@ -16,13 +16,13 @@ class File(Base):
     bucket: Mapped[str] = mapped_column(String(FILE_BUCKET_LENGTH))
     key: Mapped[str] = mapped_column(String(FILE_KEY_LENGTH))
 
-    project_as_source_file: Mapped["RenderProject"] = relationship(
-        "RenderProject",
-        foreign_keys="RenderProject.source_file_id",
+    project_as_source_file: Mapped["Project"] = relationship(
+        "Project",
+        foreign_keys="Project.source_file_id",
         back_populates="source_file",
     )
-    project_as_rendered_file: Mapped["RenderProject"] = relationship(
-        "RenderProject",
-        foreign_keys="RenderProject.rendered_file_id",
+    project_as_rendered_file: Mapped["Project"] = relationship(
+        "Project",
+        foreign_keys="Project.rendered_file_id",
         back_populates="rendered_file",
     )
