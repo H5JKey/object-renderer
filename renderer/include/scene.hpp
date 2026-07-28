@@ -54,9 +54,9 @@ class Scene {
     };
 
     struct Camera {
-        glm::vec3 origin;
-        glm::vec3 lookAt;
-        float fov;
+        glm::vec3 origin = glm::vec3(1, 0, 0);
+        glm::vec3 lookAt = glm::vec3(0, 0, 0);
+        float fov = glm::radians(70.f);
     };
 
    private:
