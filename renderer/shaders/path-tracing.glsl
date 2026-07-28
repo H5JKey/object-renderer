@@ -451,6 +451,7 @@ void main() {
     uint seed = uSeed + 6732 * uint(pixel.x) + 8157 * uint(pixel.y);
     vec2 jitter = random2(seed) - vec2(0.5, 0.5);
     vec2 uv = (2.0*vec2(pixel) + jitter - vec2(size)) / vec2(size).y;
+    uv.y = -uv.y;
     
     vec3 direction = normalize(forward + right * uFov * uv.x + up * uFov * uv.y);
 
