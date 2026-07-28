@@ -4,7 +4,7 @@ from core.constants import ProjectVisibility, RenderStatus
 from pydantic import BaseModel, ConfigDict
 
 
-class RenderProjectBase(BaseModel):
+class ProjectBase(BaseModel):
     """
     Базовая схема для создания проекта.
     """
@@ -15,7 +15,7 @@ class RenderProjectBase(BaseModel):
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
 
-class RenderProjectCreate(RenderProjectBase):
+class ProjectCreate(ProjectBase):
     """
     Схема для создания проекта.
     """
@@ -23,7 +23,7 @@ class RenderProjectCreate(RenderProjectBase):
     visibility: ProjectVisibility
 
 
-class RenderProjectResponse(RenderProjectBase):
+class ProjectResponse(ProjectBase):
     """
     Схема для вывода информации о проекте.
     """
@@ -34,11 +34,11 @@ class RenderProjectResponse(RenderProjectBase):
     id: int
 
 
-class RenderProjectResponseList(BaseModel):
+class ProjectResponseList(BaseModel):
     """
     Схема для вывода информации о списке проектов.
     """
 
-    render_projects: list[RenderProjectResponse]
+    project_list: list[ProjectResponse]
     size: int
     page: int

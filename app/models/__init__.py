@@ -1,9 +1,9 @@
 __all__ = (
     "File",
-    "RenderProject",
+    "Project",
     "User",
 )
 
 from .file import File
-from .render_project import RenderProject
+from .project import Project
 from .user import User

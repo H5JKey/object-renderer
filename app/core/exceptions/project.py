@@ -1,7 +1,7 @@
 from core.exceptions.base import NotFoundError
 
 
-class RenderProjectNotFoundError(NotFoundError):
+class ProjectNotFoundError(NotFoundError):
     """
     Ошибка, связанная с ненахождением проекта.
     """
@@ -10,12 +10,12 @@ class RenderProjectNotFoundError(NotFoundError):
         super().__init__(detail)
 
 
-class RenderProjectIdNotFoundError(RenderProjectNotFoundError):
+class ProjectIdNotFoundError(ProjectNotFoundError):
     """
     Ошибка, связанная с ненахождением id проекта.
     """
 
-    def __init__(self, render_project_id: int) -> None:
-        self.render_project_id = render_project_id
-        detail = f"Render project with id = {render_project_id} not found."
+    def __init__(self, project_id: int) -> None:
+        self.project_id = project_id
+        detail = f"Project with id = {project_id} not found."
         super().__init__(detail)
