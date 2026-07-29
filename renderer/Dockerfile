@@ -27,4 +27,5 @@ COPY renderer/ .
 RUN mkdir build && cd build && cmake ..
 RUN cd build && make -j$(nproc)
 
-CMD ["./build/renderer"]
+ENTRYPOINT ["./build/renderer"]
+CMD ["--help"]
