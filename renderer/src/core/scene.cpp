@@ -1,7 +1,5 @@
 #include "scene.hpp"
 
-#include <print>
-
 Scene::Scene() { backgroundColor = glm::vec3(0.3f, 0.3f, 0.45f); };
 
 Scene::Camera Scene::getCamera() const noexcept { return camera; }

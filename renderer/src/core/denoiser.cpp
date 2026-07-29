@@ -1,7 +1,5 @@
 #include "denoiser.hpp"
 
-#include <print>
-
 #include "logger.hpp"
 #include "utils.hpp"
 

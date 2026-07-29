@@ -7,7 +7,6 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 
 std::string utils::readFromFile(const std::filesystem::path& path) {

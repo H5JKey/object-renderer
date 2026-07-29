@@ -1,6 +1,5 @@
 #include "target-manager.hpp"
 
-#include <iostream>
 #include <stdexcept>
 
 #include "logger.hpp"

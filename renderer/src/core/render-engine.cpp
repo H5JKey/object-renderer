@@ -1,6 +1,5 @@
 #include "render-engine.hpp"
 
-#include <iostream>
 #include <string>
 
 #include "logger.hpp"
