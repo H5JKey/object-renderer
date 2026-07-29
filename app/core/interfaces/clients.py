@@ -29,7 +29,7 @@ class AbstractS3Client(ABC):
         """
 
 
-class AbstractUnitOfWork(ABC):
+class AbstractUnitOfWorkClient(ABC):
     """
     Интерфейс для использования unit of work паттерна.
     """
@@ -54,7 +54,10 @@ class AbstractUnitOfWork(ABC):
         """
 
     @abstractmethod
-    def get_repository(self, repository_class: type[AbstractRepository]):
+    def get_repository(  # type: ignore[no-untyped-def] # noqa: ANN201
+        self,
+        repository_class: type[AbstractRepository],
+    ):
         """
         Метод для получения репозитория
         """

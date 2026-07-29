@@ -1,8 +1,9 @@
 from core.interfaces.repositories import AbstractFileRepository
-from models import File
 from schemas.file import FileCreate
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from infrastructure.database.models import File
 
 
 class FileRepository(AbstractFileRepository):

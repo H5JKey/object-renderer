@@ -8,12 +8,13 @@ from core.constants import (
     RENDER_WIDTH_MAX_VALUE,
     RENDER_WIDTH_MIN_VALUE,
 )
-from infrastructure.database import Base
 from sqlalchemy import CheckConstraint, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from infrastructure.database.core import Base
+
 if TYPE_CHECKING:
-    from models import File, Project
+    from infrastructure.database.models import File, Project
 
 
 class Render(Base):
