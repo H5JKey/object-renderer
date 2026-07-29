@@ -7,6 +7,9 @@
 
 ## Headless OpenGL compute shader Path Tracer using EGL
 
+An offline renderer that runs entirely without a display server,
+using EGL for GPU-accelerated rendering in headless environments
+
 ## Demos
 
 <table>
@@ -19,10 +22,6 @@
     <td><img src="images/monument.png" alt="Monument" width="400"></td>
   </tr>
 </table>
-
-
-An offline renderer that runs entirely without a display server,
-using EGL for GPU-accelerated rendering in headless environments
 
 ## Key features:
 - GLSL compute shaders for path tracing
