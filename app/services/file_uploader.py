@@ -1,3 +1,4 @@
+from os import fstat
 from typing import BinaryIO
 from uuid import uuid4
 
@@ -35,10 +36,16 @@ class FileUploader(AbstractFileUploader):
             key=key,
             file=file,
         )
+        file_descriptor = file.fileno()
+        file_status = fstat(file_descriptor)
+        size = file_status.st_size
         create_file_data = FileCreate(
+            name=file.name,
+            size=size,
             bucket=self.bucket,
             key=key,
         )
+
         created_file = await self.file_repository.create_file(
             create_file_data=create_file_data,
         )
