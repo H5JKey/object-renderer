@@ -56,13 +56,13 @@ void RenderEngine::destroy() {
 
 RenderEngine::RenderEngine() : gen(rd()), uniformDistr(0, 0xFFFFFFFF), bvhBuilder(-1, 32) {
     try {
-        Logger::getInstance().log("Compiling path tracing shader", Logger::Level::INFO);
+        Logger::getInstance().log("Compiling path tracing shader", Logger::Level::DEBUG);
         pathTracingProgram = compileShader(utils::readFromFile("shaders/path-tracing.glsl"));
 
-        Logger::getInstance().log("Compiling post processing shader", Logger::Level::INFO);
+        Logger::getInstance().log("Compiling post processing shader", Logger::Level::DEBUG);
         postProcessingProgram = compileShader(utils::readFromFile("shaders/post-processing.glsl"));
 
-        Logger::getInstance().log("Compiling gbuffer shader", Logger::Level::INFO);
+        Logger::getInstance().log("Compiling gbuffer shader", Logger::Level::DEBUG);
         gbufferProgram = compileShader(utils::readFromFile("shaders/gbuffer.glsl"));
 
     } catch (const std::exception& e) {
@@ -233,7 +233,7 @@ void RenderEngine::pathTracing(RenderTarget& target, const GPUData& gpuData, con
 }
 
 void RenderEngine::fillGbuffer(RenderTarget& target, const GPUData& gpuData, const Scene::Camera& camera) {
-    Logger::getInstance().log("Filling gbuffer", Logger::Level::INFO);
+    Logger::getInstance().log("Filling gbuffer", Logger::Level::DEBUG);
     glUseProgram(gbufferProgram);
     glBindImageTexture(0, target.getNormalMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
     glBindImageTexture(1, target.getAlbedoMap(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
@@ -249,7 +249,7 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const GPUData& gpuData, con
     glUniform3f(glGetUniformLocation(gbufferProgram, "uOrigin"), camera.origin.x, camera.origin.y, camera.origin.z);
     glUniform3f(glGetUniformLocation(gbufferProgram, "uLookAt"), camera.lookAt.x, camera.lookAt.y, camera.lookAt.z);
     glUniform1f(glGetUniformLocation(gbufferProgram, "uFov"), tan(camera.fov / 2.0f));
-
+    auto start = std::chrono::steady_clock::now();
     int groupsX = (target.getWidth() + 15) / 16;
     int groupsY = (target.getHeight() + 15) / 16;
     glDispatchCompute(groupsX, groupsY, 1);
@@ -261,6 +261,9 @@ void RenderEngine::fillGbuffer(RenderTarget& target, const GPUData& gpuData, con
     }
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     glFinish();
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    Logger::getInstance().log(std::format("gbuffer filling finished in {}ms", duration.count()), Logger::Level::DEBUG);
     glUseProgram(0);
 }
 
@@ -269,7 +272,7 @@ void RenderEngine::postProcess(RenderTarget& target) const {
     glUseProgram(postProcessingProgram);
     glBindImageTexture(0, target.getDenoisedTexture(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
     glBindImageTexture(1, target.getOutputTexture(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
+    auto start = std::chrono::steady_clock::now();
     int groupsX = (target.getWidth() + 15) / 16;
     int groupsY = (target.getHeight() + 15) / 16;
     glDispatchCompute(groupsX, groupsY, 1);
@@ -281,11 +284,14 @@ void RenderEngine::postProcess(RenderTarget& target) const {
     }
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     glFinish();
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    Logger::getInstance().log(std::format("Post processing finished in {}ms", duration.count()), Logger::Level::INFO);
     glUseProgram(0);
 }
 
 void RenderEngine::uploadGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
-    Logger::getInstance().log("Filling GPU buffers with scene data", Logger::Level::INFO);
+    Logger::getInstance().log("Filling GPU buffers with scene data", Logger::Level::DEBUG);
     const auto& vertices = gpuData.vertices;
     const auto& texCoords = gpuData.texCoords;
     const auto& vertexIndices = gpuData.vertexIndices;
@@ -295,7 +301,7 @@ void RenderEngine::uploadGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
     const auto& bvhTriangles = bvh.getTriangles();
     Logger::getInstance().log(std::format("\n\tTotal triangles: {}\n\tBVH nodes: {}\n\tBVH depth: {}",
                                           vertexIndices.size() / 3, bvhNodes.size(), bvh.getDepth()),
-                              Logger::Level::INFO);
+                              Logger::Level::DEBUG);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexSSBO);
     glBufferData(GL_SHADER_STORAGE_BUFFER, vertices.size() * sizeof(glm::vec4), vertices.data(), GL_STATIC_DRAW);
@@ -321,7 +327,7 @@ void RenderEngine::uploadGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
 }
 
 RenderEngine::GPUData RenderEngine::convertSceneToGPUData(const Scene& scene) {
-    Logger::getInstance().log("Converting scene for GPU passing", Logger::Level::INFO);
+    Logger::getInstance().log("Preparing scene data for GPU", Logger::Level::INFO);
     GPUData data;
     for (const auto& mesh : scene.getMeshes()) {
         int indexOffset = data.vertices.size();
@@ -357,7 +363,7 @@ RenderEngine::GPUData RenderEngine::convertSceneToGPUData(const Scene& scene) {
 }
 
 void RenderEngine::loadTextures(const std::vector<Scene::TextureData>& textures) {
-    Logger::getInstance().log("Loading textures to GPU", Logger::Level::INFO);
+    Logger::getInstance().log("Loading textures to GPU", Logger::Level::DEBUG);
     int maxWidth = 1;
     int maxHeight = 1;
     for (const auto& texture : textures) {
@@ -401,7 +407,7 @@ void RenderEngine::loadTextures(const std::vector<Scene::TextureData>& textures)
     for (const auto& texture : textures) {
         Logger::getInstance().log(std::format("Loading texture {} to GPU ({}x{}), layer {}", texture.id, texture.width,
                                               texture.height, layer),
-                                  Logger::Level::INFO);
+                                  Logger::Level::DEBUG);
         if (texture.pixels.empty()) {
             Logger::getInstance().log("Loading texture with no data", Logger::Level::WARNING);
         }
@@ -429,7 +435,8 @@ void RenderEngine::loadTextures(const std::vector<Scene::TextureData>& textures)
 }
 
 void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, int samples) {
-    Logger::getInstance().log("Rendering started", Logger::Level::INFO);
+    Logger::getInstance().log(std::format("Rendering started ({}x{})", target.getWidth(), target.getHeight()),
+                              Logger::Level::INFO);
     RenderTarget::ContextGuard context(target);
     glClearTexImage(target.getRawTexture(), 0, GL_RGBA, GL_FLOAT, nullptr);
     glClearTexImage(target.getNormalMap(), 0, GL_RGBA, GL_FLOAT, nullptr);
@@ -450,7 +457,12 @@ void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, int sam
     pathTracing(target, gpuData, camera, backgroundColor, samples);
 
     fillGbuffer(target, gpuData, camera);
+    Logger::getInstance().log("Denoising started", Logger::Level::INFO);
+    auto start = std::chrono::steady_clock::now();
     denoiser.denoise(target);
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    Logger::getInstance().log(std::format("Denoising finished in {}ms", duration.count()), Logger::Level::INFO);
     postProcess(target);
 }
 
