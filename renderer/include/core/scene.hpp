@@ -80,4 +80,5 @@ class Scene {
     const std::vector<Mesh>& getMeshes() const noexcept;
     const std::vector<Material>& getMaterials() const noexcept;
     const std::vector<TextureData>& getTexturesData() const noexcept;
+    void setCamera(const Camera& camera);
 };

@@ -331,7 +331,7 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
 
             float distance = (maxSize * 0.5f) / std::tan(scene.camera.fov * 0.5f);
 
-            scene.camera.origin = center + glm::normalize(glm::vec3(1.f, 0.7f, 1.0f)) * 2.0f * distance;
+            scene.camera.origin = center + glm::normalize(glm::vec3(1.0f, 0.7f, 1.0f)) * 2.0f * distance;
             scene.camera.lookAt = center;
         } else {
             scene.camera.origin = glm::vec3(1, 0, 0);
@@ -348,19 +348,29 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
 }
 
 /* Add plane for better ligting visualization*/
-void SceneLoader::addPlane(Scene& scene) {
-    float lowest = std::numeric_limits<float>::infinity();
+void SceneLoader::addPlane(Scene& scene, float planeSize) {
+    glm::vec3 boxMax(-std::numeric_limits<float>::infinity()), boxMin(std::numeric_limits<float>::infinity());
+    bool empty = true;
     for (const auto& mesh : scene.getMeshes()) {
         for (auto v : mesh.vertices) {
             v = glm::vec3(mesh.transform * glm::vec4(v, 1.0));
-            lowest = std::min(lowest, v.y);
+            empty = false;
+            boxMax = glm::max(boxMax, v);
+            boxMin = glm::min(boxMin, v);
         }
     }
-
+    glm::vec3 center;
+    if (!empty) {
+        center = (boxMin + boxMax) / 2.0f;
+    } else {
+        center = glm::vec3(0, 0, 0);
+    }
     Scene::Mesh planeMesh;
     planeMesh.transform = glm::mat4(1.0);
-    planeMesh.vertices = {glm::vec3(-100.0f, lowest, 100.0f), glm::vec3(-100.0f, lowest, -100.0f),
-                          glm::vec3(100.0f, lowest, -100.0f), glm::vec3(100.0f, lowest, 100.0f)};
+    planeMesh.vertices = {glm::vec3(center.x - planeSize, boxMin.y, center.z + planeSize),
+                          glm::vec3(center.x - planeSize, boxMin.y, center.z - planeSize),
+                          glm::vec3(center.x + planeSize, boxMin.y, center.z - planeSize),
+                          glm::vec3(center.x + planeSize, boxMin.y, center.z + planeSize)};
     planeMesh.vertexIndices = {3, 1, 0, 2, 1, 3};
 
     Scene::Mesh::Primitive primitive1, primitive2;
