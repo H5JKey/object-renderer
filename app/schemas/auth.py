@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from schemas.constraints import (
+from schemas.constraints.user import (
     EmailConstraint,
     NameConstraint,
     PasswordConstraint,
