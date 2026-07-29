@@ -2,7 +2,7 @@ from typing import ClassVar
 
 from pydantic import BaseModel, ConfigDict
 
-from schemas.constraints import (
+from schemas.constraints.render import (
     HeightConstraint,
     SampleConstraint,
     WidthConstraint,
