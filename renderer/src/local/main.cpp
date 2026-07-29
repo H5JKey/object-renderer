@@ -13,15 +13,17 @@ void printHelp(std::string_view programName) {
     std::println("Usage:");
     std::println(" {} <width> <height> <samples> <input_scene> [OPTIONS]\n", programName);
     std::println("Arguments:");
-    std::println("  width:        Output image width");
-    std::println("  height:       Output image height");
-    std::println("  samples:      Path tracer samples");
-    std::println("  input_model:  Path to 3D scene file (only .glb, .gltf supported)");
+    std::println("  width:         Output image width");
+    std::println("  height:        Output image height");
+    std::println("  samples:       Path tracer samples");
+    std::println("  input_model:   Path to 3D scene file (only .glb, .gltf supported)");
     std::println("Options:");
-    std::println("-h, --help      Shows this help message");
-    std::println("-o, --output    Output image path (default: output.png)");
-    std::println("-v, --verbose   Print detailed logs");
-    std::println("-d, --debug     Output debug images: raw, albedo, normals");
+    std::println(" -h, --help      Shows this help message");
+    std::println(" -o, --output    Output image path (default: output.png)");
+    std::println(" -v, --verbose   Print detailed logs");
+    std::println(" -d, --debug     Output debug images: raw, albedo, normals");
+    std::println(" -p, --plane     Add plane to scene");
+    std::println(" -c, --camera    Set camera properties");
 }
 
 void printUsage(std::string_view programName) {
@@ -46,6 +48,7 @@ int main(int argc, char* argv[]) {
     std::string input;
     std::string output = "output.png";
     bool debugImages = false;
+    bool plane = true;
     try {
         width = std::stoi(argv[1]);
         height = std::stoi(argv[2]);
@@ -57,6 +60,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     input = argv[4];
+    bool showPlane = false;
+    float planeSize = 0;
+    Scene::Camera userCamera;
+    bool cameraSet = false;
+
     for (int i = 5; i < argc; i++) {
         std::string arg = argv[i];
         if (arg == "-h" || arg == "--help") {
@@ -68,13 +76,38 @@ int main(int argc, char* argv[]) {
             debugImages = true;
         else if (arg == "-o" || arg == "--output") {
             if (i + 1 == argc) {
-                std::println(std::cerr, "Error: -o requires an argument");
+                std::println(std::cerr, "Error: {} requires an argument", arg);
                 return EXIT_FAILURE;
             }
             output = argv[++i];
             size_t dot = output.find_last_of('.');
             if (dot != std::string::npos) {
                 output = output.substr(0, dot);
+            }
+        } else if (arg == "-p" || arg == "--plane") {
+            showPlane = true;
+            try {
+                planeSize = std::stof(argv[++i]);
+            } catch (const std::exception& e) {
+                std::println(std::cerr, "Error: {} requires number <size:float>", arg);
+                return EXIT_FAILURE;
+            }
+        } else if (arg == "-c" || arg == "--camera") {
+            if (i + 7 >= argc) {
+                std::println(std::cerr, "Error: {} requires 7 numbers <origin:vec3> <lookAt:vec3> <fov:float>", arg);
+                return EXIT_FAILURE;
+            }
+            try {
+                userCamera.origin.x = std::stof(argv[++i]);
+                userCamera.origin.y = std::stof(argv[++i]);
+                userCamera.origin.z = std::stof(argv[++i]);
+                userCamera.lookAt.x = std::stof(argv[++i]);
+                userCamera.lookAt.y = std::stof(argv[++i]);
+                userCamera.lookAt.z = std::stof(argv[++i]);
+                userCamera.fov = std::stof(argv[++i]);
+            } catch (const std::exception& e) {
+                std::println(std::cerr, "Error: {} requires 7 numbers <origin:vec3> <lookAt:vec3> <fov:float>", arg);
+                return EXIT_FAILURE;
             }
         } else {
             std::println(std::cerr, "Unrecognized option: {}", argv[i]);
@@ -88,7 +121,8 @@ int main(int argc, char* argv[]) {
         RenderEngine engine;
         SceneLoader loader;
         Scene scene = loader.loadGltf(input);
-        loader.addPlane(scene);
+        if (showPlane) loader.addPlane(scene, planeSize);
+        if (cameraSet) scene.setCamera(userCamera);
         std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(width, height);
         engine.renderFrame(*egl, scene, samples);
 
