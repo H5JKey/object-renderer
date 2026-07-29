@@ -9,7 +9,7 @@
 #include "utils.hpp"
 
 void printHelp(std::string_view programName) {
-    std::println("{} - offline path tracer\n", programName);
+    std::println("{} - Offline Path Tracer\n", programName);
     std::println("Usage:");
     std::println(" {} <width> <height> <samples> <input_scene> [OPTIONS]\n", programName);
     std::println("Arguments:");
