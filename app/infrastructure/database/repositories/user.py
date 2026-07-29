@@ -1,9 +1,10 @@
 from core.interfaces.repositories import AbstractUserRepository
-from models import User
 from pydantic import EmailStr
 from schemas.user import UserCreate, UserUpdate
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from infrastructure.database.models import User
 
 
 class UserRepository(AbstractUserRepository):

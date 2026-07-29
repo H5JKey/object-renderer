@@ -5,7 +5,6 @@ from dependencies.annotations import (
 )
 from fastapi import APIRouter, status
 from schemas.project import (
-    ProjectResponse,
     ProjectResponseList,
     ProjectWithRenderCreate,
     ProjectWithRenderResponse,
@@ -19,14 +18,14 @@ router = APIRouter(
 
 @router.get(
     "/{project_id}",
-    response_model=ProjectResponse,
+    response_model=ProjectWithRenderResponse,
     status_code=status.HTTP_200_OK,
 )
 async def get_project(
     project_id: int,
     user_id: AuthUserByAccessTokenDep,
     project_service: ProjectServiceDep,
-) -> ProjectResponse:
+) -> ProjectWithRenderResponse:
     return await project_service.get_by_id(
         project_id=project_id,
         user_id=user_id,

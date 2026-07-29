@@ -23,6 +23,18 @@ class AbstractFileUploader(ABC):
         """
 
 
+class AbstractRenderService(ABC):
+    """
+    Интерфейс для рендера моделей.
+    """
+
+    @abstractmethod
+    async def send_event_render_model(self, create_render_data: RenderCreate) -> None:
+        """
+        Метод для создания моделей.
+        """
+
+
 class AbstractAuthService(ABC):
     """
     Интерфейс для сервиса аутентификации / авторизации.
@@ -50,16 +62,4 @@ class AbstractAuthService(ABC):
     async def refresh_access_token(self, user_id: int) -> TokenInfo:
         """
         Обновление токена доступа.
-        """
-
-
-class AbstractRenderService(ABC):
-    """
-    Интерфейс для рендера моделей.
-    """
-
-    @abstractmethod
-    async def send_event_render_model(self, create_render_data: RenderCreate) -> None:
-        """
-        Метод для создания моделей.
         """

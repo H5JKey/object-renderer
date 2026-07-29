@@ -1,12 +1,13 @@
 from typing import TYPE_CHECKING
 
 from core.constants import FILE_BUCKET_LENGTH, FILE_KEY_LENGTH
-from infrastructure.database import Base
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from infrastructure.database.core import Base
+
 if TYPE_CHECKING:
-    from models import Project, Render
+    from infrastructure.database.models import Project, Render
 
 
 class File(Base):

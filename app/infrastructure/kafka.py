@@ -48,3 +48,8 @@ class ConfluentKafkaConsumer(KafkaConsumer):
 
     async def poll(self, timeout: int = 0) -> None:  # noqa: ASYNC109
         await asyncio.to_thread(self._consumer.poll, timeout)
+
+
+def get_producer_config() -> dict:  # type: ignore[type-arg]
+    config = {"bootstrap.servers": "kafka:9092"}
+    return config
