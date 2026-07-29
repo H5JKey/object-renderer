@@ -10,7 +10,7 @@ class RenderService(AbstractRenderService):
         self.producer = producer
         self.topic = "create_render"
 
-    async def create_render(self, create_render_data: RenderCreate) -> None:
+    async def send_event_render_model(self, create_render_data: RenderCreate) -> None:
         render_data = create_render_data.model_dump()
         serialized_value = json.dumps(render_data)
         self.producer.produce(topic=self.topic, value=serialized_value)  # type: ignore[call-arg]

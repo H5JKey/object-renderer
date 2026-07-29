@@ -11,6 +11,5 @@ class RenderRepository(AbstractRenderRepository):
     async def create_render(self, create_render_data: RenderCreate) -> Render:
         render = Render(**create_render_data.model_dump())
         self.session.add(render)
-        await self.session.commit()
-        await self.session.refresh(render)
+        await self.session.flush()
         return render
