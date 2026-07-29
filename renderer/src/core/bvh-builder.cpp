@@ -1,7 +1,6 @@
 #include "bvh-builder.hpp"
 
 #include <algorithm>
-#include <iostream>
 #include <stdexcept>
 
 BVHBuilder::BVHBuilder(int depthLimit, int trianglesLimit) {

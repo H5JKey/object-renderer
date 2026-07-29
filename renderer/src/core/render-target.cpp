@@ -1,10 +1,9 @@
 #include "render-target.hpp"
 
-#include <iostream>
+#include <format>
 #include <stdexcept>
 
 #include "logger.hpp"
-#include "utils.hpp"
 
 EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config, EGLContext context)
     : RenderTarget(width, height), display(display), context(context) {
