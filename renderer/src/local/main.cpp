@@ -16,7 +16,7 @@ void printHelp(std::string_view programName) {
     std::println("  width:         Output image width");
     std::println("  height:        Output image height");
     std::println("  samples:       Path tracer samples");
-    std::println("  input_model:   Path to 3D scene file (only .glb, .gltf supported)");
+    std::println("  input_scene:   Path to 3D scene file (only .glb, .gltf supported)");
     std::println("Options:");
     std::println(" -h, --help      Shows this help message");
     std::println(" -o, --output    Output image path (default: output.png)");
