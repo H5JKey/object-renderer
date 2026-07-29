@@ -3,11 +3,11 @@ from typing import cast
 from core.constants import ProjectVisibility
 from core.exceptions.auth import PermissionDeniedError
 from core.exceptions.project import ProjectIdNotFoundError
-from core.interfaces.repositories import (
-    AbstractProjectRepository,
-    AbstractRenderRepository,
-)
+from core.interfaces.clients import AbstractUnitOfWork
+from core.interfaces.services import AbstractRenderService
 from models import User
+from repositories.project import ProjectRepository
+from repositories.render import RenderRepository
 from schemas.project import (
     ProjectResponse,
     ProjectResponseList,
@@ -16,15 +16,15 @@ from schemas.project import (
 )
 from schemas.render import RenderResponse
 
-from core.interfaces.services import AbstractRenderService
-
 
 class ProjectService:
     def __init__(
         self,
-        project_repository: AbstractProjectRepository,
+        unit_of_work: AbstractUnitOfWork,
     ) -> None:
-        self.project_repository = project_repository
+        self.unit_of_work = unit_of_work
+        self.project_repository = self.unit_of_work.get_repository(ProjectRepository)
+        self.render_repository = self.unit_of_work.get_repository(RenderRepository)
 
     async def get_by_id(
         self,
@@ -91,19 +91,18 @@ class ProjectService:
         self,
         user_id: int,
         create_project: ProjectWithRenderCreate,
-        render_repository: AbstractRenderRepository,
         render_service: AbstractRenderService,
     ) -> ProjectWithRenderResponse:
         create_project_data = create_project.project
         create_render_data = create_project.render
-        render = await render_repository.create_render(create_render_data)
-        render_response = RenderResponse.model_validate(render)
+        render = await self.render_repository.create_render(create_render_data)
         project = await self.project_repository.create_project(
             user_id=user_id,
-            render_id=render_response.id,
+            render_id=render.id,
             create_project_data=create_project_data,
         )
-        await render_service.create_render(create_render_data)
+        await render_service.send_event_render_model(create_render_data)
+        render_response = RenderResponse.model_validate(render)
         project_response = ProjectResponse.model_validate(project)
         project_with_render_response = ProjectWithRenderResponse(
             render=render_response,

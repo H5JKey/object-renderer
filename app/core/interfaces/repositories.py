@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from models import File, Project, User, Render
+from models import File, Project, Render, User
 from pydantic import EmailStr
 from schemas.file import FileCreate
 from schemas.project import ProjectCreate
@@ -8,7 +8,13 @@ from schemas.render import RenderCreate
 from schemas.user import UserCreate, UserUpdate
 
 
-class AbstractFileRepository(ABC):
+class AbstractRepository(ABC):
+    """
+    Родительский класс-интерфейс, от которого наследуются другие репозитории.
+    """
+
+
+class AbstractFileRepository(AbstractRepository):
     """
     Интерфейс репозитория для работы с файлами.
     """
@@ -32,7 +38,7 @@ class AbstractFileRepository(ABC):
         """
 
 
-class AbstractUserRepository(ABC):
+class AbstractUserRepository(AbstractRepository):
     """
     Интерфейс репозитория для работы с пользователями.
     """
@@ -78,7 +84,7 @@ class AbstractUserRepository(ABC):
         """
 
 
-class AbstractProjectRepository(ABC):
+class AbstractProjectRepository(AbstractRepository):
     """
     Интерфейс репозитория для работы с проектами.
     """
@@ -128,7 +134,7 @@ class AbstractProjectRepository(ABC):
         """
 
 
-class AbstractRenderRepository(ABC):
+class AbstractRenderRepository(AbstractRepository):
     """
     Интерфейс для репозитория рендеров.
     """
