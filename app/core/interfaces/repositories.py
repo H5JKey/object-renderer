@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from models import File, Project, Render, User
+from infrastructure.database.models import File, Project, Render, User
 from pydantic import EmailStr
 from schemas.file import FileCreate
 from schemas.project import ProjectCreate
@@ -8,10 +8,22 @@ from schemas.render import RenderCreate
 from schemas.user import UserCreate, UserUpdate
 
 
-class AbstractRepository(ABC):
+class AbstractRepository(ABC):  # noqa: B024
     """
     Родительский класс-интерфейс, от которого наследуются другие репозитории.
     """
+
+
+class AbstractRenderRepository(AbstractRepository):
+    """
+    Интерфейс для репозитория рендеров.
+    """
+
+    @abstractmethod
+    async def create_render(self, create_render_data: RenderCreate) -> Render:
+        """
+        Метод для создания записи о рендере.
+        """
 
 
 class AbstractFileRepository(AbstractRepository):
@@ -131,16 +143,4 @@ class AbstractProjectRepository(AbstractRepository):
     async def delete_by_id(self, project_id: int) -> None:
         """
         Удалить проект по id.
-        """
-
-
-class AbstractRenderRepository(AbstractRepository):
-    """
-    Интерфейс для репозитория рендеров.
-    """
-
-    @abstractmethod
-    async def create_render(self, create_render_data: RenderCreate) -> Render:
-        """
-        Метод для создания записи о рендере.
         """

@@ -1,9 +1,11 @@
 from core.constants import ProjectVisibility
 from core.interfaces.repositories import AbstractProjectRepository
-from models import Project, User
 from schemas.project import ProjectCreate
 from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
+
+from infrastructure.database.models import Project, User
 
 
 class ProjectRepository(AbstractProjectRepository):
@@ -11,10 +13,13 @@ class ProjectRepository(AbstractProjectRepository):
         self.session = session
 
     async def get_by_id(self, project_id: int) -> Project | None:
-        return await self.session.get(
-            entity=Project,
-            ident=project_id,
+        stmt = (
+            select(Project)
+            .options(joinedload(Project.render))
+            .where(Project.id == project_id)
         )
+        result = await self.session.execute(stmt)
+        return result.scalar()
 
     async def get_project_owner(self, project_id: int) -> User | None:
         stmt = select(User).join(User.projects).where(Project.id == project_id)

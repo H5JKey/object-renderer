@@ -3,11 +3,13 @@ from typing import cast
 from core.constants import ProjectVisibility
 from core.exceptions.auth import PermissionDeniedError
 from core.exceptions.project import ProjectIdNotFoundError
-from core.interfaces.clients import AbstractUnitOfWork
+from core.exceptions.user import UserIdNotFoundError
+from core.interfaces.clients import AbstractUnitOfWorkClient
 from core.interfaces.services import AbstractRenderService
-from models import User
-from repositories.project import ProjectRepository
-from repositories.render import RenderRepository
+from infrastructure.database.models import User
+from infrastructure.database.repositories.project import ProjectRepository
+from infrastructure.database.repositories.render import RenderRepository
+from infrastructure.database.repositories.user import UserRepository
 from schemas.project import (
     ProjectResponse,
     ProjectResponseList,
@@ -20,9 +22,10 @@ from schemas.render import RenderResponse
 class ProjectService:
     def __init__(
         self,
-        unit_of_work: AbstractUnitOfWork,
+        unit_of_work: AbstractUnitOfWorkClient,
     ) -> None:
         self.unit_of_work = unit_of_work
+        self.user_repository = self.unit_of_work.get_repository(UserRepository)
         self.project_repository = self.unit_of_work.get_repository(ProjectRepository)
         self.render_repository = self.unit_of_work.get_repository(RenderRepository)
 
@@ -30,7 +33,7 @@ class ProjectService:
         self,
         project_id: int,
         user_id: int,
-    ) -> ProjectResponse:
+    ) -> ProjectWithRenderResponse:
         project = await self.project_repository.get_by_id(
             project_id,
         )
@@ -48,7 +51,7 @@ class ProjectService:
             detail = "You are not allowed to watch this project."
             raise PermissionDeniedError(detail)
 
-        return ProjectResponse.model_validate(project)
+        return ProjectWithRenderResponse.model_validate(project)
 
     async def get_user_projects(
         self,
@@ -56,6 +59,10 @@ class ProjectService:
         size: int,
         page: int,
     ) -> ProjectResponseList:
+        user = await self.user_repository.get_by_id(user_id)
+        if user is None:
+            raise UserIdNotFoundError(user_id)
+
         get_projects = self.project_repository.get_user_projects(
             user_id,
         )
@@ -74,10 +81,13 @@ class ProjectService:
         size: int,
         page: int,
     ) -> ProjectResponseList:
+        user = await self.user_repository.get_by_id(user_id)
+        if user is None:
+            raise UserIdNotFoundError(user_id)
+
         get_projects = self.project_repository.get_user_public_projects(
             user_id,
         )
-
         projects = [
             ProjectResponse.model_validate(project) for project in await get_projects
         ]

@@ -1,7 +1,8 @@
 from core.interfaces.repositories import AbstractRenderRepository
-from models import Render
 from schemas.render import RenderCreate
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from infrastructure.database.models import Render
 
 
 class RenderRepository(AbstractRenderRepository):

@@ -8,12 +8,13 @@ from core.constants import (
     ProjectVisibility,
     RenderStatus,
 )
-from infrastructure.database import Base
 from sqlalchemy import CheckConstraint, Enum, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from infrastructure.database.core import Base
+
 if TYPE_CHECKING:
-    from models import File, Render, User
+    from infrastructure.database.models import File, Render, User
 
 
 class Project(Base):

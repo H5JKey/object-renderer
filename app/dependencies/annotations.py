@@ -1,8 +1,8 @@
 from typing import Annotated
 
 from fastapi import Depends
-from repositories.render import RenderRepository
-from repositories.unit_of_work import UnitOfWork
+from infrastructure.database.repositories.render import RenderRepository
+from infrastructure.database.unit_of_work import UnitOfWork
 from schemas.auth import LoginRequest
 from services.auth import AuthService
 from services.file_uploader import FileUploader
@@ -15,13 +15,12 @@ from dependencies.auth import (
     get_auth_user_by_refresh_token,
     get_login_request,
 )
+from dependencies.repositories import get_render_repository, get_unit_of_work
 from dependencies.services import (
     get_auth_service,
     get_input_file_uploader,
     get_project_service,
-    get_render_repository,
     get_render_service,
-    get_unit_of_work,
     get_user_service,
 )
 
