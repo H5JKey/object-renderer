@@ -13,7 +13,7 @@ from sqlalchemy import CheckConstraint, Enum, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from models import File, User
+    from models import File, Render, User
 
 
 class Project(Base):
@@ -27,12 +27,14 @@ class Project(Base):
     create_date: Mapped[datetime] = mapped_column(
         server_default=func.timezone("UTC", func.now()),
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+    )
     source_file_id: Mapped[int] = mapped_column(
         ForeignKey("files.id", ondelete="CASCADE"),
     )
-    rendered_file_id: Mapped[int | None] = mapped_column(
-        ForeignKey("files.id", ondelete="CASCADE"),
+    render_id: Mapped[int] = mapped_column(
+        ForeignKey("renders.id", ondelete="CASCADE"),
     )
     status: Mapped[RenderStatus] = mapped_column(
         Enum(RenderStatus, name="render_status"),
@@ -52,10 +54,10 @@ class Project(Base):
         foreign_keys=[source_file_id],
         back_populates="project_as_source_file",
     )
-    rendered_file: Mapped["File"] = relationship(
-        "File",
-        foreign_keys=[rendered_file_id],
-        back_populates="project_as_rendered_file",
+    render: Mapped["Render"] = relationship(
+        "Render",
+        foreign_keys=[render_id],
+        back_populates="project",
     )
 
     __table_args__ = (

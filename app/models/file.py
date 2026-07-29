@@ -6,7 +6,7 @@ from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from models import Project
+    from models import Project, Render
 
 
 class File(Base):
@@ -21,8 +21,8 @@ class File(Base):
         foreign_keys="Project.source_file_id",
         back_populates="source_file",
     )
-    project_as_rendered_file: Mapped["Project"] = relationship(
-        "Project",
-        foreign_keys="Project.rendered_file_id",
-        back_populates="rendered_file",
+    render: Mapped["Render"] = relationship(
+        "Render",
+        foreign_keys="Render.file_id",
+        back_populates="file",
     )

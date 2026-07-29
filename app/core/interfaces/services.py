@@ -3,6 +3,7 @@ from typing import BinaryIO
 
 from schemas.auth import LoginRequest, RegisterRequest
 from schemas.file import FileResponse
+from schemas.render import RenderCreate
 from schemas.token import TokenInfo
 
 
@@ -49,4 +50,16 @@ class AbstractAuthService(ABC):
     async def refresh_access_token(self, user_id: int) -> TokenInfo:
         """
         Обновление токена доступа.
+        """
+
+
+class AbstractRenderService(ABC):
+    """
+    Интерфейс для рендера моделей.
+    """
+
+    @abstractmethod
+    async def create_render(self, create_render_data: RenderCreate) -> None:
+        """
+        Метод для создания моделей.
         """

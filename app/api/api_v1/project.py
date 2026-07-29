@@ -1,9 +1,15 @@
-from dependencies.annotations import AuthUserByAccessTokenDep, ProjectServiceDep
+from dependencies.annotations import (
+    AuthUserByAccessTokenDep,
+    ProjectServiceDep,
+    RenderRepositoryDep,
+    RenderServiceDep,
+)
 from fastapi import APIRouter, status
 from schemas.project import (
-    ProjectCreate,
     ProjectResponse,
     ProjectResponseList,
+    ProjectWithRenderCreate,
+    ProjectWithRenderResponse,
 )
 
 router = APIRouter(
@@ -66,17 +72,21 @@ async def get_user_public_projects(
 
 @router.post(
     "/create",
-    response_model=ProjectResponse,
+    response_model=ProjectWithRenderResponse,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_project(
     user_id: AuthUserByAccessTokenDep,
-    create_project_data: ProjectCreate,
+    create_project_data: ProjectWithRenderCreate,
     project_service: ProjectServiceDep,
-) -> ProjectResponse:
+    render_repository: RenderRepositoryDep,
+    render_service: RenderServiceDep,
+) -> ProjectWithRenderResponse:
     return await project_service.create_project(
         user_id=user_id,
         create_project=create_project_data,
+        render_repository=render_repository,
+        render_service=render_service,
     )
 
 

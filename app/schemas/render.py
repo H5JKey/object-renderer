@@ -1,6 +1,12 @@
-from pydantic import BaseModel
+from typing import ClassVar
 
-from schemas.constraints import FovConstraint, SampleConstraint, SizeConstraint
+from pydantic import BaseModel, ConfigDict
+
+from schemas.constraints import (
+    HeightConstraint,
+    SampleConstraint,
+    WidthConstraint,
+)
 
 
 class RenderBase(BaseModel):
@@ -8,13 +14,13 @@ class RenderBase(BaseModel):
     Базовая схема для рендера.
     """
 
-    width: SizeConstraint
-    height: SizeConstraint
+    width: WidthConstraint
+    height: HeightConstraint
     samples: SampleConstraint
-    use_denoiser: bool
-    fov: FovConstraint
-    camera_coordinates: tuple[float, float, float]
-    camera_view_coordinates: tuple[float, float, float]
+    denoiser: bool
+    gpu: bool
+
+    model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
 
 class RenderCreate(RenderBase):
@@ -22,16 +28,11 @@ class RenderCreate(RenderBase):
     Схема для создания рендера.
     """
 
-    width: SizeConstraint = 600
-    height: SizeConstraint = 800
-    samples: SampleConstraint = 20
-    use_denoiser: bool = True
-    fov: FovConstraint = 90
-    camera_coordinates: tuple[float, float, float] = (100, 100, 100)
-    camera_view_coordinates: tuple[float, float, float] = (0, 0, 0)
-
 
 class RenderResponse(RenderBase):
     """
     Схема для вывода информации о рендере.
     """
+
+    file_id: int | None
+    id: int
