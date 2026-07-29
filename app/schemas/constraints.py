@@ -2,6 +2,12 @@ from typing import Annotated
 
 from annotated_types import Len, MaxLen
 from core.constants import (
+    RENDER_HEIGHT_MAX_VALUE,
+    RENDER_HEIGHT_MIN_VALUE,
+    RENDER_SAMPLES_MAX_VALUE,
+    RENDER_SAMPLES_MIN_VALUE,
+    RENDER_WIDTH_MAX_VALUE,
+    RENDER_WIDTH_MIN_VALUE,
     USER_EMAIL_MAX_LENGTH,
     USER_EMAIL_MIN_LENGTH,
     USER_ENCRYPTED_PASSWORD_MAX_LENGTH,
@@ -63,18 +69,27 @@ PasswordConstraint = Annotated[
     ),
 ]
 
-SizeConstraint = Annotated[
+WidthConstraint = Annotated[
     int,
-    Field(ge=1),
+    Field(
+        ge=RENDER_WIDTH_MIN_VALUE,
+        le=RENDER_WIDTH_MAX_VALUE,
+    ),
+]
+
+HeightConstraint = Annotated[
+    int,
+    Field(
+        ge=RENDER_HEIGHT_MIN_VALUE,
+        le=RENDER_HEIGHT_MAX_VALUE,
+    ),
 ]
 
 
 SampleConstraint = Annotated[
     int,
-    Field(ge=1),
-]
-
-FovConstraint = Annotated[
-    int,
-    Field(gt=0),
+    Field(
+        ge=RENDER_SAMPLES_MIN_VALUE,
+        le=RENDER_SAMPLES_MAX_VALUE,
+    ),
 ]

@@ -8,6 +8,7 @@ from infrastructure.kafka import ConfluentKafkaProducer
 from infrastructure.minio.client import MinioClient
 from repositories.file import FileRepository
 from repositories.project import ProjectRepository
+from repositories.render import RenderRepository
 from repositories.user import UserRepository
 from services.auth import AuthService
 from services.file_uploader import FileUploader
@@ -117,11 +118,23 @@ async def get_project_repository(
     yield project_repository
 
 
+async def get_render_repository(
+    session: Annotated[
+        AsyncSession,
+        Depends(get_session),
+    ],
+) -> AsyncGenerator[RenderRepository]:
+    render_repository = RenderRepository(session)
+    yield render_repository
+
+
 async def get_project_service(
     project_repository: Annotated[
         ProjectRepository,
         Depends(get_project_repository),
     ],
 ) -> AsyncGenerator[ProjectService]:
-    project_service = ProjectService(project_repository)
+    project_service = ProjectService(
+        project_repository,
+    )
     yield project_service

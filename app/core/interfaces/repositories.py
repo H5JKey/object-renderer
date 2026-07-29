@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 
-from models import File, Project, User
+from models import File, Project, User, Render
 from pydantic import EmailStr
 from schemas.file import FileCreate
 from schemas.project import ProjectCreate
+from schemas.render import RenderCreate
 from schemas.user import UserCreate, UserUpdate
 
 
@@ -62,7 +63,9 @@ class AbstractUserRepository(ABC):
 
     @abstractmethod
     async def update_user(
-        self, user_id: int, update_user_data: UserUpdate,
+        self,
+        user_id: int,
+        update_user_data: UserUpdate,
     ) -> User | None:
         """
         Метод для обновления данных о пользователе.
@@ -111,6 +114,7 @@ class AbstractProjectRepository(ABC):
     async def create_project(
         self,
         user_id: int,
+        render_id: int,
         create_project_data: ProjectCreate,
     ) -> Project:
         """
@@ -121,4 +125,16 @@ class AbstractProjectRepository(ABC):
     async def delete_by_id(self, project_id: int) -> None:
         """
         Удалить проект по id.
+        """
+
+
+class AbstractRenderRepository(ABC):
+    """
+    Интерфейс для репозитория рендеров.
+    """
+
+    @abstractmethod
+    async def create_render(self, create_render_data: RenderCreate) -> Render:
+        """
+        Метод для создания записи о рендере.
         """

@@ -42,10 +42,12 @@ class ProjectRepository(AbstractProjectRepository):
     async def create_project(
         self,
         user_id: int,
+        render_id: int,
         create_project_data: ProjectCreate,
     ) -> Project:
         project = Project(
             user_id=user_id,
+            render_id=render_id,
             **create_project_data.model_dump(),
         )
         self.session.add(project)
