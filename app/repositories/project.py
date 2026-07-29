@@ -51,8 +51,7 @@ class ProjectRepository(AbstractProjectRepository):
             **create_project_data.model_dump(),
         )
         self.session.add(project)
-        await self.session.commit()
-        await self.session.refresh(project)
+        await self.session.flush()
         return project
 
     async def delete_by_id(self, project_id: int) -> None:

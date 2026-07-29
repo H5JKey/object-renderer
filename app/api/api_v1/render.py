@@ -16,4 +16,4 @@ async def create_render(
     create_render_data: RenderCreate,
     render_service: RenderServiceDep,
 ) -> None:
-    await render_service.create_render(create_render_data)
+    await render_service.send_event_render_model(create_render_data)

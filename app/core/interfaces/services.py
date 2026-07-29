@@ -59,7 +59,7 @@ class AbstractRenderService(ABC):
     """
 
     @abstractmethod
-    async def create_render(self, create_render_data: RenderCreate) -> None:
+    async def send_event_render_model(self, create_render_data: RenderCreate) -> None:
         """
         Метод для создания моделей.
         """
