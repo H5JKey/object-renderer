@@ -1,10 +1,11 @@
 import json
 
 from core.interfaces.kafka import KafkaProducer
+from core.interfaces.services import AbstractRenderService
 from schemas.render import RenderCreate
 
 
-class RenderService:
+class RenderService(AbstractRenderService):
     def __init__(self, producer: KafkaProducer) -> None:
         self.producer = producer
         self.topic = "create_render"

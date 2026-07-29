@@ -3,6 +3,8 @@ from typing import ClassVar
 from core.constants import ProjectVisibility, RenderStatus
 from pydantic import BaseModel, ConfigDict
 
+from schemas.render import RenderCreate, RenderResponse
+
 
 class ProjectBase(BaseModel):
     """
@@ -23,15 +25,42 @@ class ProjectCreate(ProjectBase):
     visibility: ProjectVisibility
 
 
+class ProjectWithRenderCreate(BaseModel):
+    """
+    Схема для создания проекта c данными о рендере.
+    """
+
+    render: RenderCreate
+    project: ProjectCreate
+
+
 class ProjectResponse(ProjectBase):
     """
     Схема для вывода информации о проекте.
     """
 
-    render_file_id: int | None = None
     visibility: ProjectVisibility
     status: RenderStatus
+    render_id: int | None
     id: int
+
+
+class ProjectWithRenderResponse(ProjectResponse):
+    """
+    Схема для вывода информации о проекте с рендером.
+    """
+
+    render: RenderResponse
+
+
+class ProjectWithRenderResponseList(BaseModel):
+    """
+    Схема для вывода информации о списке проектов с рендером.
+    """
+
+    project_list: list[ProjectWithRenderResponse]
+    size: int
+    page: int
 
 
 class ProjectResponseList(BaseModel):
