@@ -13,7 +13,7 @@ TargetManager& TargetManager::getInstance() {
 void TargetManager::init() {
     TargetManager& self = getInstance();
     if (!self.initialized) {
-        Logger::getInstance().log("Initializing EGL", Logger::Level::INFO);
+        Logger::getInstance().log("Initializing EGL", Logger::Level::DEBUG);
         self.display = eglGetPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA, EGL_DEFAULT_DISPLAY, nullptr);
         if (self.display == EGL_NO_DISPLAY) {
             Logger::getInstance().log("Failed to get EGL display", Logger::Level::FATAL);
@@ -77,7 +77,7 @@ void TargetManager::init() {
         Logger::getInstance().log(
             std::format("\n\tVendor   : {}\n\tVendor   : {}\n\tVersion  : {}", (const char*)glGetString(GL_VENDOR),
                         (const char*)glGetString(GL_RENDERER), (const char*)glGetString(GL_VERSION)),
-            Logger::Level::INFO);
+            Logger::Level::DEBUG);
 
         self.initialized = true;
     }

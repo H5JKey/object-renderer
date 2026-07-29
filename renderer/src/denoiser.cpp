@@ -11,7 +11,6 @@ Denoiser::Denoiser() {
 }
 
 void Denoiser::denoise(RenderTarget& target) {
-    Logger::getInstance().log("Denoising started", Logger::Level::INFO);
     int pixelCount = target.getWidth() * target.getHeight();
     size_t bufferSize = pixelCount * 3 * sizeof(float);
 

@@ -2,6 +2,7 @@
 
 #include <stb_image.h>
 
+#include <exception>
 #include <filesystem>
 #include <format>
 #include <glm/glm.hpp>
@@ -17,68 +18,72 @@
 SceneLoader::SceneLoader() : parser(supportedExtensions) {}
 
 Scene::TextureData SceneLoader::loadTexture(const fastgltf::Image& image, const fastgltf::Asset& asset) const {
-    return std::visit(
-        fastgltf::visitor{
-            [&](const fastgltf::sources::URI& filePath) -> Scene::TextureData {
-                Logger::getInstance().log("Loading texture from URI", Logger::Level::INFO);
-                assert(filePath.fileByteOffset == 0);
-                if (!filePath.uri.isLocalPath()) {
-                    Logger::getInstance().log(std::format("Non-local URI not supported"), Logger::Level::ERROR);
-                    throw std::runtime_error("Non-local URI not supported");
-                }
+    Logger::getInstance().log(std::format("Loading texture {}", image.name), Logger::Level::DEBUG);
+    try {
+        return std::visit(
+            fastgltf::visitor{
+                [&](const fastgltf::sources::URI& filePath) -> Scene::TextureData {
+                    Logger::getInstance().log("Loading texture from URI", Logger::Level::DEBUG);
+                    assert(filePath.fileByteOffset == 0);
+                    if (!filePath.uri.isLocalPath()) {
+                        throw std::runtime_error("Non-local URI not supported");
+                    }
 
-                const std::string path(filePath.uri.path().begin(), filePath.uri.path().end());
-                std::vector<uint8_t> result;
-                int width, height, channels;
-                utils::readImage(path, width, height, channels, result);
+                    const std::string path(filePath.uri.path().begin(), filePath.uri.path().end());
+                    std::vector<uint8_t> result;
+                    int width, height, channels;
+                    utils::readImage(path, width, height, channels, result);
 
-                return Scene::TextureData{.pixels = std::move(result), .width = width, .height = height};
-            },
-            [&](const fastgltf::sources::Array& vector) -> Scene::TextureData {
-                Logger::getInstance().log(std::format("Loading texture from Array"), Logger::Level::INFO);
-                std::vector<uint8_t> result;
-                int width, height, channels;
+                    return Scene::TextureData{.pixels = std::move(result), .width = width, .height = height};
+                },
+                [&](const fastgltf::sources::Array& vector) -> Scene::TextureData {
+                    Logger::getInstance().log(std::format("Loading texture from Array"), Logger::Level::DEBUG);
+                    std::vector<uint8_t> result;
+                    int width, height, channels;
 
-                utils::readImageFromMemory(vector.bytes.data(), vector.bytes.size(), width, height, channels, result);
+                    utils::readImageFromMemory(vector.bytes.data(), vector.bytes.size(), width, height, channels,
+                                               result);
 
-                return Scene::TextureData{.pixels = std::move(result), .width = width, .height = height};
-            },
-            [&](const fastgltf::sources::BufferView& view) -> Scene::TextureData {
-                Logger::getInstance().log("Loading texture from URI", Logger::Level::INFO);
-                auto& bufferView = asset.bufferViews[view.bufferViewIndex];
-                auto& buffer = asset.buffers[bufferView.bufferIndex];
-                return std::visit(
-                    fastgltf::visitor{
-                        [&](const fastgltf::sources::Array& vector) -> Scene::TextureData {
-                            std::vector<uint8_t> result;
-                            int width, height, channels;
-                            const auto* data = vector.bytes.data() + bufferView.byteOffset;
-                            const auto size = bufferView.byteLength;
+                    return Scene::TextureData{.pixels = std::move(result), .width = width, .height = height};
+                },
+                [&](const fastgltf::sources::BufferView& view) -> Scene::TextureData {
+                    Logger::getInstance().log("Loading texture from URI", Logger::Level::DEBUG);
+                    auto& bufferView = asset.bufferViews[view.bufferViewIndex];
+                    auto& buffer = asset.buffers[bufferView.bufferIndex];
+                    return std::visit(
+                        fastgltf::visitor{
+                            [&](const fastgltf::sources::Array& vector) -> Scene::TextureData {
+                                std::vector<uint8_t> result;
+                                int width, height, channels;
+                                const auto* data = vector.bytes.data() + bufferView.byteOffset;
+                                const auto size = bufferView.byteLength;
 
-                            utils::readImageFromMemory(data, size, width, height, channels, result);
-                            return Scene::TextureData{.pixels = std::move(result), .width = width, .height = height};
+                                utils::readImageFromMemory(data, size, width, height, channels, result);
+                                return Scene::TextureData{
+                                    .pixels = std::move(result), .width = width, .height = height};
+                            },
+                            [](auto& arg) -> Scene::TextureData {
+                                throw std::runtime_error(std::string("Unsupported format: ") + typeid(arg).name());
+                            },
                         },
-                        [](auto& arg) -> Scene::TextureData {
-                            Logger::getInstance().log(std::string("Unsupported format: ") + typeid(arg).name(),
-                                                      Logger::Level::ERROR);
-                            throw std::runtime_error(std::string("Unsupported format: ") + typeid(arg).name());
-                        },
-                    },
-                    buffer.data);
+                        buffer.data);
+                },
+                [](auto& arg) -> Scene::TextureData {
+                    throw std::runtime_error(std::string("Unsupported format: ") + typeid(arg).name());
+                },
             },
-            [](auto& arg) -> Scene::TextureData {
-                Logger::getInstance().log(std::string("Unsupported format: ") + typeid(arg).name(),
-                                          Logger::Level::ERROR);
-                throw std::runtime_error(std::string("Unsupported format: ") + typeid(arg).name());
-            },
-        },
-        image.data);
+            image.data);
+    } catch (const std::exception& e) {
+        Logger::getInstance().log(std::format("Failed to load texture {}: {}", image.name, e.what()),
+                                  Logger::Level::ERROR);
+        throw;
+    }
 }
 
 Scene::Material SceneLoader::loadMaterial(const fastgltf::Material& gltfMaterial,
                                           std::vector<Scene::TextureData>& textures,
                                           const fastgltf::Asset& asset) const {
-    Logger::getInstance().log(std::format("Loading material {}", gltfMaterial.name), Logger::Level::INFO);
+    Logger::getInstance().log(std::format("Loading material {}", gltfMaterial.name), Logger::Level::DEBUG);
     Scene::Material material;
 
     material.metalness = gltfMaterial.pbrData.metallicFactor;
@@ -112,7 +117,15 @@ Scene::Material SceneLoader::loadMaterial(const fastgltf::Material& gltfMaterial
 
             if (imageIndex.has_value() && imageIndex.value() < asset.images.size()) {
                 auto& image = asset.images[imageIndex.value()];
-                Scene::TextureData texture = loadTexture(image, asset);
+                Scene::TextureData texture;
+                try {
+                    texture = std::move(loadTexture(image, asset));
+                } catch (const std::exception& e) {
+                    Logger::getInstance().log(
+                        std::format("Failed to load texture for material '{}': {}", gltfMaterial.name, e.what()),
+                        Logger::Level::ERROR);
+                    throw;
+                }
                 texture.id = static_cast<int>(textures.size());
 
                 textures.push_back(std::move(texture));
@@ -125,7 +138,7 @@ Scene::Material SceneLoader::loadMaterial(const fastgltf::Material& gltfMaterial
 
 Scene::Camera SceneLoader::loadCamera(const fastgltf::Camera::Perspective& gltfCamera,
                                       const fastgltf::Node& node) const {
-    Logger::getInstance().log("Loading camera", Logger::Level::INFO);
+    Logger::getInstance().log("Loading camera", Logger::Level::DEBUG);
     Scene::Camera camera;
 
     glm::mat4 worldMatrix(1.0f);
@@ -175,74 +188,77 @@ void SceneLoader::loadNode(const fastgltf::Node& node, const fastgltf::Asset& as
 
 Scene::Mesh SceneLoader::loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf::Asset& asset) const {
     Scene::Mesh mesh;
-    Logger::getInstance().log(std::format("Loading mesh {}", gltfMesh.name), Logger::Level::INFO);
-    for (auto& gltPrimitive : gltfMesh.primitives) {
-        Scene::Mesh::Primitive primitive;
-        if (gltPrimitive.materialIndex.has_value())
-            primitive.materialId = gltPrimitive.materialIndex.value();
-        else
-            primitive.materialId = 0;
+    Logger::getInstance().log(std::format("Loading mesh {}", gltfMesh.name), Logger::Level::DEBUG);
+    try {
+        for (int i = 0; i < gltfMesh.primitives.size(); i++) {
+            const auto& gltfPrimitive = gltfMesh.primitives[i];
+            Scene::Mesh::Primitive primitive;
+            if (gltfPrimitive.materialIndex.has_value())
+                primitive.materialId = gltfPrimitive.materialIndex.value();
+            else
+                primitive.materialId = 0;
 
-        const auto* positionIt = gltPrimitive.findAttribute("POSITION");
-        if (positionIt == gltPrimitive.attributes.end()) {
-            Logger::getInstance().log("Failed to find POSITION attribute", Logger::Level::ERROR);
-            throw std::runtime_error("Failed to find POSITION attribute");
-        }
-        const auto& positionAccessor = asset.accessors[positionIt->accessorIndex];
-        if (!positionAccessor.bufferViewIndex.has_value()) {
-            Logger::getInstance().log("No value at bufferViewIndex", Logger::Level::ERROR);
-            throw std::runtime_error("No value at bufferViewIndex");
-        }
-        size_t vertexCount = positionAccessor.count;
-        size_t startVertex = mesh.vertices.size();
-
-        mesh.vertices.resize(startVertex + vertexCount);
-        fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(
-            asset, positionAccessor, [&](fastgltf::math::fvec3 pos, std::size_t idx) {
-                size_t vertexIdx = startVertex + idx;
-                mesh.vertices[vertexIdx] = glm::vec4(pos.x(), pos.y(), pos.z(), 1.0f);
-            });
-
-        const auto* texCoordIt = gltPrimitive.findAttribute("TEXCOORD_0");
-        if (texCoordIt != gltPrimitive.attributes.end()) {
-            const auto& texCoordAccessor = asset.accessors[texCoordIt->accessorIndex];
-            if (!texCoordAccessor.bufferViewIndex.has_value()) {
-                Logger::getInstance().log("No value at bufferViewIndex", Logger::Level::ERROR);
-                throw std::runtime_error("No value at bufferViewIndex");
+            const auto* positionIt = gltfPrimitive.findAttribute("POSITION");
+            if (positionIt == gltfPrimitive.attributes.end()) {
+                throw std::runtime_error(std::format("Failed to find POSITION attribute for primitive {}", i));
             }
-            size_t startTexCoord = mesh.texCoords.size();
+            const auto& positionAccessor = asset.accessors[positionIt->accessorIndex];
+            if (!positionAccessor.bufferViewIndex.has_value()) {
+                throw std::runtime_error(std::format("No value at bufferViewIndex for primitive {}", i));
+            }
+            size_t vertexCount = positionAccessor.count;
+            size_t startVertex = mesh.vertices.size();
 
-            mesh.texCoords.resize(startTexCoord + texCoordAccessor.count);
-            fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec2>(
-                asset, texCoordAccessor, [&](fastgltf::math::fvec2 uv, std::size_t idx) {
-                    size_t texIdx = startTexCoord + idx;
-                    mesh.texCoords[texIdx] = glm::vec4(uv.x(), uv.y(), 1.0f, 1.0f);
+            mesh.vertices.resize(startVertex + vertexCount);
+            fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(
+                asset, positionAccessor, [&](fastgltf::math::fvec3 pos, std::size_t idx) {
+                    size_t vertexIdx = startVertex + idx;
+                    mesh.vertices[vertexIdx] = glm::vec4(pos.x(), pos.y(), pos.z(), 1.0f);
                 });
-        }
-        if (!gltPrimitive.indicesAccessor.has_value()) {
-            Logger::getInstance().log("No value at indicesAccessor", Logger::Level::ERROR);
-            throw std::runtime_error("No value at indicesAccessor");
-        }
-        const auto& indexAccessor = asset.accessors[gltPrimitive.indicesAccessor.value()];
-        size_t startIndex = mesh.vertexIndices.size();
-        primitive.startVertexIndex = startIndex;
-        primitive.vertexIndicesCount = indexAccessor.count;
-        mesh.vertexIndices.resize(startIndex + indexAccessor.count);
 
-        if (indexAccessor.componentType == fastgltf::ComponentType::UnsignedShort) {
-            std::vector<uint16_t> tmp(indexAccessor.count);
-            fastgltf::copyFromAccessor<uint16_t>(asset, indexAccessor, tmp.data());
-            for (size_t i = 0; i < indexAccessor.count; ++i) {
-                mesh.vertexIndices[startIndex + i] = tmp[i] + startVertex;
+            const auto* texCoordIt = gltfPrimitive.findAttribute("TEXCOORD_0");
+            if (texCoordIt != gltfPrimitive.attributes.end()) {
+                const auto& texCoordAccessor = asset.accessors[texCoordIt->accessorIndex];
+                if (!texCoordAccessor.bufferViewIndex.has_value()) {
+                    throw std::runtime_error(std::format("No value at bufferViewIndex for primitive {}", i));
+                }
+                size_t startTexCoord = mesh.texCoords.size();
+
+                mesh.texCoords.resize(startTexCoord + texCoordAccessor.count);
+                fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec2>(
+                    asset, texCoordAccessor, [&](fastgltf::math::fvec2 uv, std::size_t idx) {
+                        size_t texIdx = startTexCoord + idx;
+                        mesh.texCoords[texIdx] = glm::vec4(uv.x(), uv.y(), 1.0f, 1.0f);
+                    });
             }
-        } else {
-            std::vector<uint32_t> tmp(indexAccessor.count);
-            fastgltf::copyFromAccessor<uint32_t>(asset, indexAccessor, tmp.data());
-            for (size_t i = 0; i < indexAccessor.count; ++i) {
-                mesh.vertexIndices[startIndex + i] = tmp[i] + startVertex;
+            if (!gltfPrimitive.indicesAccessor.has_value()) {
+                throw std::runtime_error(std::format("No value at indicesAccessor for primitive", i));
             }
+            const auto& indexAccessor = asset.accessors[gltfPrimitive.indicesAccessor.value()];
+            size_t startIndex = mesh.vertexIndices.size();
+            primitive.startVertexIndex = startIndex;
+            primitive.vertexIndicesCount = indexAccessor.count;
+            mesh.vertexIndices.resize(startIndex + indexAccessor.count);
+
+            if (indexAccessor.componentType == fastgltf::ComponentType::UnsignedShort) {
+                std::vector<uint16_t> tmp(indexAccessor.count);
+                fastgltf::copyFromAccessor<uint16_t>(asset, indexAccessor, tmp.data());
+                for (size_t i = 0; i < indexAccessor.count; ++i) {
+                    mesh.vertexIndices[startIndex + i] = tmp[i] + startVertex;
+                }
+            } else {
+                std::vector<uint32_t> tmp(indexAccessor.count);
+                fastgltf::copyFromAccessor<uint32_t>(asset, indexAccessor, tmp.data());
+                for (size_t i = 0; i < indexAccessor.count; ++i) {
+                    mesh.vertexIndices[startIndex + i] = tmp[i] + startVertex;
+                }
+            }
+            mesh.primitives.push_back(std::move(primitive));
         }
-        mesh.primitives.push_back(std::move(primitive));
+    } catch (const std::exception& e) {
+        Logger::getInstance().log(std::format("Failed to load mesh {}: {}", gltfMesh.name, e.what()),
+                                  Logger::Level::ERROR);
+        throw;
     }
     return mesh;
 }
@@ -274,7 +290,7 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
     }
 
     /* Loading nodes recursively*/
-    Logger::getInstance().log("Loading nodes recursively", Logger::Level::INFO);
+    Logger::getInstance().log("Loading nodes recursively", Logger::Level::DEBUG);
     const fastgltf::Scene& gltfScene = asset->scenes[asset->defaultScene.value()];
     for (std::size_t rootIdx : gltfScene.nodeIndices) {
         fastgltf::Node& root = asset->nodes[rootIdx];
