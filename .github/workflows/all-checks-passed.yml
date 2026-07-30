@@ -1,0 +1,23 @@
+name: all-checks-passed
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  cpp-checks:
+    uses: ./.github/workflows/cpp-checks.yml
+
+  python-checks:
+    uses: ./.github/workflows/python-checks.yml
+
+
+  aggregate:
+    needs: [cpp-checks, python-checks]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check status
+        run: echo "✅ All checks passed"

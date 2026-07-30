@@ -1,6 +1,7 @@
 name: python-checks
 
 on:
+  workflow_call:
   push:
     branches:
       - main
