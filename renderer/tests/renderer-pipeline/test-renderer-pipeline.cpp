@@ -4,7 +4,6 @@
 #include "scene-loader.hpp"
 #include "scene.hpp"
 #include "target-manager.hpp"
-#include "utils.hpp"
 
 class RendererPipelineTest : public ::testing::Test {
    protected:
@@ -20,13 +19,18 @@ class RendererPipelineTest : public ::testing::Test {
         ASSERT_NE(egl, nullptr);
         ASSERT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
     }
-    static void TearDownTestSuite() { engine->destroy(); }
+    static void TearDownTestSuite() {
+        egl.reset();
+        engine->destroy();
+    }
 };
-std::unique_ptr<RenderEngine> RendererPipelineTest::engine;
 
-TEST_F(RendererPipelineTest, RendererWorks) {
-    EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 2));
-}
+std::unique_ptr<RenderEngine> RendererPipelineTest::engine;
+Scene RendererPipelineTest::scene;
+std::shared_ptr<RenderTarget> RendererPipelineTest::egl;
+SceneLoader RendererPipelineTest::loader;
+
+TEST_F(RendererPipelineTest, RendererWorks) { EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 2)); }
 
 TEST_F(RendererPipelineTest, RendersMultipleTimes) {
     std::shared_ptr<RenderTarget> egl2;
