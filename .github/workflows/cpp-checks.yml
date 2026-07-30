@@ -3,8 +3,12 @@ name: C++ checks
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'renderer/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'renderer/**'
 
 
 
