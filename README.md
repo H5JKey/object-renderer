@@ -7,7 +7,7 @@
 
 ## Headless OpenGL compute shader Path Tracer using EGL
 
-An offline renderer that runs entirely without a display server,
+An renderer that runs entirely without a display server,
 using EGL for GPU-accelerated rendering in headless environments
 
 ## Demos
@@ -34,10 +34,57 @@ using EGL for GPU-accelerated rendering in headless environments
 - **Unit tests with googleTest**
 - **Docker ready**
 
-## Usage
+## Build Options
+
+### Build Modes
+
+| Mode | CMake Flag | Output | Description |
+|------|-----------|--------|-------------|
+| **Core** | `-DBUILD_MODE=CORE` | `-` | Build only core rendering library for testing |
+| **CLI** | `-DBUILD_MODE=CLI` | `renderer_cli` | Standalone CLI application |
+| **Microservice** | `-DBUILD_MODE=MICROSERVICE` | `renderer_web` | Build renderer worker for web service |
+| **Both** | `-DBUILD_MODE=BOTH` | `renderer_cli` + `renderer_web` | Build both CLI and Web service |
+
+### Build Options
+
+| Option | CMake Flag | Description |
+|--------|-----------|-------------|
+| **Tests** | `-DBUILD_TESTS=ON` | Build unit tests |
+
+## 1. CLI version
+
+### Build
+
+#### Docker
 
 ```bash
-./renderer <width> <height> <samples> <input_scene> [OPTIONS]
+docker build -t priZm --build-arg BUILD_MODE=CLI  .
+```
+
+#### CMake
+
+```bash
+cd renderer
+mkdir build && cd build
+cmake .. -DBUILD_MODE=CLI
+cmake --build .
+```
+
+### Usage
+
+#### CMake
+```bash
+./renderer_cli <width> <height> <samples> <input_scene> [OPTIONS]
+```
+#### Example
+
+```bash
+./renderer_cli 1920 1080 50 tests/data/test-scene.glb -o scene.png --plane 15 --verbose
+```
+
+#### Docker
+```bash
+docker run --rm priZm renderer_cli
 ```
 ###  Command line arguments
 
@@ -59,26 +106,46 @@ using EGL for GPU-accelerated rendering in headless environments
 | `-p, --plane` | `float` | Add ground plane at scene center with specified size |
 | `-c, --camera` | `vec3 vec3 float` | Set camera: `position lookAt fov` |
 
-### Example
 
+## 2. Microservice version
+
+### Build
+
+#### Docker
 ```bash
-./renderer 1920 1080 50 tests/data/test-scene.glb -o scene.png --plane 15 --verbose
+docker build -t priZm --build-arg BUILD_MODE=MICROSERVICE  .
 ```
 
-## Build
-
-### 1. Build with Docker
-
-```bash
-docker build -t renderer .
-docker run --rm renderer --help
-```
-
-### 2. Native build
+#### CMake
 ```bash
 cd renderer
 mkdir build && cd build
-cmake ..
+cmake .. -DBUILD_MODE=MICROSERVICE
 cmake --build .
-./renderer --help
+```
+### Usage
+
+#### Docker
+```bash
+docker run --rm priZm renderer_web
+```
+
+#### CMake
+```bash
+./renderer_web
+```
+## 3. Testing
+
+#### Docker
+```bash
+docker build -t priZm --build-arg BUILD_MODE=CORE  --build-arg BUILD_TESTS=ON .
+docker run --rm priZm test
+```
+### CMake
+```bash
+cd renderer
+mkdir build && cd build
+cmake .. -DBUILD_MODE=CORE
+cmake --build .
+./test
 ```
