@@ -12,7 +12,7 @@ from core.constants import (
 from pydantic import Field
 
 NameConstraint = Annotated[
-    int,
+    str,
     Len(
         min_length=FILE_NAME_MIN_LENGTH,
         max_length=FILE_NAME_MAX_LENGTH,
