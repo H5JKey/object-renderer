@@ -1,4 +1,4 @@
 add_subdirectory(core)
-if (BUILD_MICROSERVICE)
-    add_subdirectory(web)
+if (BUILD_WORKER)
+    add_subdirectory(worker)
 endif()

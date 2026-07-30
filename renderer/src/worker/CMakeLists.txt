@@ -1,17 +1,17 @@
-add_executable(renderer_web
+add_executable(renderer_worker
     main.cpp
 )
 
-target_link_libraries(renderer_web PRIVATE
+target_link_libraries(renderer_worker PRIVATE
     renderer_core
     renderer_web_deps
 )
 
-target_include_directories(renderer_web PRIVATE
-     ${CMAKE_SOURCE_DIR}/include/core
+target_include_directories(renderer_worker PRIVATE
+     ${CMAKE_SOURCE_DIR}/include/worker
 )
 
-target_compile_options(renderer_web PRIVATE 
+target_compile_options(renderer_worker PRIVATE 
     -O3 
     -ffast-math 
     -march=native
