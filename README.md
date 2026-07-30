@@ -42,8 +42,8 @@ using EGL for GPU-accelerated rendering in headless environments
 |------|-----------|--------|-------------|
 | **Core** | `-DBUILD_MODE=CORE` | `-` | Build only core rendering library for testing |
 | **CLI** | `-DBUILD_MODE=CLI` | `renderer_cli` | Standalone CLI application |
-| **Microservice** | `-DBUILD_MODE=MICROSERVICE` | `renderer_web` | Build renderer worker for web service |
-| **Both** | `-DBUILD_MODE=BOTH` | `renderer_cli` + `renderer_web` | Build both CLI and Web service |
+| **Worker** | `-DBUILD_MODE=WORKER` | `renderer_worker` | Build renderer worker for web service |
+| **Both** | `-DBUILD_MODE=BOTH` | `renderer_cli` + `renderer_worker` | Build both CLI and worker versions |
 
 ### Build Options
 
@@ -107,32 +107,32 @@ docker run --rm priZm renderer_cli
 | `-c, --camera` | `vec3 vec3 float` | Set camera: `position lookAt fov` |
 
 
-## 2. Microservice version
+## 2. Worker version
 
 ### Build
 
 #### Docker
 ```bash
-docker build -t priZm --build-arg BUILD_MODE=MICROSERVICE  .
+docker build -t priZm --build-arg BUILD_MODE=WORKER  .
 ```
 
 #### CMake
 ```bash
 cd renderer
 mkdir build && cd build
-cmake .. -DBUILD_MODE=MICROSERVICE
+cmake .. -DBUILD_MODE=WORKER
 cmake --build .
 ```
 ### Usage
 
 #### Docker
 ```bash
-docker run --rm priZm renderer_web
+docker run --rm priZm renderer_worker
 ```
 
 #### CMake
 ```bash
-./renderer_web
+./renderer_worker
 ```
 ## 3. Testing
 
