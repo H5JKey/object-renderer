@@ -2,18 +2,6 @@ name: python-checks
 
 on:
   workflow_call:
-  push:
-    branches:
-      - main
-    paths:
-      - 'app/**'
-      - '.github/workflows/python-checks.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'app/**'
-      - '.github/workflows/python-checks.yml'
 
 jobs:
   lint:

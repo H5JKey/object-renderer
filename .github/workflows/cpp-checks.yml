@@ -2,16 +2,6 @@ name: C++ checks
 
 on:
   workflow_call:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'renderer/**'
-      - '.github/workflows/cpp-checks.yml'
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'renderer/**'
-      - '.github/workflows/cpp-checks.yml'
 
 jobs:
   style:
@@ -34,7 +24,7 @@ jobs:
         docker build . --file renderer/Dockerfile --tag renderer --build-arg BUILD_MODE=BOTH --build-arg BUILD_TESTS=ON
     - name: Run tests
       run: |
-        docker run --rm --entrypoint /bin/sh renderer -c "cd buivalgrind --leak-check=summary \
+        docker run --rm --entrypoint /bin/sh renderer -c "cd build && valgrind --leak-check=summary \
          --show-leak-kinds=all \
          --track-origins=yes \
          --error-exitcode=1 ./test"

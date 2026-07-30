@@ -7,12 +7,33 @@ on:
     branches: [ "main" ]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      cpp: ${{ steps.filter.outputs.cpp }}
+      python: ${{ steps.filter.outputs.python }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            cpp:
+              - 'renderer/**'
+              - '.github/workflows/cpp-checks.yml'
+            python:
+              - 'app/**'
+              - '.github/workflows/python-checks.yml'
+
   cpp-checks:
+    needs: changes
     uses: ./.github/workflows/cpp-checks.yml
+    if: needs.changes.outputs.cpp == 'true'
 
   python-checks:
+    needs: changes
     uses: ./.github/workflows/python-checks.yml
-
+    if: needs.changes.outputs.python == 'true'
 
   aggregate:
     needs: [cpp-checks, python-checks]
@@ -20,4 +41,10 @@ jobs:
     if: always()
     steps:
       - name: Check status
-        run: echo "✅ All checks passed"
+        run: |
+          if [[ "${{ needs.cpp-checks.result }}" == "failure" ]] || \
+             [[ "${{ needs.python-checks.result }}" == "failure" ]]; then
+            echo "❌ Some checks failed"
+            exit 1
+          fi
+          echo "✅ All checks passed"
