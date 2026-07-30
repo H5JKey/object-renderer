@@ -24,14 +24,16 @@ using EGL for GPU-accelerated rendering in headless environments
 </table>
 
 ## Key features:
-- GLSL compute shaders for path tracing
-- EGL for headless rendering
-- .glb/.gltf scene loading
-- Open Image Denoiser
-- Debug images output: raw, albedo, normals
-- Logging system
-- Unit tests
-- Docker support
+- **GLSL compute shaders for path tracing**
+- **Physically based rendering**
+- **EGL for headless rendering**
+- **glTF 2.0 loading**
+- **.glb/.gltf scene loading**
+- **Open Image Denoiser**
+- **Debug images output: raw, albedo, normals**
+- **Logging system**
+- **Unit tests with googleTest**
+- **Docker ready**
 
 ## Usage
 
