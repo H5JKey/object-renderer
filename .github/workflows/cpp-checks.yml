@@ -3,8 +3,14 @@ name: C++ checks
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'renderer/**'
+      - '.github/workflows/cpp-checks.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'renderer/**'
+      - '.github/workflows/cpp-checks.yml'
 
 
 
