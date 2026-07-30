@@ -4,48 +4,44 @@
 #include "scene-loader.hpp"
 #include "scene.hpp"
 #include "target-manager.hpp"
-#include "utils.hpp"
 
 class RendererPipelineTest : public ::testing::Test {
    protected:
-    SceneLoader loader;
+    static SceneLoader loader;
     static std::unique_ptr<RenderEngine> engine;
+    static std::shared_ptr<RenderTarget> egl;
+    static Scene scene;
 
     static void SetUpTestSuite() {
         ASSERT_NO_THROW(TargetManager::init());
         engine = std::make_unique<RenderEngine>();
+        EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(10, 10));
+        ASSERT_NE(egl, nullptr);
+        ASSERT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
     }
-    static void TearDownTestSuite() { engine->destroy(); }
+    static void TearDownTestSuite() {
+        egl.reset();
+        engine->destroy();
+    }
 };
+
 std::unique_ptr<RenderEngine> RendererPipelineTest::engine;
+Scene RendererPipelineTest::scene;
+std::shared_ptr<RenderTarget> RendererPipelineTest::egl;
+SceneLoader RendererPipelineTest::loader;
 
-TEST_F(RendererPipelineTest, RendererWorks) {
-    Scene scene;
-    std::shared_ptr<RenderTarget> egl;
-    EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(10, 10));
-    ASSERT_NE(egl, nullptr);
-
-    EXPECT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
-    EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 2));
-}
+TEST_F(RendererPipelineTest, RendererWorks) { EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 2)); }
 
 TEST_F(RendererPipelineTest, RendersMultipleTimes) {
-    Scene scene;
-    std::shared_ptr<RenderTarget> egl;
-    EXPECT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
-
+    std::shared_ptr<RenderTarget> egl2;
+    EXPECT_NO_THROW(egl2 = TargetManager::getInstance().createEGLTarget(10, 10));
+    ASSERT_NE(egl2, nullptr);
     for (int i = 1; i <= 4; i++) {
-        EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(i * 4, i * 4));
-        ASSERT_NE(egl, nullptr);
-        EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 1));
+        EXPECT_NO_THROW(engine->renderFrame(*egl2, scene, 1));
     }
 }
 
 TEST_F(RendererPipelineTest, RendersEmptyScene) {
     Scene scene;
-    std::shared_ptr<RenderTarget> egl;
-    EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(100, 100));
-    ASSERT_NE(egl, nullptr);
-
     EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 5));
 }
