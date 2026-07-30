@@ -1,5 +1,8 @@
 FROM archlinux:latest
 
+ARG BUILD_MODE
+ARG BUILD_TESTS=OFF
+
 WORKDIR /renderer
 
 ENV DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
@@ -24,8 +27,7 @@ RUN pacman -Syu --noconfirm && \
 && pacman -Scc --noconfirm
 
 COPY renderer/ .
-RUN mkdir build && cd build && cmake ..
+RUN mkdir build && cd build && cmake .. -DBUILD_MODE=${BUILD_MODE} -DBUILD_TESTS=${BUILD_TESTS}
 RUN cd build && make -j$(nproc)
 
-ENTRYPOINT ["./build/renderer"]
-CMD ["--help"]
+ENV PATH="/renderer/build:${PATH}"
