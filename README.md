@@ -76,9 +76,9 @@ cmake --build .
 ```bash
 ./renderer_cli <width> <height> <samples> <input_scene> [OPTIONS]
 ```
-#### Example
 
 ```bash
+# example
 ./renderer_cli 1920 1080 50 tests/data/test-scene.glb -o scene.png --plane 15 --verbose
 ```
 
