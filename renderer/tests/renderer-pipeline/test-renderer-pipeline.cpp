@@ -8,10 +8,10 @@
 
 class RendererPipelineTest : public ::testing::Test {
    protected:
-    SceneLoader loader;
+    static SceneLoader loader;
     static std::unique_ptr<RenderEngine> engine;
-    std::shared_ptr<RenderTarget> egl;
-    Scene scene;
+    static std::shared_ptr<RenderTarget> egl;
+    static Scene scene;
 
     static void SetUpTestSuite() {
         ASSERT_NO_THROW(TargetManager::init());
