@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <exception>
+#include <filesystem>
 
 #include "logger.hpp"
 #include "render-engine.hpp"
@@ -80,10 +81,6 @@ int main(int argc, char* argv[]) {
                 return EXIT_FAILURE;
             }
             output = argv[++i];
-            size_t dot = output.find_last_of('.');
-            if (dot != std::string::npos) {
-                output = output.substr(0, dot);
-            }
         } else if (arg == "-p" || arg == "--plane") {
             showPlane = true;
             try {
@@ -98,13 +95,14 @@ int main(int argc, char* argv[]) {
                 return EXIT_FAILURE;
             }
             try {
+                cameraSet = true;
                 userCamera.origin.x = std::stof(argv[++i]);
                 userCamera.origin.y = std::stof(argv[++i]);
                 userCamera.origin.z = std::stof(argv[++i]);
                 userCamera.lookAt.x = std::stof(argv[++i]);
                 userCamera.lookAt.y = std::stof(argv[++i]);
                 userCamera.lookAt.z = std::stof(argv[++i]);
-                userCamera.fov = std::stof(argv[++i]);
+                userCamera.fov = glm::radians(std::stof(argv[++i]));
             } catch (const std::exception& e) {
                 std::println(std::cerr, "Error: {} requires 7 numbers <origin:vec3> <lookAt:vec3> <fov:float>", arg);
                 return EXIT_FAILURE;
@@ -115,6 +113,9 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
         }
     }
+    std::filesystem::path outputPath(output);
+    std::filesystem::path absoluteDirectoryPath = std::filesystem::absolute(outputPath.parent_path());
+    std::string outputFilename = outputPath.stem().string();
     try {
         Logger::getInstance().log("Renderer application started", Logger::Level::INFO);
         TargetManager::init();
@@ -129,19 +130,29 @@ int main(int argc, char* argv[]) {
         auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());
         if (eglTarget) {
             RenderTarget::ContextGuard guard(*egl);
-            Logger::getInstance().log("Writing into output.png", Logger::Level::DEBUG);
+            Logger::getInstance().log(
+                std::format("Writing into {}", (absoluteDirectoryPath / (outputFilename + ".png")).string()),
+                Logger::Level::DEBUG);
             utils::writeToPng(egl->getBufferData<uint8_t>(egl->getOutputTexture()), egl->getWidth(), egl->getHeight(),
-                              4, std::format("{}.png", output));
+                              4, absoluteDirectoryPath / (outputFilename + ".png"));
             if (debugImages) {
-                Logger::getInstance().log("Writing into output_raw.png", Logger::Level::DEBUG);
+                Logger::getInstance().log(
+                    std::format("Writing into {}", (absoluteDirectoryPath / (outputFilename + "-raw.png")).string()),
+                    Logger::Level::DEBUG);
                 utils::writeToPng(egl->getBufferData<float>(egl->getRawTexture()), egl->getWidth(), egl->getHeight(), 4,
-                                  std::format("{}-raw.png", output));
-                Logger::getInstance().log("Writing into output_albedo.png", Logger::Level::DEBUG);
+                                  absoluteDirectoryPath / (outputFilename + "-raw.png"));
+
+                Logger::getInstance().log(
+                    std::format("Writing into {}", (absoluteDirectoryPath / (outputFilename + "-albedo.png")).string()),
+                    Logger::Level::DEBUG);
                 utils::writeToPng(egl->getBufferData<float>(egl->getAlbedoMap()), egl->getWidth(), egl->getHeight(), 4,
-                                  std::format("{}-albedo.png", output));
-                Logger::getInstance().log("Writing into output_normal.png", Logger::Level::DEBUG);
+                                  absoluteDirectoryPath / (outputFilename + "-albedo.png"));
+
+                Logger::getInstance().log(
+                    std::format("Writing into {}", (absoluteDirectoryPath / (outputFilename + "-normal.png")).string()),
+                    Logger::Level::DEBUG);
                 utils::writeToPng(egl->getBufferData<float>(egl->getNormalMap()), egl->getWidth(), egl->getHeight(), 4,
-                                  std::format("{}-normals.png", output));
+                                  absoluteDirectoryPath / (outputFilename + "-normal.png"));
             }
         }
         Logger::getInstance().log("Renderer application stopped successfully", Logger::Level::INFO);
