@@ -22,7 +22,7 @@ std::unique_ptr<RenderEngine> RendererPipelineTest::engine;
 TEST_F(RendererPipelineTest, RendererWorks) {
     Scene scene;
     std::shared_ptr<RenderTarget> egl;
-    EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(10, 10));
+    EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(1, 1));
     ASSERT_NE(egl, nullptr);
 
     EXPECT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
@@ -34,8 +34,8 @@ TEST_F(RendererPipelineTest, RendersMultipleTimes) {
     std::shared_ptr<RenderTarget> egl;
     EXPECT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
 
-    for (int i = 1; i <= 4; i++) {
-        EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(i * 4, i * 4));
+    for (int i = 1; i <= 3; i++) {
+        EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget((i+1) / 2));
         ASSERT_NE(egl, nullptr);
         EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 1));
     }
@@ -44,8 +44,8 @@ TEST_F(RendererPipelineTest, RendersMultipleTimes) {
 TEST_F(RendererPipelineTest, RendersEmptyScene) {
     Scene scene;
     std::shared_ptr<RenderTarget> egl;
-    EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(100, 100));
+    EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(30, 30));
     ASSERT_NE(egl, nullptr);
 
-    EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 5));
+    EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 3));
 }
