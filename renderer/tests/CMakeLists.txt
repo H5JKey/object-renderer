@@ -1,3 +1,5 @@
+message(STATUS "Building tests")
+
 include(FetchContent)
 FetchContent_Declare(
     googletest

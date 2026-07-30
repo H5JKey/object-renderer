@@ -3,6 +3,28 @@ project(Renderer
     LANGUAGES C CXX
     VERSION 1.0.0
 )
+
+set(BUILD_MODE "CLI" CACHE STRING "Build mode: CLI, MICROSERVICE, BOTH or CORE")
+option(BUILD_TESTS "Building tests" OFF)
+
+if(BUILD_MODE STREQUAL "BOTH")
+    set(BUILD_CLI ON)
+    set(BUILD_MICROSERVICE ON)
+    message(STATUS "Building BOTH CLI and microservice versions")
+elseif(BUILD_MODE STREQUAL "MICROSERVICE")
+    set(BUILD_CLI OFF)
+    set(BUILD_MICROSERVICE ON)
+    message(STATUS "Building MICROSERVICE version")
+elseif(BUILD_MODE STREQUAL "CLI")
+    set(BUILD_CLI ON)
+    set(BUILD_MICROSERVICE OFF)
+    message(STATUS "Building CLI version")
+else()
+    set(BUILD_CLI OFF)
+    set(BUILD_MICROSERVICE OFF)
+    message(STATUS "Building core only")
+endif()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,4 +39,7 @@ set(CMAKE_BUILD_PARALLEL_LEVEL 4)
 
 add_subdirectory(lib)
 add_subdirectory(src)
-add_subdirectory(tests)
+
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

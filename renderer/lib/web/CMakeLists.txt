@@ -1,0 +1,1 @@
+add_library(renderer_web_deps INTERFACE)

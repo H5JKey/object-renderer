@@ -13,7 +13,7 @@ add_library(renderer_core STATIC
 )
 
 target_link_libraries(renderer_core PUBLIC
-    renderer_deps
+    renderer_core_deps
 )
 
 target_include_directories(renderer_core PUBLIC
