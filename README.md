@@ -28,7 +28,6 @@ using EGL for GPU-accelerated rendering in headless environments
 - **Physically based rendering**
 - **EGL for headless rendering**
 - **glTF 2.0 loading**
-- **.glb/.gltf scene loading**
 - **Open Image Denoiser**
 - **Debug images output: raw, albedo, normals**
 - **Logging system**
