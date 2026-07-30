@@ -25,6 +25,16 @@ class FileUploader(AbstractFileUploader):
         key = f"{uuid}_{file_name}"
         return key
 
+    @staticmethod
+    def _get_file_size(file: BinaryIO) -> int:
+        """
+        Получить размер файла в байтах.
+        """
+        file_descriptor = file.fileno()
+        file_status = fstat(file_descriptor)
+        size = file_status.st_size
+        return size
+
     async def upload(
         self,
         file_name: str,
@@ -36,11 +46,9 @@ class FileUploader(AbstractFileUploader):
             key=key,
             file=file,
         )
-        file_descriptor = file.fileno()
-        file_status = fstat(file_descriptor)
-        size = file_status.st_size
+        size = self._get_file_size(file)
         create_file_data = FileCreate(
-            name=file.name,
+            name=file_name,
             size=size,
             bucket=self.bucket,
             key=key,
