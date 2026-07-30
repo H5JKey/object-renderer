@@ -3,6 +3,6 @@ if (BUILD_CLI)
     add_subdirectory(cli)
 endif()
 
-if (BUILD_MICROSERVICE)
-    add_subdirectory(web)
+if (BUILD_WORKER)
+    add_subdirectory(worker)
 endif()
