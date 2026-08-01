@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from infrastructure.database.models import File, Project, Render, User
 from pydantic import EmailStr
 from schemas.file import FileCreate
-from schemas.project import ProjectCreate
+from schemas.project import ProjectCreate, ProjectPartialUpdate
 from schemas.render import RenderCreate
 from schemas.user import UserCreate, UserUpdate
 
@@ -23,6 +23,12 @@ class AbstractRenderRepository(AbstractRepository):
     async def create_render(self, create_render_data: RenderCreate) -> Render:
         """
         Метод для создания записи о рендере.
+        """
+
+    @abstractmethod
+    async def add_render_file(self, render_id: int, file_id: int) -> Render:
+        """
+        Метод для добавления файла рендера.
         """
 
 
@@ -129,6 +135,12 @@ class AbstractProjectRepository(AbstractRepository):
         """
 
     @abstractmethod
+    async def update_project_status(self, project_id: int) -> None:
+        """
+        Обновить статус проекта при завершении рендера кода.
+        """
+
+    @abstractmethod
     async def create_project(
         self,
         user_id: int,
@@ -137,6 +149,16 @@ class AbstractProjectRepository(AbstractRepository):
     ) -> Project:
         """
         Создать проект.
+        """
+
+    @abstractmethod
+    async def partial_update_project(
+        self,
+        project_id: int,
+        partial_update_project_data: ProjectPartialUpdate,
+    ) -> Project | None:
+        """
+        Обновить данные о проекте по id.
         """
 
     @abstractmethod

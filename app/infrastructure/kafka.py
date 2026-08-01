@@ -1,55 +1,59 @@
-import asyncio
-from collections.abc import Callable
+from json import dumps, loads
 
-from confluent_kafka import Consumer, Producer
-from core.interfaces.kafka import KafkaConsumer, KafkaProducer
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from core.constants import kafka_topic
+from pydantic import BaseModel
+from schemas.file import FileCreate
+from schemas.render import UploadRenderProjectEvent
+from services.project import ProjectService
+
+from infrastructure.database.core import session_factory
+from infrastructure.database.unit_of_work import UnitOfWork
 
 
-class ConfluentKafkaProducer(KafkaProducer):
-    def __init__(
-        self,
-        config: dict,  # type: ignore[type-arg]
-    ) -> None:
-        self._producer = Producer(config)
+def serialize_message[T: BaseModel](message_data: T) -> bytes:
+    message_dict = message_data.model_dump()
+    serialized_value = dumps(message_dict)
+    encoded_serialized_value = serialized_value.encode()
+    return encoded_serialized_value
 
-    def produce(
-        self,
-        topic: str,
-        value: str | bytes | None = None,
-        key: str | bytes | None = None,
-        partition: int = -1,
-        callback: Callable | None = None,  # type: ignore[type-arg]
-        on_delivery: Callable | None = None,  # type: ignore[type-arg]
-        timestamp: int = 0,
-    ) -> None:
-        self._producer.produce(
-            topic=topic,
-            value=value,
-            key=key,
-            partition=partition,
-            callback=callback,
-            on_delivery=on_delivery,
-            timestamp=timestamp,
+
+def deserialize_message(message: bytes) -> dict:
+    message_string = message.decode()
+    message_json = loads(message_string)
+    return message_json
+
+
+async def consume_messages(consumer: AIOKafkaConsumer):
+    await consumer.start()
+    async for message in consumer:
+        json_data = message.value
+        project_id = json_data["project_id"]
+        json_data.pop("project_id")
+        file = FileCreate(**json_data["file"])
+        uploaded_render_project_event = UploadRenderProjectEvent(
+            project_id=project_id,
+            file=file,
         )
-
-    async def flush(self) -> None:
-        await asyncio.to_thread(self._producer.flush)
-
-
-class ConfluentKafkaConsumer(KafkaConsumer):
-    def __init__(
-        self,
-        config: dict,  # type: ignore[type-arg]
-    ) -> None:
-        self._consumer = Consumer(config)
-
-    def subscribe(self, topics: list[str]) -> None:
-        self._consumer.subscribe(topics=topics)
-
-    async def poll(self, timeout: int = 0) -> None:  # noqa: ASYNC109
-        await asyncio.to_thread(self._consumer.poll, timeout)
+        async with session_factory() as session:
+            async with UnitOfWork(session) as unit_of_work:
+                async with ProjectService(unit_of_work) as project_service:
+                    await project_service.update_project_status(project_id)
+                    await project_service.upload_render_to_project(
+                        uploaded_render_project_event,
+                    )
+        await consumer.commit()
 
 
-def get_producer_config() -> dict:  # type: ignore[type-arg]
-    config = {"bootstrap.servers": "kafka:9092"}
-    return config
+consumer = AIOKafkaConsumer(
+    kafka_topic.generate_model,
+    bootstrap_servers="kafka:9092",
+    group_id="app",
+    value_deserializer=deserialize_message,
+)
+
+
+producer = AIOKafkaProducer(
+    bootstrap_servers="kafka:9092",
+    value_serializer=serialize_message,
+)

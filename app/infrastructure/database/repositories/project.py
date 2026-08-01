@@ -1,11 +1,11 @@
-from core.constants import ProjectVisibility
+from core.constants import ProjectVisibility, RenderStatus
 from core.interfaces.repositories import AbstractProjectRepository
-from schemas.project import ProjectCreate
+from schemas.project import ProjectCreate, ProjectPartialUpdate
 from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from infrastructure.database.models import Project, User
+from infrastructure.database.models import Project, Render, User
 
 
 class ProjectRepository(AbstractProjectRepository):
@@ -15,7 +15,9 @@ class ProjectRepository(AbstractProjectRepository):
     async def get_by_id(self, project_id: int) -> Project | None:
         stmt = (
             select(Project)
-            .options(joinedload(Project.render))
+            .options(
+                joinedload(Project.render).joinedload(Render.file),
+            )
             .where(Project.id == project_id)
         )
         result = await self.session.execute(stmt)
@@ -44,6 +46,15 @@ class ProjectRepository(AbstractProjectRepository):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
+    async def update_project_status(self, project_id: int) -> Project | None:
+        project = await self.get_by_id(project_id)
+        if project is None:
+            return None
+
+        project.status = RenderStatus.completed.value
+        await self.session.flush()
+        return project
+
     async def create_project(
         self,
         user_id: int,
@@ -56,6 +67,23 @@ class ProjectRepository(AbstractProjectRepository):
             **create_project_data.model_dump(),
         )
         self.session.add(project)
+        await self.session.flush()
+        return project
+
+    async def partial_update_project(
+        self,
+        project_id: int,
+        partial_update_project_data: ProjectPartialUpdate,
+    ) -> Project | None:
+        project = await self.get_by_id(project_id)
+        if project is None:
+            return None
+
+        for field, value in partial_update_project_data.model_dump(
+            exclude_none=True,
+        ).items():
+            setattr(project, field, value)
+
         await self.session.flush()
         return project
 
