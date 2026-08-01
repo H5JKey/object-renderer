@@ -20,6 +20,8 @@ USER_ENCRYPTED_PASSWORD_MAX_LENGTH = 128
 
 PROJECT_NAME_MIN_LENGTH = 5
 PROJECT_NAME_MAX_LENGTH = 30
+
+PROJECT_DESCRIPTION_MIN_LENGTH = 0
 PROJECT_DESCRIPTION_MAX_LENGTH = 512
 
 RENDER_WIDTH_MIN_VALUE = 20
@@ -58,10 +60,17 @@ class ProjectVisibility(StrEnum):
     private = "private"
 
 
-@dataclass
+@dataclass(frozen=True)
 class S3Bucket:
     input_bucket = "output"
     output_bucket = "output"
 
 
+@dataclass(frozen=True)
+class KafkaTopic:
+    create_project: str = "create_project"
+    generate_model: str = "generate_model"
+
+
 s3_bucket = S3Bucket()
+kafka_topic = KafkaTopic()

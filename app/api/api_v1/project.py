@@ -5,7 +5,9 @@ from dependencies.annotations import (
 )
 from fastapi import APIRouter, status
 from schemas.project import (
+    ProjectPartialUpdate,
     ProjectResponseList,
+    ProjectWithRenderAndFileResponse,
     ProjectWithRenderCreate,
     ProjectWithRenderResponse,
 )
@@ -18,14 +20,14 @@ router = APIRouter(
 
 @router.get(
     "/{project_id}",
-    response_model=ProjectWithRenderResponse,
+    response_model=ProjectWithRenderAndFileResponse,
     status_code=status.HTTP_200_OK,
 )
 async def get_project(
     project_id: int,
     user_id: AuthUserByAccessTokenDep,
     project_service: ProjectServiceDep,
-) -> ProjectWithRenderResponse:
+) -> ProjectWithRenderAndFileResponse:
     return await project_service.get_by_id(
         project_id=project_id,
         user_id=user_id,
@@ -83,6 +85,24 @@ async def create_project(
         user_id=user_id,
         create_project=create_project_data,
         render_service=render_service,
+    )
+
+
+@router.patch(
+    "/update/{project_id}",
+    response_model=ProjectWithRenderAndFileResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def partial_update_project(
+    project_id: int,
+    user_id: AuthUserByAccessTokenDep,
+    partial_update_project_data: ProjectPartialUpdate,
+    project_service: ProjectServiceDep,
+) -> ProjectWithRenderAndFileResponse:
+    return await project_service.partial_update_project(
+        project_id,
+        user_id,
+        partial_update_project_data,
     )
 
 
