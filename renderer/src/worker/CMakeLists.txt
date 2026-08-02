@@ -4,7 +4,7 @@ add_executable(renderer_worker
 
 target_link_libraries(renderer_worker PRIVATE
     renderer_core
-    renderer_web_deps
+    renderer_worker_deps
 )
 
 target_include_directories(renderer_worker PRIVATE
