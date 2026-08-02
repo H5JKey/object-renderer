@@ -1,6 +1,6 @@
+#pragma once
 #include <cppkafka.h>
 
-#include <functional>
 #include <string>
 
 class KafkaConsumer {
