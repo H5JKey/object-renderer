@@ -58,7 +58,7 @@ using EGL for GPU-accelerated rendering in headless environments
 #### Docker
 
 ```bash
-docker build -t prizm --build-arg BUILD_MODE=CLI  .
+docker build --file renderer/Dockerfile -t prizm --build-arg BUILD_MODE=CLI  .
 ```
 
 #### CMake
@@ -72,20 +72,16 @@ cmake --build .
 
 ### Usage
 
+#### Docker
+```bash
+docker run --rm prizm renderer_cli <width> <height> <samples> <input_scene> [OPTIONS]
+```
+
 #### CMake
 ```bash
 ./renderer_cli <width> <height> <samples> <input_scene> [OPTIONS]
 ```
 
-```bash
-# example
-./renderer_cli 1920 1080 50 tests/data/test-scene.glb -o scene.png --plane 15 --verbose
-```
-
-#### Docker
-```bash
-docker run --rm prizm renderer_cli
-```
 ###  Command line arguments
 
 | Argument | Type | Description |
