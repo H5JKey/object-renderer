@@ -16,6 +16,9 @@ RUN pacman -Syu --noconfirm && \
     mesa-utils \
     python-jinja \
     ispc \
+    boost \ 
+    boost-libs \
+    librdkafka \
     openimagedenoise \
     libglvnd \
     libx11 \
