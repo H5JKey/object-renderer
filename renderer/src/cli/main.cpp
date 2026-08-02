@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
+#include <print>
 
 #include "logger.hpp"
 #include "render-engine.hpp"
@@ -114,10 +115,18 @@ int main(int argc, char* argv[]) {
         }
     }
     std::filesystem::path outputPath(output);
-    std::filesystem::path absoluteDirectoryPath = std::filesystem::absolute(outputPath.parent_path());
+    std::filesystem::path absoluteDirectoryPath;
+    if (outputPath.has_parent_path() && !outputPath.parent_path().empty()) {
+        absoluteDirectoryPath = std::filesystem::absolute(outputPath.parent_path());
+        std::println("GGG");
+    } else {
+        std::println("GGG");
+        std::println("GGG");
+        absoluteDirectoryPath = std::filesystem::current_path();
+    }
     std::string outputFilename = outputPath.stem().string();
     try {
-        Logger::getInstance().log("Renderer application started", Logger::Level::INFO);
+        Logger::getInstance().log("Local renderer CLI-application started", Logger::Level::INFO);
         TargetManager::init();
         RenderEngine engine;
         SceneLoader loader;
