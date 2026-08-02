@@ -7,11 +7,7 @@
 int main() try {
     Logger::getInstance().debug = true;
 
-    constexpr std::string_view TopicName = "create_project";
-    cppkafka::Configuration config = {
-        {"metadata.broker.list", "127.0.0.1:9093"},
-        {"group.id", "local_renderer_worker"},
-    };
+    Logger::getInstance().log("Renderer worker started", Logger::Level::INFO);
 
     KafkaConsumer consumer("127.0.0.1:9093", "renderer_worker", "create_project");
     while (true) {

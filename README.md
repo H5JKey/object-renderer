@@ -58,7 +58,7 @@ using EGL for GPU-accelerated rendering in headless environments
 #### Docker
 
 ```bash
-docker build -t priZm --build-arg BUILD_MODE=CLI  .
+docker build -t prizm --build-arg BUILD_MODE=CLI  .
 ```
 
 #### CMake
@@ -84,7 +84,7 @@ cmake --build .
 
 #### Docker
 ```bash
-docker run --rm priZm renderer_cli
+docker run --rm prizm renderer_cli
 ```
 ###  Command line arguments
 
@@ -113,7 +113,7 @@ docker run --rm priZm renderer_cli
 
 #### Docker
 ```bash
-docker build -t priZm --build-arg BUILD_MODE=WORKER  .
+docker build --file renderer/Dockerfile -t prizm --build-arg BUILD_MODE=WORKER .
 ```
 
 #### CMake
@@ -127,19 +127,19 @@ cmake --build .
 
 #### Docker
 ```bash
-docker run --rm priZm renderer_worker
+docker run --rm prizm renderer_worker
 ```
 
 #### CMake
 ```bash
-./renderer_worker
+cd renderer/build && ./renderer_worker
 ```
 ## 3. Testing
 
 #### Docker
 ```bash
-docker build -t priZm --build-arg BUILD_MODE=CORE  --build-arg BUILD_TESTS=ON .
-docker run --rm priZm test
+docker build --file renderer/Dockerfile -t prizm --build-arg BUILD_MODE=CORE  --build-arg BUILD_TESTS=ON .
+docker run --rm prizm test
 ```
 ### CMake
 ```bash
