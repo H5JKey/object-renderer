@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
     }
     std::string outputFilename = outputPath.stem().string();
     try {
-        Logger::getInstance().log("Renderer application started", Logger::Level::INFO);
+        Logger::getInstance().log("Local renderer CLI-application started", Logger::Level::INFO);
         TargetManager::init();
         RenderEngine engine;
         SceneLoader loader;
