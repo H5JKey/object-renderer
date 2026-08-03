@@ -101,14 +101,7 @@ TEST(ImageReadWriteTest, readImageFromMemoryWorks) {
     std::vector<std::byte> memoryBuffer;
 
     ASSERT_NO_THROW(utils::readImage(path, width, height, channels, expected));
-    ASSERT_NE(stbi_write_png_to_func(
-                  [](void* context, void* data, int size) {
-                      auto* vec = static_cast<std::vector<std::byte>*>(context);
-                      std::byte* bytes = static_cast<std::byte*>(data);
-                      vec->insert(vec->end(), bytes, bytes + size);
-                  },
-                  &memoryBuffer, width, height, channels, expected.data(), width * channels),
-              0);
+    ASSERT_NO_THROW(memoryBuffer = utils::writeToPng(expected, width, height, channels));
 
     ASSERT_NO_THROW(utils::readImageFromMemory(memoryBuffer.data(), memoryBuffer.size(), resultWidth, resultHeight,
                                                resultChannels, resultRGB));

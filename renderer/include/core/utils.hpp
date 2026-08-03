@@ -21,4 +21,6 @@ void readImage(const std::filesystem::path& filename, int& width, int& height, i
 
 void readImageFromMemory(const std::byte* memoryBuffer, size_t size, int& width, int& height, int& channels,
                          std::vector<uint8_t>& result);
+
+std::vector<std::byte> writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels);
 }  // namespace utils

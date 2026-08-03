@@ -86,6 +86,25 @@ void utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height
     stbi_write_png(path.c_str(), width, height, channels, pixels.data(), width * channels);
 }
 
+std::vector<std::byte> utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels) {
+    if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
+
+    if (pixels.size() != static_cast<size_t>(width * height * channels)) {
+        throw std::runtime_error("Pixel data size mismatch");
+    }
+
+    int outputSize = 0;
+    std::vector<std::byte> result;
+    stbi_write_png_to_func(
+        [](void* context, void* data, int size) {
+            auto* vec = static_cast<std::vector<std::byte>*>(context);
+            std::byte* bytes = static_cast<std::byte*>(data);
+            vec->insert(vec->end(), bytes, bytes + size);
+        },
+        &result, width, height, channels, pixels.data(), width * channels);
+    return result;
+}
+
 void utils::writeToPng(const std::vector<float>& pixels, int width, int height, int channels,
                        const std::filesystem::path& path) {
     if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
