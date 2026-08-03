@@ -20,7 +20,6 @@ if TYPE_CHECKING:
 class Render(Base):
     __tablename__ = "renders"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     width: Mapped[int]
     height: Mapped[int]
     samples: Mapped[int]

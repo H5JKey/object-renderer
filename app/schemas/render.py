@@ -2,13 +2,12 @@ from typing import ClassVar
 
 from pydantic import BaseModel, ConfigDict
 
-from schemas.constraints.file import BucketConstraint, KeyConstraint
 from schemas.constraints.render import (
     HeightConstraint,
     SampleConstraint,
     WidthConstraint,
 )
-from schemas.file import FileCreate, FileResponse
+from schemas.file import FileResponse
 
 
 class RenderBase(BaseModel):
@@ -46,22 +45,3 @@ class RenderWithFileResponse(RenderResponse):
     """
 
     file: FileResponse | None
-
-
-class GenerateRenderEvent(RenderCreate):
-    """
-    Схема для события генерация проекта.
-    """
-
-    bucket: BucketConstraint
-    key: KeyConstraint
-    project_id: int
-
-
-class UploadRenderProjectEvent(BaseModel):
-    """
-    Схема для события загрузка рендер модели.
-    """
-
-    project_id: int
-    file: FileCreate
