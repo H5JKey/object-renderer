@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     surname: Mapped[str] = mapped_column(String(USER_SURNAME_MAX_LENGTH))
     name: Mapped[str] = mapped_column(String(USER_NAME_MAX_LENGTH))
     username: Mapped[str] = mapped_column(String(USER_USERNAME_MAX_LENGTH), unique=True)

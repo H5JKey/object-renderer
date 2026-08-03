@@ -26,6 +26,15 @@ class ProjectCreate(ProjectBase):
     visibility: ProjectVisibility
 
 
+class ProjectWithRenderCreate(BaseModel):
+    """
+    Схема для создания проекта c предоставлением данных о рендере.
+    """
+
+    render: RenderCreate
+    project: ProjectCreate
+
+
 class ProjectPartialUpdate(BaseModel):
     """
     Схема для частичного обновления проекта от пользователя.
@@ -56,6 +65,22 @@ class ProjectResponse(ProjectBase):
     id: int
 
 
+class ProjectWithRenderResponse(ProjectResponse):
+    """
+    Схема для вывода информации о проекте с рендером.
+    """
+
+    render: RenderResponse
+
+
+class ProjectWithRenderFileResponse(ProjectResponse):
+    """
+    Схема для вывода информации о проекте с файлом рендера.
+    """
+
+    render: RenderWithFileResponse
+
+
 class ProjectResponseList(BaseModel):
     """
     Схема для вывода информации о списке проектов.
@@ -66,36 +91,11 @@ class ProjectResponseList(BaseModel):
     page: int
 
 
-class ProjectWithRenderCreate(BaseModel):
-    """
-    Схема для создания проекта c предоставлением данных о рендере.
-    """
-
-    render: RenderCreate
-    project: ProjectCreate
-
-
-class ProjectWithRenderResponse(ProjectResponse):
-    """
-    Схема для вывода информации о проекте с рендером.
-    """
-
-    render: RenderResponse
-
-
-class ProjectWithRenderAndFileResponse(ProjectResponse):
-    """
-    Схема для вывода информации о проекте с рендером.
-    """
-
-    render: RenderWithFileResponse
-
-
-class ProjectWithRenderResponseList(BaseModel):
+class ProjectWithRenderFileResponseList(BaseModel):
     """
     Схема для вывода информации о списке проектов с рендером.
     """
 
-    project_list: list[ProjectWithRenderAndFileResponse]
+    project_list: list[ProjectWithRenderFileResponse]
     size: int
     page: int

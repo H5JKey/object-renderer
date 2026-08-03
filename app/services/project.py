@@ -13,16 +13,16 @@ from infrastructure.database.repositories.file import FileRepository
 from infrastructure.database.repositories.project import ProjectRepository
 from infrastructure.database.repositories.render import RenderRepository
 from infrastructure.database.repositories.user import UserRepository
-from schemas.file import FileData, FileResponse
+from schemas.event import AddRenderProjectEvent, GenerateRenderEvent
 from schemas.project import (
     ProjectPartialUpdate,
     ProjectResponse,
     ProjectResponseList,
-    ProjectWithRenderAndFileResponse,
     ProjectWithRenderCreate,
+    ProjectWithRenderFileResponse,
     ProjectWithRenderResponse,
 )
-from schemas.render import GenerateRenderEvent, RenderResponse, UploadRenderProjectEvent
+from schemas.render import RenderResponse
 
 
 class ProjectService:
@@ -53,7 +53,7 @@ class ProjectService:
         self,
         project_id: int,
         user_id: int,
-    ) -> ProjectWithRenderAndFileResponse:
+    ) -> ProjectWithRenderFileResponse:
         project = await self.project_repository.get_by_id(project_id)
         if project is None:
             raise ProjectIdNotFoundError(project_id)
@@ -69,7 +69,7 @@ class ProjectService:
             detail = "You are not allowed to watch this project."
             raise PermissionDeniedError(detail)
 
-        return ProjectWithRenderAndFileResponse.model_validate(project)
+        return ProjectWithRenderFileResponse.model_validate(project)
 
     async def get_user_projects(
         self,
@@ -115,30 +115,28 @@ class ProjectService:
             page=page,
         )
 
-    async def upload_render_to_project(
+    async def add_render_to_project(
         self,
-        uploaded_render_project_event: UploadRenderProjectEvent,
+        add_render_project_event: AddRenderProjectEvent,
     ) -> None:
-        render_file = uploaded_render_project_event.file
-        project_id = uploaded_render_project_event.project_id
-        file = await self.file_repository.create_file(render_file)
+        file = add_render_project_event.file
+        project_id = add_render_project_event.project_id
+        render_file = await self.file_repository.create_file(file)
         project = await self.project_repository.get_by_id(project_id)
-        file_response = FileResponse.model_validate(file)
-        project_response = ProjectWithRenderAndFileResponse.model_validate(project)
         await self.render_repository.add_render_file(
-            render_id=project_response.render.id,
-            file_id=file_response.id,
+            render_id=project.render.id,
+            file_id=render_file.id,
         )
 
     async def update_project_status(
         self,
         project_id: int,
-    ) -> ProjectWithRenderAndFileResponse:
+    ) -> ProjectWithRenderFileResponse:
         project = await self.project_repository.update_project_status(project_id)
         if project is None:
             raise ProjectIdNotFoundError(project_id)
 
-        return ProjectWithRenderAndFileResponse.model_validate(project)
+        return ProjectWithRenderFileResponse.model_validate(project)
 
     async def create_project(
         self,
@@ -152,7 +150,6 @@ class ProjectService:
         file = await self.file_repository.get_by_id(file_id)
         if file is None:
             raise FileIdNotFoundError(file_id)
-        file_response = FileData.model_validate(file)
         render = await self.render_repository.create_render(create_render_data)
         project = await self.project_repository.create_project(
             user_id=user_id,
@@ -165,13 +162,13 @@ class ProjectService:
             render=render_response,
             **project_response.model_dump(),
         )
-        render_event_data = GenerateRenderEvent(
-            bucket=file_response.bucket,
-            key=file_response.key,
+        render_model_event_data = GenerateRenderEvent(
+            bucket=file.bucket,
+            key=file.key,
             project_id=project_response.id,
             **create_render_data.model_dump(),
         )
-        await render_service.send_event_render_model(render_event_data)
+        await render_service.send_render_model_event(render_model_event_data)
         return project_with_render_response
 
     async def partial_update_project(
@@ -179,7 +176,7 @@ class ProjectService:
         project_id: int,
         user_id: int,
         partial_update_project_data: ProjectPartialUpdate,
-    ) -> ProjectWithRenderAndFileResponse:
+    ) -> ProjectWithRenderFileResponse:
         project = await self.project_repository.get_by_id(
             project_id,
         )
@@ -198,7 +195,7 @@ class ProjectService:
             project_id,
             partial_update_project_data,
         )
-        return ProjectWithRenderAndFileResponse.model_validate(project)
+        return ProjectWithRenderFileResponse.model_validate(project)
 
     async def delete_by_id(
         self,

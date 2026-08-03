@@ -35,9 +35,3 @@ class FileResponse(FileBase):
     """
 
     id: int
-
-
-class FileData(FileCreate):
-    """
-    Схема для вывода полной информации о файле.
-    """
