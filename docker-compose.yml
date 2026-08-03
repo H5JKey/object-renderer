@@ -3,11 +3,19 @@ services:
     build:
       context: .
       dockerfile: renderer/Dockerfile
+      args:
+        BUILD_MODE: WORKER
+        BUILD_TESTS: OFF
     container_name: renderer
+    command: ["renderer_worker"]
     hostname: renderer
     depends_on:
       minio:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: on-failure 
+      
 
   app:
     build:
@@ -86,6 +94,12 @@ services:
     image: confluentinc/cp-kafka:latest
     container_name: kafka
     hostname: kafka
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     environment:
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
       KAFKA_NODE_ID: 1
