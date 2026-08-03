@@ -13,6 +13,7 @@ KafkaConsumer::KafkaConsumer(std::string_view brokerList, std::string_view group
           {"auto.offset.reset", "earliest"},
           {"enable.auto.commit", "true"},
           {"auto.commit.interval.ms", "1000"},
+          {"broker.address.family", "v4"},
       }),
       consumer(config) {
     try {

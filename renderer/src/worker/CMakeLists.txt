@@ -1,6 +1,7 @@
 add_executable(renderer_worker
     main.cpp
     kafka-consumer.cpp
+    s3-client.cpp
 )
 
 target_link_libraries(renderer_worker PRIVATE

@@ -3,11 +3,19 @@ services:
     build:
       context: .
       dockerfile: renderer/Dockerfile
+      args:
+        BUILD_MODE: WORKER
+        BUILD_TESTS: OFF
     container_name: renderer
+    command: ["renderer_worker"]
     hostname: renderer
     depends_on:
       minio:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: on-failure 
+      
 
   app:
     build:
@@ -86,6 +94,158 @@ services:
     image: confluentinc/cp-kafka:latest
     container_name: kafka
     hostname: kafka
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+
+      # Открываем порты(даем им имена) внутри контейнера,
+      # которые слушают все ip интерфейсы
+      KAFKA_LISTENERS: "INTERNAL://:9092, EXTERNAL://:9093, CONTROLLER://:29093"
+
+      # Открытому порту внутри контейнера, даем хост:порт,
+      # с которого подключаемся к открытому порту в контейнере
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:9092, EXTERNAL://localhost:9093"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT"
+
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    ports:
+      - "9093:9093"
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    hostname: kafka-ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: kafka-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka:9092"
+      KAFKA_CLUSTERS_0_PROPERTIES_AUTO_CREATE_TOPICS: true
+    ports:
+      - "8090:8080"
+
+    depends_on:
+      kafka:
+        condition: service_started
+
+
+
+volumes:
+  minio_data:
+services:
+  renderer:
+    build:
+      context: .
+      dockerfile: renderer/Dockerfile
+      args:
+        BUILD_MODE: WORKER
+        BUILD_TESTS: OFF
+    container_name: renderer
+    command: ["renderer_worker"]
+    hostname: renderer
+    depends_on:
+      minio:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: on-failure 
+      
+
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    container_name: app
+    hostname: app
+    environment:
+      DATABASE__HOST: database
+      DATABASE__PORT: 5432
+      DATABASE__DB_NAME: renderer
+
+      MINIO__HOST: minio
+      MINIO__PORT: 9000
+
+      MINIO__USERNAME: adminadmin
+      MINIO__PASSWORD: adminadmin
+    volumes:
+      - "./app:/app"
+    ports:
+      - "8000:8000"
+    depends_on:
+      database:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "localhost:8000/health"]
+      start_period: 2s
+      interval: 2s
+      timeout: 2s
+      retries: 3
+
+  database:
+    image: postgres:17-bookworm
+    container_name: database
+    hostname: database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: renderer
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d renderer"]
+      start_period: 3s
+      interval: 2s
+      timeout: 2s
+      retries: 3
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    hostname: minio
+    command: server --console-address ":9001" /data
+    environment:
+      MINIO_ROOT_USER: adminadmin
+      MINIO_ROOT_PASSWORD: adminadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f","http://localhost:9000/minio/health/ready"]
+      start_period: 2s
+      interval: 2s
+      timeout: 2s
+      retries: 3
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    hostname: kafka
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     environment:
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
       KAFKA_NODE_ID: 1
