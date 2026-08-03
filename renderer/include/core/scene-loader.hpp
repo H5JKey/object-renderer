@@ -3,7 +3,6 @@
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
 #include <filesystem>
-#include <string>
 
 #include "scene.hpp"
 class SceneLoader {

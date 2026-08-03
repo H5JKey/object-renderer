@@ -6,17 +6,28 @@
 
 #include "kafka-consumer.hpp"
 #include "logger.hpp"
+#include "render-engine.hpp"
 #include "s3-client.hpp"
+#include "scene-loader.hpp"
+#include "scene.hpp"
+#include "target-manager.hpp"
 
 using json = nlohmann::json;
 
-void renderPipeline(int width, int height, int samples) { /* Some render */ }
-
 Aws::SDKOptions options;
+RenderEngine engine;
+
+void renderPipeline(Scene scene, int width, int height, int samples) {
+    std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(width, height);
+    engine.renderFrame(*egl, scene, samples);
+}
+
 int main() try {
     Logger::getInstance().log(std::format("Aws initialized"), Logger::Level::DEBUG);
     Aws::InitAPI(options);
+    TargetManager::init();
     Logger::getInstance().debug = true;
+    SceneLoader sceneLoader;
 
     Logger::getInstance().log("Renderer worker started", Logger::Level::INFO);
 
@@ -43,7 +54,8 @@ int main() try {
             std::format("Get data from Json: [width: {}  height: {}  samples: {}]", width, height, samples),
             Logger::Level::DEBUG);
         std::vector<uint8_t> data = s3client.getData(bucket, key);
-        renderPipeline(width, height, samples);
+        Scene scene = sceneLoader.loadGltfFromMemory(data);
+        renderPipeline(scene, width, height, samples);
     }
     Logger::getInstance().log("Renderer application stopped successfully", Logger::Level::INFO);
     Aws::ShutdownAPI(options);
