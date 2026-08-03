@@ -20,6 +20,7 @@ RUN pacman -Syu --noconfirm && \
     boost-libs \
     librdkafka \
     openimagedenoise \
+    aws-sdk-cpp \
     libglvnd \
     libx11 \
     libxrandr \
