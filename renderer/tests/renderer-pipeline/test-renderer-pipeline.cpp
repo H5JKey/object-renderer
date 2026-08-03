@@ -17,7 +17,7 @@ class RendererPipelineTest : public ::testing::Test {
         engine = std::make_unique<RenderEngine>();
         EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(10, 10));
         ASSERT_NE(egl, nullptr);
-        ASSERT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
+        ASSERT_NO_THROW(scene = loader.loadGltfFromFile("tests/data/test-scene.glb"));
     }
     static void TearDownTestSuite() {
         egl.reset();

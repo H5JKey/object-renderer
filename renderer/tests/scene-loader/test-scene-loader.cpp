@@ -7,21 +7,21 @@ TEST(SceneLoaderTest, throwsOnNonexistentFile) {
     SceneLoader loader;
 
     /* Failed to find non/existent/scene.gltf */
-    EXPECT_THROW(loader.loadGltf("non/existent/scene.gltf"), std::runtime_error);
+    EXPECT_THROW(loader.loadGltfFromFile("non/existent/scene.gltf"), std::runtime_error);
 }
 
 TEST(SceneLoaderTest, throwsOnInvalidFile) {
     SceneLoader loader;
 
     /* Failed to load data/test-image.png */
-    EXPECT_THROW(loader.loadGltf("tests/data/test-image.jpg"), std::runtime_error);
+    EXPECT_THROW(loader.loadGltfFromFile("tests/data/test-image.jpg"), std::runtime_error);
 }
 
 TEST(SceneLoaderTest, loadSceneCorrectly) {
     SceneLoader loader;
 
     Scene scene;
-    EXPECT_NO_THROW(scene = loader.loadGltf("tests/data/test-scene.glb"));
+    EXPECT_NO_THROW(scene = loader.loadGltfFromFile("tests/data/test-scene.glb"));
 
     /* Testing geometry */
     const auto& meshes = scene.getMeshes();

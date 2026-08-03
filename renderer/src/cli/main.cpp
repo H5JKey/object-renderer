@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
         TargetManager::init();
         RenderEngine engine;
         SceneLoader loader;
-        Scene scene = loader.loadGltf(input);
+        Scene scene = loader.loadGltfFromFile(input);
         if (showPlane) loader.addPlane(scene, planeSize);
         if (cameraSet) scene.setCamera(userCamera);
         std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(width, height);
