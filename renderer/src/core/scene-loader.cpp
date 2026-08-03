@@ -11,6 +11,8 @@
 #include <variant>
 #include <vector>
 
+#include "fastgltf/core.hpp"
+#include "fastgltf/types.hpp"
 #include "logger.hpp"
 #include "utils.hpp"
 
@@ -262,8 +264,7 @@ Scene::Mesh SceneLoader::loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf
     return mesh;
 }
 
-Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
-    Scene scene;
+Scene SceneLoader::loadGltfFromFile(const std::filesystem::path& path) {
     Logger::getInstance().log(std::format("Loading scene from file {}", path.string()), Logger::Level::INFO);
     if (!std::filesystem::exists(path)) {
         Logger::getInstance().log(std::format("Failed to find {} ", path.string()), Logger::Level::ERROR);
@@ -278,7 +279,6 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
         throw std::runtime_error(
             std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(data.error())));
     }
-
     auto asset = parser.loadGltf(data.get(), path.parent_path(), gltfOptions);
     if (auto error = asset.error(); error != fastgltf::Error::None) {
         Logger::getInstance().log(
@@ -287,21 +287,47 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
         throw std::runtime_error(
             std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(data.error())));
     }
+    return loadGltf(asset.get());
+}
+
+Scene SceneLoader::loadGltfFromMemory(const std::vector<uint8_t>& bytes) {
+    Logger::getInstance().log(std::format("Loading scene from memory. Size: {}", bytes.size()), Logger::Level::INFO);
+    auto data = fastgltf::GltfDataBuffer::FromBytes(reinterpret_cast<const std::byte*>(bytes.data()), bytes.size());
+    if (data.error() != fastgltf::Error::None) {
+        Logger::getInstance().log(
+            std::format("Failed to load data from memory. Error: {} ", fastgltf::getErrorMessage(data.error())),
+            Logger::Level::ERROR);
+        throw std::runtime_error(
+            std::format("Failed to load data from memory. Error: {} ", fastgltf::getErrorMessage(data.error())));
+    }
+    auto asset = parser.loadGltf(data.get(), "", gltfOptions);
+    if (auto error = asset.error(); error != fastgltf::Error::None) {
+        Logger::getInstance().log(
+            std::format("Failed to load data from memory. Error: {} ", fastgltf::getErrorMessage(data.error())),
+            Logger::Level::ERROR);
+        throw std::runtime_error(
+            std::format("Failed to load data from meory. Error: {} ", fastgltf::getErrorMessage(data.error())));
+    }
+    return loadGltf(asset.get());
+}
+
+Scene SceneLoader::loadGltf(const fastgltf::Asset& asset) {
+    Scene scene;
 
     /* Loading nodes recursively*/
     Logger::getInstance().log("Loading nodes recursively", Logger::Level::DEBUG);
-    const fastgltf::Scene& gltfScene = asset->scenes[asset->defaultScene.value()];
+    const fastgltf::Scene& gltfScene = asset.scenes[asset.defaultScene.value()];
     for (std::size_t rootIdx : gltfScene.nodeIndices) {
-        fastgltf::Node& root = asset->nodes[rootIdx];
-        loadNode(root, asset.get(), scene);
+        const fastgltf::Node& root = asset.nodes[rootIdx];
+        loadNode(root, asset, scene);
     }
 
     /* Loading camera */
     bool cameraFound = false;
-    for (auto node : asset->nodes) {
+    for (auto node : asset.nodes) {
         if (node.cameraIndex.has_value()) {
             auto* gltfCamera =
-                std::get_if<fastgltf::Camera::Perspective>(&asset->cameras[node.cameraIndex.value()].camera);
+                std::get_if<fastgltf::Camera::Perspective>(&asset.cameras[node.cameraIndex.value()].camera);
             if (gltfCamera) {
                 scene.camera = loadCamera(*gltfCamera, node);
                 cameraFound = true;
@@ -341,8 +367,8 @@ Scene SceneLoader::loadGltf(const std::filesystem::path& path) {
     }
 
     /* Loading materials */
-    for (const auto& material : asset->materials) {
-        scene.materials.push_back(loadMaterial(material, scene.textures, asset.get()));
+    for (const auto& material : asset.materials) {
+        scene.materials.push_back(loadMaterial(material, scene.textures, asset));
     }
     return scene;
 }
