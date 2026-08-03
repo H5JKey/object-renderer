@@ -16,9 +16,6 @@ class SceneLoader {
                                         fastgltf::Options::DecomposeNodeMatrices;
     fastgltf::Parser parser;
 
-   public:
-    SceneLoader();
-
     Scene::TextureData loadTexture(const fastgltf::Image& image, const fastgltf::Asset& asset) const;
     Scene::Camera loadCamera(const fastgltf::Camera::Perspective& gltfCamera, const fastgltf::Node& node) const;
     Scene::Material loadMaterial(const fastgltf::Material& gltfMaterial, std::vector<Scene::TextureData>& textures,
@@ -26,7 +23,13 @@ class SceneLoader {
     void loadNode(const fastgltf::Node& node, const fastgltf::Asset& asset, Scene& scene,
                   glm::mat4 parentTransform = glm::mat4(1.0f)) const;
     Scene::Mesh loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf::Asset& asset) const;
-    Scene loadGltf(const std::filesystem::path& path);
+
+    Scene loadGltf(const fastgltf::Asset& asset);
+
+   public:
+    SceneLoader();
+    Scene loadGltfFromFile(const std::filesystem::path& path);
+    Scene loadGltfFromMemory(const std::vector<uint8_t>& bytes);
 
     void addPlane(Scene& scene, float planeSize);
     ~SceneLoader() = default;
