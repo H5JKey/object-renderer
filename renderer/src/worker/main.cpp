@@ -23,10 +23,10 @@ void renderPipeline(Scene scene, int width, int height, int samples) {
 }
 
 int main() try {
+    Logger::getInstance().debug = true;
     Logger::getInstance().log(std::format("Aws initialized"), Logger::Level::DEBUG);
     Aws::InitAPI(options);
     TargetManager::init();
-    Logger::getInstance().debug = true;
     SceneLoader sceneLoader;
 
     Logger::getInstance().log("Renderer worker started", Logger::Level::INFO);
@@ -47,7 +47,7 @@ int main() try {
             bucket = json["bucket"];
             key = json["key"];
         } catch (const std::exception& e) {
-            Logger::getInstance().log(std::format("Failed to create or parse json from string: {}", message),
+            Logger::getInstance().log(std::format("Failed to parse json from string: {}", message),
                                       Logger::Level::ERROR);
         }
         Logger::getInstance().log(
@@ -59,9 +59,11 @@ int main() try {
     }
     Logger::getInstance().log("Renderer application stopped successfully", Logger::Level::INFO);
     Aws::ShutdownAPI(options);
+    TargetManager::terminate();
     return EXIT_SUCCESS;
 } catch (const std::exception& e) {
     Aws::ShutdownAPI(options);
     Logger::getInstance().log("Application terminated due to error", Logger::Level::FATAL);
+    TargetManager::terminate();
     return EXIT_FAILURE;
 }

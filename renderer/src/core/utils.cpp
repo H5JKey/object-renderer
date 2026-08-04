@@ -76,16 +76,6 @@ void utils::rgbToRgba(const std::vector<uint8_t>& rgb, std::vector<uint8_t>& rgb
     }
 }
 
-void utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels,
-                       const std::filesystem::path& path) {
-    if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
-
-    if (pixels.size() != static_cast<size_t>(width * height * channels)) {
-        throw std::runtime_error("Pixel data size mismatch");
-    }
-    stbi_write_png(path.c_str(), width, height, channels, pixels.data(), width * channels);
-}
-
 std::vector<std::byte> utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels) {
     if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
 
@@ -105,6 +95,28 @@ std::vector<std::byte> utils::writeToPng(const std::vector<uint8_t>& pixels, int
     return result;
 }
 
+std::vector<std::byte> utils::writeToPng(const std::vector<float>& pixels, int width, int height, int channels) {
+    if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
+
+    if (pixels.size() != static_cast<size_t>(width * height * channels)) {
+        throw std::runtime_error("Pixel data size mismatch");
+    }
+    std::vector<unsigned char> normalizedPixels(width * height * channels);
+    for (int i = 0; i < pixels.size(); i++)
+        normalizedPixels[i] = static_cast<unsigned char>(std::min(std::max(pixels[i], 0.0f), 1.0f) * 255);
+
+    int outputSize = 0;
+    std::vector<std::byte> result;
+    stbi_write_png_to_func(
+        [](void* context, void* data, int size) {
+            auto* vec = static_cast<std::vector<std::byte>*>(context);
+            std::byte* bytes = static_cast<std::byte*>(data);
+            vec->insert(vec->end(), bytes, bytes + size);
+        },
+        &result, width, height, channels, normalizedPixels.data(), width * channels);
+    return result;
+}
+
 void utils::writeToPng(const std::vector<float>& pixels, int width, int height, int channels,
                        const std::filesystem::path& path) {
     if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
@@ -116,6 +128,16 @@ void utils::writeToPng(const std::vector<float>& pixels, int width, int height, 
     for (int i = 0; i < pixels.size(); i++)
         normalizedPixels[i] = static_cast<unsigned char>(std::min(std::max(pixels[i], 0.0f), 1.0f) * 255);
     stbi_write_png(path.c_str(), width, height, channels, normalizedPixels.data(), width * channels);
+}
+
+void utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels,
+                       const std::filesystem::path& path) {
+    if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
+
+    if (pixels.size() != static_cast<size_t>(width * height * channels)) {
+        throw std::runtime_error("Pixel data size mismatch");
+    }
+    stbi_write_png(path.c_str(), width, height, channels, pixels.data(), width * channels);
 }
 
 void utils::readImage(const std::filesystem::path& filename, int& width, int& height, int& channels,

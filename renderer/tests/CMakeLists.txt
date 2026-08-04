@@ -10,6 +10,7 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 add_executable(test
     utils/test-rgb-rgba.cpp
     utils/test-imageReadWrite.cpp
@@ -26,7 +27,12 @@ target_compile_options(test PRIVATE
     -g
     -fno-omit-frame-pointer
     -fno-inline
-    -fno-optimize-sibling-calls 
+    -fno-optimize-sibling-calls
+    -fsanitize=address
+)
+
+target_link_options(test PRIVATE
+    -fsanitize=address
 )
 
 target_link_libraries(test PRIVATE
@@ -38,10 +44,22 @@ add_custom_command(
     TARGET test POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/tests/data
-        ${CMAKE_BINARY_DIR}/tests/data
+        ${CMAKE_BINARY_DIR}/data
     COMMENT "Copying tests data to build directory"
 )
 
+add_custom_command(
+    TARGET test POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/tests/asan.supp
+        ${CMAKE_BINARY_DIR}/tests/asan.supp
+    COMMENT "Copying ASan suppression file"
+)
+
+
 include(GoogleTest)
-add_test(NAME test COMMAND test)
-gtest_discover_tests(test)
+gtest_discover_tests(test
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    PROPERTIES
+    ENVIRONMENT "TBB_ENABLE_SANITIZERS=1;LSAN_OPTIONS=detect_leaks=1:suppressions=${ASAN_SUPP_FILE}"
+)
