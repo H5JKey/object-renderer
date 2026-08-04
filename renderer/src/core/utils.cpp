@@ -76,7 +76,7 @@ void utils::rgbToRgba(const std::vector<uint8_t>& rgb, std::vector<uint8_t>& rgb
     }
 }
 
-std::vector<std::byte> utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels) {
+std::vector<std::uint8_t> utils::writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels) {
     if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
 
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
@@ -84,18 +84,18 @@ std::vector<std::byte> utils::writeToPng(const std::vector<uint8_t>& pixels, int
     }
 
     int outputSize = 0;
-    std::vector<std::byte> result;
+    std::vector<std::uint8_t> result;
     stbi_write_png_to_func(
         [](void* context, void* data, int size) {
-            auto* vec = static_cast<std::vector<std::byte>*>(context);
-            std::byte* bytes = static_cast<std::byte*>(data);
+            auto* vec = static_cast<std::vector<std::uint8_t>*>(context);
+            uint8_t* bytes = static_cast<std::uint8_t*>(data);
             vec->insert(vec->end(), bytes, bytes + size);
         },
         &result, width, height, channels, pixels.data(), width * channels);
     return result;
 }
 
-std::vector<std::byte> utils::writeToPng(const std::vector<float>& pixels, int width, int height, int channels) {
+std::vector<std::uint8_t> utils::writeToPng(const std::vector<float>& pixels, int width, int height, int channels) {
     if (pixels.size() == 0) throw std::runtime_error("Writing empty image");
 
     if (pixels.size() != static_cast<size_t>(width * height * channels)) {
@@ -106,11 +106,11 @@ std::vector<std::byte> utils::writeToPng(const std::vector<float>& pixels, int w
         normalizedPixels[i] = static_cast<unsigned char>(std::min(std::max(pixels[i], 0.0f), 1.0f) * 255);
 
     int outputSize = 0;
-    std::vector<std::byte> result;
+    std::vector<std::uint8_t> result;
     stbi_write_png_to_func(
         [](void* context, void* data, int size) {
-            auto* vec = static_cast<std::vector<std::byte>*>(context);
-            std::byte* bytes = static_cast<std::byte*>(data);
+            auto* vec = static_cast<std::vector<std::uint8_t>*>(context);
+            std::uint8_t* bytes = static_cast<std::uint8_t*>(data);
             vec->insert(vec->end(), bytes, bytes + size);
         },
         &result, width, height, channels, normalizedPixels.data(), width * channels);
