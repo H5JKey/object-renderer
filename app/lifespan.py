@@ -1,9 +1,8 @@
-from core.logs import configure_logging, get_logger
-
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+from core.logging import configure_logging, get_logger
 from fastapi import FastAPI
 from infrastructure.kafka import (
     add_render_to_project_consume,
