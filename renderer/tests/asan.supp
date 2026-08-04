@@ -1,0 +1,17 @@
+
+leak:libGL.so
+leak:libGLX.so
+leak:libGLdispatch.so
+
+leak:libnvidia-glcore.so
+leak:libnvidia-tls.so
+leak:libGLX_nvidia.so
+leak:nvidia
+
+leak:libXf86VM.so
+leak:amdgpu
+leak:radeonsi_dri.so
+
+leak:iris_dri.so
+leak:swrast_dri.so
+leak:gallium
