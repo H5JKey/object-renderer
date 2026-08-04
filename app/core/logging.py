@@ -1,4 +1,4 @@
-from logging import getLogger, Formatter, StreamHandler, Logger
+from logging import Formatter, Logger, StreamHandler, getLogger
 
 from core.config.application import settings
 

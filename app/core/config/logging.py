@@ -1,7 +1,6 @@
-from logging import StreamHandler, getLogger
-from typing import Literal, ClassVar
+from typing import Literal
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel
 
 
 class LoggingFormatterConfig(BaseModel):
