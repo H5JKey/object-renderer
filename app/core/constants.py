@@ -62,7 +62,7 @@ class ProjectVisibility(StrEnum):
 
 @dataclass(frozen=True)
 class S3Bucket:
-    input_bucket = "output"
+    input_bucket = "input"
     output_bucket = "output"
 
 

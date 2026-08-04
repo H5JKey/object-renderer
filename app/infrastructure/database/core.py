@@ -30,7 +30,7 @@ engine = create_async_engine(
 
 session_factory = async_sessionmaker(
     bind=engine,
-    expire_on_commit=False,
+    expire_on_commit=settings.database.expire_on_commit,
 )
 
 

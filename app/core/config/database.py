@@ -12,6 +12,7 @@ class DataBaseConfig(BaseModel):
     max_overflow: int = 10
     pool_timeout: int = 30
     pool_recycle: int = 3600
+    expire_on_commit: bool = True
     echo: bool = False
 
     naming_convention: dict[str, str] = {
