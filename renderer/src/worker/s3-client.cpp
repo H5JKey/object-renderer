@@ -40,7 +40,11 @@ std::vector<uint8_t> S3Client::getData(const Aws::String& bucketName, const Aws:
 
         return data;
     } else {
-        throw std::runtime_error(std::format("Failed to read from S3: ", outcome.GetError().GetMessage()));
+        Logger::getInstance().log(std::format("Failed to read from S3 with bucket '{}' and key '{}': ", bucketName,
+                                              objectKey, outcome.GetError().GetMessage()),
+                                  Logger::Level::ERROR);
+        throw std::runtime_error(std::format("Failed to read from S3 with bucket '{}' and key '{}': ", bucketName,
+                                             objectKey, outcome.GetError().GetMessage()));
     }
 }
 
@@ -59,7 +63,9 @@ void S3Client::putData(const std::vector<uint8_t>& data, const Aws::String& buck
                                   Logger::Level::INFO);
 
     } else {
-        throw std::runtime_error(std::format("Failed to put data to S3: ", outcome.GetError().GetMessage()));
+        Logger::getInstance().log(std::format("Failed to put data to S3: {}", outcome.GetError().GetMessage()),
+                                  Logger::Level::ERROR);
+        throw std::runtime_error(std::format("Failed to put data to S3: {}", outcome.GetError().GetMessage()));
     }
 }
 

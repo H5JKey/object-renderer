@@ -12,7 +12,8 @@ class KafkaConsumer {
     cppkafka::Consumer consumer;
 
    public:
-    KafkaConsumer(std::string_view brokerList, std::string_view groupId, std::string_view topicName);
+    KafkaConsumer(const std::string& brokerList, const std::string_view& groupId, const std::string& topicName);
     std::string consume();
+    void commit();
     ~KafkaConsumer();
 };

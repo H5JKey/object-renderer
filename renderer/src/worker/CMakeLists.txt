@@ -1,6 +1,7 @@
 add_executable(renderer_worker
     main.cpp
     kafka-consumer.cpp
+    kafka-producer.cpp
     s3-client.cpp
 )
 
