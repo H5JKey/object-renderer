@@ -1,3 +1,2 @@
-build/
+renderer/build/
 assets/
-app/.venv

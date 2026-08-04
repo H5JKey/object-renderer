@@ -165,9 +165,11 @@ int main(int argc, char* argv[]) {
             }
         }
         Logger::getInstance().log("Renderer application stopped successfully", Logger::Level::INFO);
+        TargetManager::terminate();
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         Logger::getInstance().log("Application terminated due to error", Logger::Level::FATAL);
+        TargetManager::terminate();
         return EXIT_FAILURE;
     }
 }

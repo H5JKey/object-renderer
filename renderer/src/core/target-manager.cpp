@@ -82,6 +82,31 @@ void TargetManager::init() {
     }
 }
 
+void TargetManager::terminate() {
+    TargetManager& self = getInstance();
+    if (self.initialized) {
+        eglMakeCurrent(self.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+        if (self.dummySurface != EGL_NO_SURFACE) {
+            eglDestroySurface(self.display, self.dummySurface);
+            self.dummySurface = EGL_NO_SURFACE;
+        }
+
+        if (self.context != EGL_NO_CONTEXT) {
+            eglDestroyContext(self.display, self.context);
+            self.context = EGL_NO_CONTEXT;
+        }
+
+        if (self.display != EGL_NO_DISPLAY) {
+            eglTerminate(self.display);
+            self.display = EGL_NO_DISPLAY;
+        }
+
+        self.initialized = false;
+        Logger::getInstance().log("EGL Terminated", Logger::Level::DEBUG);
+    }
+}
+
 std::shared_ptr<RenderTarget> TargetManager::createEGLTarget(int width, int height) {
     if (!initialized) {
         Logger::getInstance().log("Failed to create EGLTarget: context wasnt created", Logger::Level::ERROR);
@@ -90,25 +115,4 @@ std::shared_ptr<RenderTarget> TargetManager::createEGLTarget(int width, int heig
     return std::shared_ptr<EglTarget>(new EglTarget(width, height, display, config, context));
 }
 
-TargetManager::~TargetManager() {
-    if (initialized) {
-        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-        if (dummySurface != EGL_NO_SURFACE) {
-            eglDestroySurface(display, dummySurface);
-            dummySurface = EGL_NO_SURFACE;
-        }
-
-        if (context != EGL_NO_CONTEXT) {
-            eglDestroyContext(display, context);
-            context = EGL_NO_CONTEXT;
-        }
-
-        if (display != EGL_NO_DISPLAY) {
-            eglTerminate(display);
-            display = EGL_NO_DISPLAY;
-        }
-
-        initialized = false;
-    }
-}
+TargetManager::~TargetManager() { terminate(); }

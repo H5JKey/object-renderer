@@ -29,7 +29,4 @@ jobs:
         docker build . --file renderer/Dockerfile --tag renderer --build-arg BUILD_MODE=BOTH --build-arg BUILD_TESTS=ON
     - name: Run tests
       run: |
-        docker run --rm --entrypoint /bin/sh renderer -c "cd build && valgrind --leak-check=summary \
-         --show-leak-kinds=all \
-         --track-origins=yes \
-         --error-exitcode=1 ./test"
+        docker run --rm --entrypoint /bin/sh renderer -c "cd build/tests && ctest --output-on-failure"

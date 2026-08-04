@@ -23,4 +23,5 @@ void readImageFromMemory(const std::byte* memoryBuffer, size_t size, int& width,
                          std::vector<uint8_t>& result);
 
 std::vector<std::byte> writeToPng(const std::vector<uint8_t>& pixels, int width, int height, int channels);
+std::vector<std::byte> writeToPng(const std::vector<float>& pixels, int width, int height, int channels);
 }  // namespace utils
