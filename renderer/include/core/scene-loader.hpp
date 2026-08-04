@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "scene.hpp"
+
 class SceneLoader {
     static constexpr auto supportedExtensions =
         fastgltf::Extensions::KHR_mesh_quantization | fastgltf::Extensions::KHR_texture_transform |

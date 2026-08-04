@@ -17,6 +17,7 @@ class TargetManager {
     std::shared_ptr<RenderTarget> createEGLTarget(int width, int height);
 
     static void init();
+    static void terminate();
 
     EGLDisplay getDisplay() const noexcept { return display; }
     EGLDisplay getContext() const noexcept { return context; }

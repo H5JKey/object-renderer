@@ -5,7 +5,6 @@ ARG BUILD_TESTS=OFF
 
 WORKDIR /renderer
 
-ENV DEBUGINFOD_URLS="https://debuginfod.archlinux.org"
 RUN pacman -Syu --noconfirm && \
     pacman -S --noconfirm \
     gcc \
@@ -27,11 +26,10 @@ RUN pacman -Syu --noconfirm && \
     libxinerama \
     libxcursor \
     libxi \
-    valgrind \
 && pacman -Scc --noconfirm
 
 COPY renderer/ .
 RUN mkdir build && cd build && cmake .. -DBUILD_MODE=${BUILD_MODE} -DBUILD_TESTS=${BUILD_TESTS}
 RUN cd build && make -j$(nproc)
 
-ENV PATH="/renderer/build:${PATH}"
+ENV PATH="/renderer/build:/renderer/build/tests:${PATH}"
