@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from core.config.database import DataBaseConfig
 from core.config.jwt import JWTConfig
+from core.config.logging import LoggingConfig
 from core.config.minio import MinioConfig
 
 
@@ -14,6 +15,7 @@ class Settings(BaseSettings):
     database: DataBaseConfig = DataBaseConfig()
     jwt: JWTConfig = JWTConfig()
     minio: MinioConfig = MinioConfig()
+    logging: LoggingConfig = LoggingConfig()
     oauth2_scheme: OAuth2PasswordBearer = OAuth2PasswordBearer(
         tokenUrl="/api/v1/auth/login",
     )
