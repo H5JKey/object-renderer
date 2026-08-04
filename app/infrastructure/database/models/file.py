@@ -20,7 +20,6 @@ if TYPE_CHECKING:
 class File(Base):
     __tablename__ = "files"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(FILE_NAME_MAX_LENGTH))
     size: Mapped[int]
     bucket: Mapped[str] = mapped_column(String(FILE_BUCKET_MAX_LENGTH))

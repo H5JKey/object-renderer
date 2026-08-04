@@ -3,7 +3,8 @@ from typing import ClassVar
 from core.constants import ProjectVisibility, RenderStatus
 from pydantic import BaseModel, ConfigDict
 
-from schemas.render import RenderCreate, RenderResponse
+from schemas.constraints.project import DescriptionConstraint, NameConstraint
+from schemas.render import RenderCreate, RenderResponse, RenderWithFileResponse
 
 
 class ProjectBase(BaseModel):
@@ -11,8 +12,8 @@ class ProjectBase(BaseModel):
     Базовая схема для создания проекта.
     """
 
-    name: str
-    description: str
+    name: NameConstraint
+    description: DescriptionConstraint
     source_file_id: int
     model_config: ClassVar[ConfigDict] = ConfigDict(from_attributes=True)
 
@@ -23,6 +24,34 @@ class ProjectCreate(ProjectBase):
     """
 
     visibility: ProjectVisibility
+
+
+class ProjectWithRenderCreate(BaseModel):
+    """
+    Схема для создания проекта c предоставлением данных о рендере.
+    """
+
+    render: RenderCreate
+    project: ProjectCreate
+
+
+class ProjectPartialUpdate(BaseModel):
+    """
+    Схема для частичного обновления проекта от пользователя.
+    """
+
+    name: NameConstraint | None = None
+    description: DescriptionConstraint | None = None
+    visibility: ProjectVisibility | None = None
+
+
+class ProjectUpdateStatus(BaseModel):
+    """
+    Схема для обновления данных о проекте при готовом рендере.
+    """
+
+    status: RenderStatus
+    render_id: int
 
 
 class ProjectResponse(ProjectBase):
@@ -36,6 +65,22 @@ class ProjectResponse(ProjectBase):
     id: int
 
 
+class ProjectWithRenderResponse(ProjectResponse):
+    """
+    Схема для вывода информации о проекте с рендером.
+    """
+
+    render: RenderResponse
+
+
+class ProjectWithRenderFileResponse(ProjectResponse):
+    """
+    Схема для вывода информации о проекте с файлом рендера.
+    """
+
+    render: RenderWithFileResponse
+
+
 class ProjectResponseList(BaseModel):
     """
     Схема для вывода информации о списке проектов.
@@ -46,28 +91,11 @@ class ProjectResponseList(BaseModel):
     page: int
 
 
-class ProjectWithRenderCreate(BaseModel):
-    """
-    Схема для создания проекта c предоставлением данных о рендере.
-    """
-
-    render: RenderCreate
-    project: ProjectCreate
-
-
-class ProjectWithRenderResponse(ProjectResponse):
-    """
-    Схема для вывода информации о проекте с рендером.
-    """
-
-    render: RenderResponse
-
-
-class ProjectWithRenderResponseList(BaseModel):
+class ProjectWithRenderFileResponseList(BaseModel):
     """
     Схема для вывода информации о списке проектов с рендером.
     """
 
-    project_list: list[ProjectWithRenderResponse]
+    project_list: list[ProjectWithRenderFileResponse]
     size: int
     page: int

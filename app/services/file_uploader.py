@@ -1,3 +1,4 @@
+import asyncio
 from os import fstat
 from typing import BinaryIO
 from uuid import uuid4
@@ -41,11 +42,6 @@ class FileUploader(AbstractFileUploader):
         file: BinaryIO,
     ) -> FileResponse:
         key = self._generate_key(file_name)
-        await self.s3_client.put_object(
-            bucket=self.bucket,
-            key=key,
-            file=file,
-        )
         size = self._get_file_size(file)
         create_file_data = FileCreate(
             name=file_name,
@@ -53,8 +49,17 @@ class FileUploader(AbstractFileUploader):
             bucket=self.bucket,
             key=key,
         )
-
-        created_file = await self.file_repository.create_file(
+        upload_file_to_s3_coroutine = self.s3_client.put_object(
+            bucket=self.bucket,
+            key=key,
+            file=file,
+        )
+        create_file_coroutine = self.file_repository.create_file(
             create_file_data=create_file_data,
+        )
+
+        created_file, _ = await asyncio.gather(
+            create_file_coroutine,
+            upload_file_to_s3_coroutine,
         )
         return FileResponse.model_validate(created_file)

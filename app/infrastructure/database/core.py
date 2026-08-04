@@ -3,7 +3,7 @@ from collections.abc import AsyncGenerator
 from core.config.application import settings
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 metadata = MetaData(
     naming_convention=settings.database.naming_convention,
@@ -15,6 +15,7 @@ class Base(DeclarativeBase):
     Базовый класс для наследования моделей базы данных.
     """
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     metadata: MetaData = metadata  # type: ignore[misc]
 
 
@@ -29,6 +30,7 @@ engine = create_async_engine(
 
 session_factory = async_sessionmaker(
     bind=engine,
+    expire_on_commit=False,
 )
 
 

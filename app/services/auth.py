@@ -7,7 +7,6 @@ from core.exceptions.user import (
     UserUsernameNotFoundError,
 )
 from core.interfaces.repositories import AbstractUserRepository
-from core.interfaces.services import AbstractAuthService
 from core.security.jwt_tokens.factory import create_access_token, create_token
 from core.security.password_utils import (
     convert_register_to_create_user,
@@ -18,7 +17,7 @@ from schemas.token import TokenInfo
 from schemas.user import UserResponse
 
 
-class AuthService(AbstractAuthService):
+class AuthService:
     def __init__(
         self,
         user_repository: AbstractUserRepository,

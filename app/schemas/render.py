@@ -7,6 +7,7 @@ from schemas.constraints.render import (
     SampleConstraint,
     WidthConstraint,
 )
+from schemas.file import FileResponse
 
 
 class RenderBase(BaseModel):
@@ -36,3 +37,11 @@ class RenderResponse(RenderBase):
 
     file_id: int | None
     id: int
+
+
+class RenderWithFileResponse(RenderResponse):
+    """
+    Схема для вывода информации о рендере вместе с файлом.
+    """
+
+    file: FileResponse | None

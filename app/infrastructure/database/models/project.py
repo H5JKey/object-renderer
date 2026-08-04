@@ -20,7 +20,6 @@ if TYPE_CHECKING:
 class Project(Base):
     __tablename__ = "projects"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(PROJECT_NAME_MAX_LENGTH))
     description: Mapped[str | None] = mapped_column(
         String(PROJECT_DESCRIPTION_MAX_LENGTH),

@@ -1,12 +1,13 @@
 from collections.abc import AsyncGenerator
 from typing import Annotated
 
+from aiokafka import AIOKafkaProducer
 from core.constants import s3_bucket
 from fastapi import Depends
 from infrastructure.database.repositories.file import FileRepository
 from infrastructure.database.repositories.user import UserRepository
 from infrastructure.database.unit_of_work import UnitOfWork
-from infrastructure.kafka import ConfluentKafkaProducer
+from infrastructure.kafka import generate_render_producer
 from infrastructure.minio.client import MinioClient
 from services.auth import AuthService
 from services.file_uploader import FileUploader
@@ -14,13 +15,16 @@ from services.project import ProjectService
 from services.render import RenderService
 from services.user import UserService
 
-from dependencies.kafka import get_confluent_kafka_producer
 from dependencies.minio import get_minio_client
 from dependencies.repositories import (
     get_file_repository,
     get_unit_of_work,
     get_user_repository,
 )
+
+
+async def get_aiokafka_producer() -> AIOKafkaProducer:
+    return generate_render_producer
 
 
 async def get_input_file_uploader(
@@ -63,8 +67,8 @@ async def get_user_service(
 
 async def get_render_service(
     producer: Annotated[
-        ConfluentKafkaProducer,
-        Depends(get_confluent_kafka_producer),
+        AIOKafkaProducer,
+        Depends(get_aiokafka_producer),
     ],
 ) -> AsyncGenerator[RenderService]:
     render_service = RenderService(producer)
