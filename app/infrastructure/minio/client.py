@@ -2,6 +2,9 @@ from typing import BinaryIO, cast
 
 from aiobotocore.client import AioBaseClient
 from core.interfaces.clients import AbstractS3Client
+from core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class MinioClient(AbstractS3Client):
@@ -32,6 +35,7 @@ class MinioClient(AbstractS3Client):
             Key=key,
         )
         file_binary = file_response.read()
+        logger.info("Received file, bucket=%s, key=%s", bucket, key)
         return cast(BinaryIO, file_binary)
 
     async def put_object(
@@ -45,9 +49,11 @@ class MinioClient(AbstractS3Client):
             Key=key,
             Body=file,
         )
+        logger.info("Added file, bucket=%s, key=%s", bucket, key)
 
     async def delete_object(self, bucket: str, key: str) -> None:
         await self.minio_client.delete_object(
             Bucket=bucket,
             Key=key,
         )
+        logger.info("Deleted file, bucket=%s, key=%s", bucket, key)

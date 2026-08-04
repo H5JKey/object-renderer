@@ -7,6 +7,7 @@ from core.exceptions.user import (
     UserUsernameNotFoundError,
 )
 from core.interfaces.repositories import AbstractUserRepository
+from core.logging import get_logger
 from core.security.jwt_tokens.factory import create_access_token, create_token
 from core.security.password_utils import (
     convert_register_to_create_user,
@@ -15,6 +16,8 @@ from core.security.password_utils import (
 from schemas.auth import LoginRequest, RegisterRequest
 from schemas.token import TokenInfo
 from schemas.user import UserResponse
+
+logger = get_logger(__name__)
 
 
 class AuthService:
@@ -36,6 +39,7 @@ class AuthService:
         user = await self.user_repository.create_user(create_user_data)
         user_response = UserResponse.model_validate(user)
         token = create_token(user_response)
+        logger.info("User registered, username=%s", register_user_data.username)
         return token
 
     async def authenticate_user(
@@ -56,6 +60,7 @@ class AuthService:
 
         user_response = UserResponse.model_validate(user)
         token = create_token(user_response)
+        logger.info("User authed, username=%s", auth_user_data.username)
         return token
 
     async def refresh_access_token(self, user_id: int) -> TokenInfo:
@@ -69,4 +74,5 @@ class AuthService:
             access_token=access_token,
             token_type=BEARER_TOKEN_TYPE,
         )
+        logger.info("User refreshed auth token, user_id=%s", user_id)
         return token
