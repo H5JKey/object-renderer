@@ -3,7 +3,10 @@ from typing import Self
 
 from core.interfaces.clients import AbstractUnitOfWorkClient
 from core.interfaces.repositories import AbstractRepository
+from core.logging import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = get_logger(__name__)
 
 
 class UnitOfWork(AbstractUnitOfWorkClient):
@@ -33,6 +36,8 @@ class UnitOfWork(AbstractUnitOfWorkClient):
 
     async def rollback(self) -> None:
         await self.session.rollback()
+        logger.warning("Rolled back transaction")
 
     async def commit(self) -> None:
         await self.session.commit()
+        logger.info("Commited transaction")
