@@ -98,13 +98,13 @@ TEST(ImageReadWriteTest, readImageFromMemoryWorks) {
     std::vector<uint8_t> resultRGB;
     std::vector<uint8_t> expected;
     int size;
-    std::vector<std::byte> memoryBuffer;
+    std::vector<uint8_t> memoryBuffer;
 
     ASSERT_NO_THROW(utils::readImage(path, width, height, channels, expected));
     ASSERT_NO_THROW(memoryBuffer = utils::writeToPng(expected, width, height, channels));
 
-    ASSERT_NO_THROW(utils::readImageFromMemory(memoryBuffer.data(), memoryBuffer.size(), resultWidth, resultHeight,
-                                               resultChannels, resultRGB));
+    ASSERT_NO_THROW(utils::readImageFromMemory(reinterpret_cast<std::byte*>(memoryBuffer.data()), memoryBuffer.size(),
+                                               resultWidth, resultHeight, resultChannels, resultRGB));
     ASSERT_EQ(resultWidth, width);
     ASSERT_EQ(resultHeight, height);
 

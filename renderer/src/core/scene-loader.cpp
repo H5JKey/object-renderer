@@ -272,20 +272,20 @@ Scene SceneLoader::loadGltfFromFile(const std::filesystem::path& path) {
     }
 
     auto data = fastgltf::GltfDataBuffer::FromPath(path);
-    if (data.error() != fastgltf::Error::None) {
+    if (auto error = data.error(); error != fastgltf::Error::None) {
         Logger::getInstance().log(
-            std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(data.error())),
+            std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(error)),
             Logger::Level::ERROR);
         throw std::runtime_error(
-            std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(data.error())));
+            std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(error)));
     }
     auto asset = parser.loadGltf(data.get(), path.parent_path(), gltfOptions);
     if (auto error = asset.error(); error != fastgltf::Error::None) {
         Logger::getInstance().log(
-            std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(data.error())),
+            std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(error)),
             Logger::Level::ERROR);
         throw std::runtime_error(
-            std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(data.error())));
+            std::format("Failed to load {}. Error: {} ", path.string(), fastgltf::getErrorMessage(error)));
     }
     return loadGltf(asset.get());
 }
@@ -293,20 +293,20 @@ Scene SceneLoader::loadGltfFromFile(const std::filesystem::path& path) {
 Scene SceneLoader::loadGltfFromMemory(const std::vector<uint8_t>& bytes) {
     Logger::getInstance().log(std::format("Loading scene from memory. Size: {}", bytes.size()), Logger::Level::INFO);
     auto data = fastgltf::GltfDataBuffer::FromBytes(reinterpret_cast<const std::byte*>(bytes.data()), bytes.size());
-    if (data.error() != fastgltf::Error::None) {
+    if (auto error = data.error(); error != fastgltf::Error::None) {
         Logger::getInstance().log(
-            std::format("Failed to load data from memory. Error: {} ", fastgltf::getErrorMessage(data.error())),
+            std::format("Failed to load data from memory. Error: {} ", fastgltf::getErrorMessage(error)),
             Logger::Level::ERROR);
         throw std::runtime_error(
-            std::format("Failed to load data from memory. Error: {} ", fastgltf::getErrorMessage(data.error())));
+            std::format("Failed to load data from memory. Error: {} ", fastgltf::getErrorMessage(error)));
     }
-    auto asset = parser.loadGltf(data.get(), "", gltfOptions);
+    auto asset = parser.loadGltf(data.get(), ".", gltfOptions);
     if (auto error = asset.error(); error != fastgltf::Error::None) {
         Logger::getInstance().log(
-            std::format("Failed to load data from memory. Error: {} ", fastgltf::getErrorMessage(data.error())),
+            std::format("Failed to load data from memory. Error: {} ", fastgltf::getErrorMessage(error)),
             Logger::Level::ERROR);
         throw std::runtime_error(
-            std::format("Failed to load data from meory. Error: {} ", fastgltf::getErrorMessage(data.error())));
+            std::format("Failed to load data from meory. Error: {} ", fastgltf::getErrorMessage(error)));
     }
     return loadGltf(asset.get());
 }
