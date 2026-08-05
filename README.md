@@ -58,7 +58,7 @@ using EGL for GPU-accelerated rendering in headless environments
 #### Docker
 
 ```bash
-docker build --file renderer/Dockerfile -t prizm --build-arg BUILD_MODE=CLI  .
+docker build --file renderer/Dockerfile -t renderer --build-arg BUILD_MODE=CLI  .
 ```
 
 #### CMake
@@ -74,7 +74,7 @@ cmake --build .
 
 #### Docker
 ```bash
-docker run --rm prizm renderer_cli <width> <height> <samples> <input_scene> [OPTIONS]
+docker run --rm renderer renderer_cli <width> <height> <samples> <input_scene> [OPTIONS]
 ```
 
 #### CMake
@@ -109,7 +109,7 @@ docker run --rm prizm renderer_cli <width> <height> <samples> <input_scene> [OPT
 
 #### Docker
 ```bash
-docker build --file renderer/Dockerfile -t prizm --build-arg BUILD_MODE=WORKER .
+docker build --file renderer/Dockerfile -t renderer --build-arg BUILD_MODE=WORKER .
 ```
 
 #### CMake
@@ -123,7 +123,7 @@ cmake --build .
 
 #### Docker
 ```bash
-docker run --rm prizm renderer_worker
+docker run --rm renderer renderer_worker
 ```
 
 #### CMake
@@ -134,8 +134,8 @@ cd renderer/build && ./renderer_worker
 
 #### Docker
 ```bash
-docker build --file renderer/Dockerfile -t prizm --build-arg BUILD_MODE=CORE  --build-arg BUILD_TESTS=ON .
-docker run --rm prizm test
+docker build --file renderer/Dockerfile -t renderer --build-arg BUILD_MODE=CORE  --build-arg BUILD_TESTS=ON .
+docker run --rm --entrypoint /bin/sh renderer -c "cd build/tests && ctest --output-on-failure"
 ```
 ### CMake
 ```bash
