@@ -34,6 +34,8 @@ const env::Value& env::dotenv::operator[](const std::string& key) const {
     return it->second;
 }
 
+bool env::dotenv::hasVariable(const std::string& key) const { return variables.find(key) != variables.end(); }
+
 env::Value::operator std::string() const { return rawValue; }
 env::Value::operator int() const {
     try {
