@@ -52,6 +52,8 @@ class dotenv {
 
     const Value& operator[](const std::string& key) const;
 
+    bool hasVariable(const std::string& key) const;
+
    private:
     std::map<std::string, Value> variables;
 };

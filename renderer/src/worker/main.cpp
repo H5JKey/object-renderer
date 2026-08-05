@@ -32,8 +32,16 @@ std::vector<uint8_t> renderPipeline(RenderEngine& engine, Scene scene, int width
 int main() try {
     env::dotenv env(".env");
     Aws::InitAPI(options);
-    Logger::getInstance().debug = env["LOG_DEBUG"];
-    Logger::getInstance().setMinLevel(Logger::getLevelFromString(env["LOG_LEVEL"]));
+    if (env.hasVariable("RENDERER_LOG_DEBUG"))
+        Logger::getInstance().debug = env["RENDERER_LOG_DEBUG"];
+    else
+        Logger::getInstance().debug = false;
+    if (env.hasVariable("RENDERER_LOG_DEBUG")) {
+        Logger::getInstance().setMinLevel(Logger::getLevelFromString(env["RENDERER_LOG_LEVEL"]));
+    } else {
+        Logger::getInstance().setMinLevel(Logger::Level::INFO);
+    }
+
     Logger::getInstance().log(std::format("Aws initialized"), Logger::Level::DEBUG);
     TargetManager::init();
     RenderEngine engine;

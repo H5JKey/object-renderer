@@ -74,8 +74,9 @@ void TargetManager::init() {
             throw std::runtime_error("gladLoadGL failed");
         }
         Logger::getInstance().log(
-            std::format("\n\tVendor   : {}\n\tVendor   : {}\n\tVersion  : {}", (const char*)glGetString(GL_VENDOR),
-                        (const char*)glGetString(GL_RENDERER), (const char*)glGetString(GL_VERSION)),
+            std::format("OpenGL info:\n\tVendor   :  {}\n\tRenderer :  {}\n\tVersion  :  {}",
+                        (const char*)glGetString(GL_VENDOR), (const char*)glGetString(GL_RENDERER),
+                        (const char*)glGetString(GL_VERSION)),
             Logger::Level::DEBUG);
 
         self.initialized = true;

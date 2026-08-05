@@ -298,7 +298,7 @@ void RenderEngine::uploadGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
     const auto& materialIndices = gpuData.materialIndices;
     const auto& bvhNodes = bvh.getNodes();
     const auto& bvhTriangles = bvh.getTriangles();
-    Logger::getInstance().log(std::format("\n\tTotal triangles: {}\n\tBVH nodes: {}\n\tBVH depth: {}",
+    Logger::getInstance().log(std::format("Scene info: \n\tTotal triangles: {}\n\tBVH nodes: {}\n\tBVH depth: {}",
                                           vertexIndices.size() / 3, bvhNodes.size(), bvh.getDepth()),
                               Logger::Level::DEBUG);
 
