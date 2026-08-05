@@ -1,11 +1,14 @@
 from core.constants import ProjectVisibility, RenderStatus
 from core.interfaces.repositories import AbstractProjectRepository
+from core.logging import get_logger
 from schemas.project import ProjectCreate, ProjectPartialUpdate
 from sqlalchemy import and_, delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from infrastructure.database.models import Project, Render, User
+
+logger = get_logger(__name__)
 
 
 class ProjectRepository(AbstractProjectRepository):
@@ -53,6 +56,12 @@ class ProjectRepository(AbstractProjectRepository):
 
         project.status = RenderStatus.completed.value  # type: ignore[assignment]
         await self.session.flush()
+        logger.debug(
+            "Updated project status in transaction, transaction_id=%s, project_id=%s, status=%s",  # noqa: E501
+            id(self.session),
+            project_id,
+            project.status,
+        )
         return project
 
     async def create_project(
@@ -68,6 +77,14 @@ class ProjectRepository(AbstractProjectRepository):
         )
         self.session.add(project)
         await self.session.flush()
+        logger.debug(
+            "Created project in transaction, transaction_id=%s, project_id=%s, name=%s, source_file_id=%s, visibility=%s",  # noqa: E501
+            id(self.session),
+            project.id,
+            project.name,
+            project.source_file_id,
+            project.visibility,
+        )
         return project
 
     async def partial_update_project(
@@ -85,9 +102,22 @@ class ProjectRepository(AbstractProjectRepository):
             setattr(project, field, value)
 
         await self.session.flush()
+        logger.debug(
+            "Updated project in transaction, transaction_id=%s, project_id=%s, name=%s, source_file_id=%s, visibility=%s",  # noqa: E501
+            id(self.session),
+            project.id,
+            project.name,
+            project.source_file_id,
+            project.visibility,
+        )
         return project
 
     async def delete_by_id(self, project_id: int) -> None:
         stmt = delete(Project).where(Project.id == project_id)
         await self.session.execute(stmt)
-        await self.session.commit()
+        await self.session.flush()
+        logger.debug(
+            "Deleted project in transaction, transaction_id=%s, project_id=%s",
+            id(self.session),
+            project_id,
+        )

@@ -1,10 +1,15 @@
+from typing import cast
+
 from core.interfaces.repositories import AbstractUserRepository
+from core.logging import get_logger
 from pydantic import EmailStr
 from schemas.user import UserCreate, UserUpdate
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.database.models import User
+
+logger = get_logger(__name__)
 
 
 class UserRepository(AbstractUserRepository):
@@ -32,6 +37,12 @@ class UserRepository(AbstractUserRepository):
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
+        logger.debug(
+            "Created user, transaction_id=%s, user_id=%s, username=%s",
+            id(self.session),
+            user.id,
+            user.username,
+        )
         return user
 
     async def update_user(
@@ -39,17 +50,27 @@ class UserRepository(AbstractUserRepository):
         user_id: int,
         update_user_data: UserUpdate,
     ) -> User | None:
-        user = await self.get_by_id(user_id)
+        user = cast(User, await self.get_by_id(user_id))
         for field, value in update_user_data.model_dump().items():
             setattr(user, field, value)
 
         self.session.add(user)
         await self.session.commit()
         await self.session.refresh(user)
-
+        logger.debug(
+            "Updated user, transaction_id=%s, user_id=%s, username=%s",
+            id(self.session),
+            user.id,
+            user.username,
+        )
         return user
 
     async def delete_by_id(self, user_id: int) -> None:
         stmt = delete(User).where(User.id == user_id)
         await self.session.execute(stmt)
         await self.session.commit()
+        logger.debug(
+            "Deleted user, transaction_id=%s, user_id=%s",
+            id(self.session),
+            user_id,
+        )
