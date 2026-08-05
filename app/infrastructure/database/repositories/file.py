@@ -1,9 +1,12 @@
 from core.interfaces.repositories import AbstractFileRepository
+from core.logging import get_logger
 from schemas.file import FileCreate
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from infrastructure.database.models import File
+
+logger = get_logger(__name__)
 
 
 class FileRepository(AbstractFileRepository):
@@ -22,9 +25,23 @@ class FileRepository(AbstractFileRepository):
         self.session.add(file)
         await self.session.commit()
         await self.session.refresh(file)
+        logger.debug(
+            "Created file, transaction_id=%s, file_id=%s, bucket=%s, key=%s, name=%s, size=%s",  # noqa: E501
+            id(self.session),
+            file.id,
+            file.bucket,
+            file.key,
+            file.name,
+            file.size,
+        )
         return file
 
     async def delete_by_id(self, file_id: int) -> None:
         stmt = delete(File).where(File.id == file_id)
         await self.session.execute(stmt)
         await self.session.commit()
+        logger.debug(
+            "Deleted file, transaction_id=%s, file_id=%s",
+            id(self.session),
+            file_id,
+        )

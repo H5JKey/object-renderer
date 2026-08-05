@@ -36,8 +36,8 @@ class UnitOfWork(AbstractUnitOfWorkClient):
 
     async def rollback(self) -> None:
         await self.session.rollback()
-        logger.warning("Rolled back transaction")
+        logger.warning("Rolled back transaction, transaction_id=%s", id(self.session))
 
     async def commit(self) -> None:
         await self.session.commit()
-        logger.info("Commited transaction")
+        logger.debug("Commited transaction, transaction_id=%s", id(self.session))

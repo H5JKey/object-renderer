@@ -35,7 +35,7 @@ class MinioClient(AbstractS3Client):
             Key=key,
         )
         file_binary = file_response.read()
-        logger.info("Received file, bucket=%s, key=%s", bucket, key)
+        logger.debug("Received file, bucket=%s, key=%s", bucket, key)
         return cast(BinaryIO, file_binary)
 
     async def put_object(
@@ -49,11 +49,11 @@ class MinioClient(AbstractS3Client):
             Key=key,
             Body=file,
         )
-        logger.info("Added file, bucket=%s, key=%s", bucket, key)
+        logger.debug("Created file, bucket=%s, key=%s", bucket, key)
 
     async def delete_object(self, bucket: str, key: str) -> None:
         await self.minio_client.delete_object(
             Bucket=bucket,
             Key=key,
         )
-        logger.info("Deleted file, bucket=%s, key=%s", bucket, key)
+        logger.debug("Deleted file, bucket=%s, key=%s", bucket, key)
