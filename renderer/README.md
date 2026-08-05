@@ -1,10 +1,6 @@
 # Renderer
 
-[![C++](https://img.shields.io/badge/C++-23-blue?logo=cplusplus&style=flat-square)](https://isocpp.org/)
-[![CMake](https://img.shields.io/badge/CMake-3.20+-064F8C?logo=cmake)](https://cmake.org/)
-[![OpenGL](https://img.shields.io/badge/OpenGL-4.6-green?logo=opengl&style=flat-square)](https://www.opengl.org/)
-
-## Headless OpenGL compute shader Path Tracer using EGL
+> Headless OpenGL compute shader physically based path tracer using EGL
 
 An renderer that runs entirely without a display server,
 using EGL for GPU-accelerated rendering in headless environments
