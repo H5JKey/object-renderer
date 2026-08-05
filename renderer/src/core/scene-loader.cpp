@@ -265,7 +265,7 @@ Scene::Mesh SceneLoader::loadMesh(const fastgltf::Mesh& gltfMesh, const fastgltf
 }
 
 Scene SceneLoader::loadGltfFromFile(const std::filesystem::path& path) {
-    Logger::getInstance().log(std::format("Loading scene from file {}", path.string()), Logger::Level::INFO);
+    Logger::getInstance().log(std::format("Loading scene from file {}", path.string()), Logger::Level::DEBUG);
     if (!std::filesystem::exists(path)) {
         Logger::getInstance().log(std::format("Failed to find {} ", path.string()), Logger::Level::ERROR);
         throw std::runtime_error(std::format("Failed to find {} ", path.string()));
@@ -291,7 +291,7 @@ Scene SceneLoader::loadGltfFromFile(const std::filesystem::path& path) {
 }
 
 Scene SceneLoader::loadGltfFromMemory(const std::vector<uint8_t>& bytes) {
-    Logger::getInstance().log(std::format("Loading scene from memory. Size: {}", bytes.size()), Logger::Level::INFO);
+    Logger::getInstance().log(std::format("Loading scene from memory. Size: {}", bytes.size()), Logger::Level::DEBUG);
     auto data = fastgltf::GltfDataBuffer::FromBytes(reinterpret_cast<const std::byte*>(bytes.data()), bytes.size());
     if (auto error = data.error(); error != fastgltf::Error::None) {
         Logger::getInstance().log(

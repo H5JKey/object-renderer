@@ -42,18 +42,18 @@ target_link_libraries(test PRIVATE
 
 add_custom_command(
     TARGET test POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_SOURCE_DIR}/tests/data
         ${CMAKE_BINARY_DIR}/tests/data
-    COMMENT "Copying tests data to build directory"
+    COMMENT "Linking tests data to build directory"
 )
 
 add_custom_command(
     TARGET test POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_SOURCE_DIR}/tests/asan.supp
         ${CMAKE_BINARY_DIR}/tests/asan.supp
-    COMMENT "Copying ASan suppression file"
+    COMMENT "Linking ASan suppression file to build directory"
 )
 
 

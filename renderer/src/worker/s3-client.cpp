@@ -10,7 +10,7 @@
 
 #include "logger.hpp"
 
-S3Client::S3Client(std::string_view endpoint, Aws::Auth::AWSCredentials credentials) {
+S3Client::S3Client(const std::string& endpoint, Aws::Auth::AWSCredentials credentials) {
     try {
         Aws::Client::ClientConfiguration clientConfig;
         clientConfig.endpointOverride = endpoint;
@@ -34,16 +34,16 @@ std::vector<uint8_t> S3Client::getData(const Aws::String& bucketName, const Aws:
 
     if (outcome.IsSuccess()) {
         Aws::IOStream& ioStream = outcome.GetResult().GetBody();
-        Logger::getInstance().log(std::format("Get data from S3 with bucket '{}' and key '{}'", bucketName, objectKey),
-                                  Logger::Level::INFO);
+        Logger::getInstance().log(std::format("Get data from S3 (bucket = '{}', key = '{}')", bucketName, objectKey),
+                                  Logger::Level::DEBUG);
         std::vector<uint8_t> data{std::istreambuf_iterator<char>(ioStream), std::istreambuf_iterator<char>()};
 
         return data;
     } else {
-        Logger::getInstance().log(std::format("Failed to read from S3 with bucket '{}' and key '{}': ", bucketName,
+        Logger::getInstance().log(std::format("Failed to read from S3 (bucket = '{}', key = '{}') : ", bucketName,
                                               objectKey, outcome.GetError().GetMessage()),
                                   Logger::Level::ERROR);
-        throw std::runtime_error(std::format("Failed to read from S3 with bucket '{}' and key '{}': ", bucketName,
+        throw std::runtime_error(std::format("Failed to read from S3 (bucket = '{}', key = '{}') : ", bucketName,
                                              objectKey, outcome.GetError().GetMessage()));
     }
 }
@@ -59,13 +59,15 @@ void S3Client::putData(const std::vector<uint8_t>& data, const Aws::String& buck
     auto outcome = s3Client.PutObject(request);
 
     if (outcome.IsSuccess()) {
-        Logger::getInstance().log(std::format("Put data to S3 with bucket '{}' and key '{}'", bucketName, objectKey),
-                                  Logger::Level::INFO);
+        Logger::getInstance().log(std::format("Put data to S3 (bucket = '{}', key = '{}') : ", bucketName, objectKey),
+                                  Logger::Level::DEBUG);
 
     } else {
-        Logger::getInstance().log(std::format("Failed to put data to S3: {}", outcome.GetError().GetMessage()),
+        Logger::getInstance().log(std::format("Failed to put data to (bucket = '{}', key = '{}'): {}", bucketName,
+                                              objectKey, outcome.GetError().GetMessage()),
                                   Logger::Level::ERROR);
-        throw std::runtime_error(std::format("Failed to put data to S3: {}", outcome.GetError().GetMessage()));
+        throw std::runtime_error(std::format("Failed to put data to (bucket = '{}', key = '{}'): {}", bucketName,
+                                             objectKey, outcome.GetError().GetMessage()));
     }
 }
 
