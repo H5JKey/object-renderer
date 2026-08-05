@@ -22,8 +22,8 @@ target_include_directories(renderer_core PUBLIC
 
 add_custom_command(
     TARGET renderer_core POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
         ${CMAKE_SOURCE_DIR}/shaders
         ${CMAKE_BINARY_DIR}/shaders
-    COMMENT "Copying shaders to build directory"
+    COMMENT "Linking shaders to build directory"
 )

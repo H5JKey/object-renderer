@@ -326,7 +326,7 @@ void RenderEngine::uploadGPUBuffers(const GPUData& gpuData, const BVH& bvh) {
 }
 
 RenderEngine::GPUData RenderEngine::convertSceneToGPUData(const Scene& scene) {
-    Logger::getInstance().log("Preparing scene data for GPU", Logger::Level::INFO);
+    Logger::getInstance().log("Preparing scene data for GPU", Logger::Level::DEBUG);
     GPUData data;
     for (const auto& mesh : scene.getMeshes()) {
         int indexOffset = data.vertices.size();

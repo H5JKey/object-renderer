@@ -1,6 +1,7 @@
 #pragma once
 #include <cppkafka.h>
 
+#include <optional>
 #include <string>
 
 class KafkaConsumer {
@@ -12,7 +13,8 @@ class KafkaConsumer {
     cppkafka::Consumer consumer;
 
    public:
-    KafkaConsumer(const std::string& brokerList, const std::string_view& groupId, const std::string& topicName);
+    std::optional<cppkafka::Message> lastMessage;
+    KafkaConsumer(const std::string& brokerList, const std::string& groupId, const std::string& topicName);
     std::string consume();
     void commit();
     ~KafkaConsumer();

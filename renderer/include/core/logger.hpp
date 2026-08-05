@@ -17,9 +17,11 @@ class Logger {
 
     void log(std::string_view message, Level level);
 
+    static std::string getStringFromLevel(Level level);
+    static Level getLevelFromString(const std::string& level);
+
    private:
     Level minLevel;
-    std::string_view getLevelAsString(Level level);
     Logger();
     ~Logger() = default;
 };

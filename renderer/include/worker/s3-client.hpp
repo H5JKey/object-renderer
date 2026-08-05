@@ -9,7 +9,7 @@ class S3Client {
     Aws::S3::S3Client s3Client;
 
    public:
-    S3Client(std::string_view endpoint, Aws::Auth::AWSCredentials credentials);
+    S3Client(const std::string& endpoint, Aws::Auth::AWSCredentials credentials);
 
     std::vector<uint8_t> getData(const Aws::String& bucketName, const Aws::String& objectKey);
     void putData(const std::vector<uint8_t>& data, const Aws::String& bucketName, const Aws::String& objectKey);

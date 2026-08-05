@@ -3,8 +3,7 @@
 #include "consumer.h"
 #include "logger.hpp"
 
-KafkaConsumer::KafkaConsumer(const std::string& brokerList, const std::string_view& groupId,
-                             const std::string& topicName)
+KafkaConsumer::KafkaConsumer(const std::string& brokerList, const std::string& groupId, const std::string& topicName)
     : topicName(topicName),
       brokerList(brokerList),
       groupId(groupId),
@@ -13,6 +12,8 @@ KafkaConsumer::KafkaConsumer(const std::string& brokerList, const std::string_vi
           {"group.id", this->groupId},
           {"auto.offset.reset", "earliest"},
           {"broker.address.family", "v4"},
+          {"enable.auto.commit", "false"},
+          {"auto.commit.interval.ms", "0"},
       }),
       consumer(config) {
     try {
@@ -29,7 +30,7 @@ KafkaConsumer::~KafkaConsumer() { consumer.unsubscribe(); }
 
 std::string KafkaConsumer::consume() {
     while (true) {
-        auto message = consumer.poll(std::chrono::milliseconds(1000));
+        auto message = consumer.poll(std::chrono::milliseconds(10000));
         if (message) {
             if (message.get_error()) {
                 Logger::getInstance().log(std::format("Error: {}", message.get_error().to_string()),
@@ -37,11 +38,23 @@ std::string KafkaConsumer::consume() {
             } else {
                 std::string strMessage(reinterpret_cast<const char*>(message.get_payload().get_data()),
                                        message.get_payload().get_size());
-                Logger::getInstance().log(std::format("Kafka consumed message: {}", strMessage), Logger::Level::DEBUG);
+                Logger::getInstance().log(std::format("Kafka consumed message ({}, offset = {}, partition = {})",
+                                                      strMessage, message.get_offset(), message.get_partition()),
+                                          Logger::Level::DEBUG);
+                lastMessage = std::move(message);
                 return strMessage;
             }
         }
     }
 }
 
-void KafkaConsumer::commit() { consumer.commit(); }
+void KafkaConsumer::commit() {
+    if (lastMessage.has_value()) {
+        Logger::getInstance().log(std::format("Commit message (offset: {}, partition: {})",
+                                              lastMessage.value().get_offset(), lastMessage.value().get_partition()),
+                                  Logger::Level::DEBUG);
+        consumer.commit(lastMessage.value());
+    } else {
+        Logger::getInstance().log("Nothing was committed. There have been no messages yet", Logger::Level::WARNING);
+    }
+}

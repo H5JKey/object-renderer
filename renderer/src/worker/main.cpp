@@ -2,8 +2,11 @@
 
 #include <cstdlib>
 #include <exception>
+#include <filesystem>
 #include <nlohmann/json.hpp>
+#include <stdexcept>
 
+#include "dotenv.hpp"
 #include "kafka-consumer.hpp"
 #include "kafka-producer.hpp"
 #include "logger.hpp"
@@ -27,22 +30,25 @@ std::vector<uint8_t> renderPipeline(RenderEngine& engine, Scene scene, int width
 }
 
 int main() try {
-    Logger::getInstance().debug = true;
-    Logger::getInstance().log(std::format("Aws initialized"), Logger::Level::DEBUG);
+    env::dotenv env(".env");
     Aws::InitAPI(options);
+    Logger::getInstance().debug = env["LOG_DEBUG"];
+    Logger::getInstance().setMinLevel(Logger::getLevelFromString(env["LOG_LEVEL"]));
+    Logger::getInstance().log(std::format("Aws initialized"), Logger::Level::DEBUG);
     TargetManager::init();
     RenderEngine engine;
     SceneLoader sceneLoader;
 
+    S3Client s3client(env["S3_HOST"], Aws::Auth::AWSCredentials(env["S3_ACCESS_KEY"], env["S3_SECRET_KEY"]));
+    KafkaConsumer consumer(env["KAFKA_HOST"], env["KAFKA_GROUP_ID"], env["KAFKA_TOPIC_CREATE"]);
+    KafkaProducer producer(env["KAFKA_HOST"]);
     Logger::getInstance().log("Renderer worker started", Logger::Level::INFO);
-
-    KafkaConsumer consumer("127.0.0.1:9093", "renderer_worker", "create_project");
-    KafkaProducer producer("127.0.0.1:9093");
-    S3Client s3client("127.0.0.1:9000", Aws::Auth::AWSCredentials("adminadmin", "adminadmin"));
 
     while (true) {
         try {
+            Logger::getInstance().log(std::format("Listening for messages..."), Logger::Level::INFO);
             std::string message = consumer.consume();
+            Logger::getInstance().log(std::format("Message processing started"), Logger::Level::INFO);
             int width, height, samples;
             int project_id;
             std::string bucket, key;
@@ -55,7 +61,7 @@ int main() try {
                 samples = inputJson["samples"];
                 bucket = inputJson["bucket"];
                 key = inputJson["key"];
-                modelName = inputJson["name"];
+                // modelName = inputJson["name"];
                 project_id = inputJson["project_id"];
             } catch (const std::exception& e) {
                 Logger::getInstance().log(
@@ -80,36 +86,54 @@ int main() try {
             }
             outputKey += ".png";
 
-            s3client.putData(output, "output", outputKey);
+            s3client.putData(output, env["S3_BUCKET_OUTPUT"], outputKey);
 
             json outputJson;
             try {
                 outputJson["project_id"] = project_id;
                 outputJson["bucket"] = "output";
                 outputJson["key"] = outputKey;
-                outputJson["name"] = modelName;
+                outputJson["name"] = "67";
+                outputJson["size"] = 67;
             } catch (const std::exception& e) {
-                Logger::getInstance().log(std::format("Failed to generate output json: ", e.what()),
+                Logger::getInstance().log(std::format("Failed to generate output json: {}", e.what()),
                                           Logger::Level::ERROR);
                 throw;
             }
 
-            producer.produce("generate_model", outputJson.dump());
+            producer.produce(env["KAFKA_TOPIC_RESULT"], outputJson.dump());
             consumer.commit();
         } catch (const std::exception& e) {
-            Logger::getInstance().log(std::format("Processing request failed: {}", e.what()), Logger::Level::ERROR);
+            Logger::getInstance().log(
+                std::format("Processing message: (offset = {}, partition = {}) failed. Reason: {}",
+                            consumer.lastMessage.value().get_offset(), consumer.lastMessage.value().get_partition(),
+                            e.what()),
+                Logger::Level::ERROR);
             continue;
         }
-        Logger::getInstance().log(std::format("Processing request finished successfully. Listening..."),
-                                  Logger::Level::DEBUG);
+        Logger::getInstance().log(std::format("Current message processing finished successfully"), Logger::Level::INFO);
     }
     Logger::getInstance().log("Renderer application stopped successfully", Logger::Level::INFO);
     Aws::ShutdownAPI(options);
-    TargetManager::terminate();
     return EXIT_SUCCESS;
+} catch (const env::dotenv::VariableError& e) {
+    Logger::getInstance().log(std::format("Required environment variable '{}' not found or invalid in '{}'. Reason: {}",
+                                          e.variable, e.filename, e.what()),
+                              Logger::Level::ERROR);
+    return EXIT_FAILURE;
+
+} catch (const env::dotenv::ParseError& e) {
+    Logger::getInstance().log(
+        std::format("Failed to parse .env file '{}' at line {}. Error: {}", e.filename, e.line, e.what()),
+        Logger::Level::ERROR);
+    return EXIT_FAILURE;
+
+} catch (const env::Value::ValueError& e) {
+    Logger::getInstance().log(std::format("Invalid value format in .env file. Error: {}.", e.what()),
+                              Logger::Level::ERROR);
+    return EXIT_FAILURE;
 } catch (const std::exception& e) {
     Aws::ShutdownAPI(options);
-    Logger::getInstance().log("Application terminated due to error", Logger::Level::FATAL);
-    TargetManager::terminate();
+    Logger::getInstance().log(std::format("Application terminated due to error: {}", e.what()), Logger::Level::FATAL);
     return EXIT_FAILURE;
 }

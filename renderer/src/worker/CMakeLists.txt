@@ -3,6 +3,7 @@ add_executable(renderer_worker
     kafka-consumer.cpp
     kafka-producer.cpp
     s3-client.cpp
+    dotenv.cpp
 )
 
 target_link_libraries(renderer_worker PRIVATE
@@ -27,4 +28,12 @@ target_compile_options(renderer_worker PRIVATE
     -ftree-vectorize 
     -funroll-loops
     -flto=auto
+)
+
+add_custom_command(
+    TARGET renderer_worker POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_SOURCE_DIR}/../.env
+        ${CMAKE_BINARY_DIR}/.env
+    COMMENT "Linking .env to build directory"
 )
