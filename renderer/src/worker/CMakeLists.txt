@@ -4,6 +4,7 @@ add_executable(renderer_worker
     kafka-producer.cpp
     s3-client.cpp
     dotenv.cpp
+    config.cpp
 )
 
 target_link_libraries(renderer_worker PRIVATE

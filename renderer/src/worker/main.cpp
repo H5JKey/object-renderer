@@ -4,8 +4,8 @@
 #include <exception>
 #include <filesystem>
 #include <nlohmann/json.hpp>
-#include <stdexcept>
 
+#include "config.hpp"
 #include "dotenv.hpp"
 #include "kafka-consumer.hpp"
 #include "kafka-producer.hpp"
@@ -30,26 +30,24 @@ std::vector<uint8_t> renderPipeline(RenderEngine& engine, Scene scene, int width
 }
 
 int main() try {
-    env::dotenv env(".env");
+    env::dotenv dotenv(".env");
+    Config config;
+    config.apply(dotenv);
+    config.fromEnvironment();
+
     Aws::InitAPI(options);
-    if (env.hasVariable("RENDERER_LOG_DEBUG"))
-        Logger::getInstance().debug = env["RENDERER_LOG_DEBUG"];
-    else
-        Logger::getInstance().debug = false;
-    if (env.hasVariable("RENDERER_LOG_DEBUG")) {
-        Logger::getInstance().setMinLevel(Logger::getLevelFromString(env["RENDERER_LOG_LEVEL"]));
-    } else {
-        Logger::getInstance().setMinLevel(Logger::Level::INFO);
-    }
+    Logger::getInstance().debug = config.logDebug();
+
+    Logger::getInstance().setMinLevel(config.logLevel());
 
     Logger::getInstance().log(std::format("Aws initialized"), Logger::Level::DEBUG);
     TargetManager::init();
     RenderEngine engine;
     SceneLoader sceneLoader;
 
-    S3Client s3client(env["S3_HOST"], Aws::Auth::AWSCredentials(env["S3_ACCESS_KEY"], env["S3_SECRET_KEY"]));
-    KafkaConsumer consumer(env["KAFKA_HOST"], env["KAFKA_GROUP_ID"], env["KAFKA_TOPIC_CREATE"]);
-    KafkaProducer producer(env["KAFKA_HOST"]);
+    S3Client s3client(config.s3Host(), Aws::Auth::AWSCredentials(config.s3AccessKey(), config.s3SecretKey()));
+    KafkaConsumer consumer(config.kafkaHost(), config.kafkaGroupID(), config.kafkaTopicInput());
+    KafkaProducer producer(config.kafkaHost());
     Logger::getInstance().log("Renderer worker started", Logger::Level::INFO);
 
     while (true) {
@@ -94,7 +92,7 @@ int main() try {
             }
             outputKey += ".png";
 
-            s3client.putData(output, env["S3_BUCKET_OUTPUT"], outputKey);
+            s3client.putData(output, config.s3BucketOutput(), outputKey);
 
             json outputJson;
             try {
@@ -109,7 +107,7 @@ int main() try {
                 throw;
             }
 
-            producer.produce(env["KAFKA_TOPIC_RESULT"], outputJson.dump());
+            producer.produce(config.kafkaTopicOutput(), outputJson.dump());
             consumer.commit();
         } catch (const std::exception& e) {
             Logger::getInstance().log(
