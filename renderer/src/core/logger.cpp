@@ -43,5 +43,5 @@ Logger::Level Logger::getLevelFromString(const std::string& level) {
     if (level == "ERROR") return Logger::Level::ERROR;
     if (level == "DEBUG") return Logger::Level::DEBUG;
     if (level == "FATAL") return Logger::Level::FATAL;
-    throw std::invalid_argument("Invalid log level");
+    throw std::invalid_argument(std::format("Invalid log level: {}", level));
 }

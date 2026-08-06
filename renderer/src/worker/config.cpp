@@ -1,31 +1,44 @@
 #include "config.hpp"
 
 void Config::apply(env::dotenv dotenv) {
-    if (dotenv.hasVariable("KAFKA_HOST")) kafkaHost_ = dotenv["KAFKA_HOST"];
-    if (dotenv.hasVariable("KAFKA_GROUP_ID")) kafkaGroupID_ = dotenv["KAFKA_GROUP_ID"];
-    if (dotenv.hasVariable("KAFKA_TOPIC_INPUT")) kafkaTopicInput_ = dotenv["KAFKA_TOPIC_INPUT"];
-    if (dotenv.hasVariable("KAFKA_TOPIC_OUTPUT")) kafkaTopicOutput_ = dotenv["KAFKA_TOPIC_OUTPUT"];
-    if (dotenv.hasVariable("S3_HOST")) s3Host_ = dotenv["S3_HOST"];
-    if (dotenv.hasVariable("S3_ACCESS_KEY")) s3AccessKey_ = dotenv["S3_ACCESS_KEY"];
-    if (dotenv.hasVariable("S3_SECRET_KEY")) s3SecretKey_ = dotenv["S3_SECRET_KEY"];
-    if (dotenv.hasVariable("S3_BUCKET_INPUT")) s3BucketInput_ = dotenv["S3_BUCKET_INPUT"];
-    if (dotenv.hasVariable("S3_BUCKET_OUTPUT")) s3BucketOutput_ = dotenv["S3_BUCKET_OUTPUT"];
-    if (dotenv.hasVariable("RENDERER_LOG_LEVEL")) logLevel_ = Logger::getLevelFromString(dotenv["RENDERER_LOG_LEVEL"]);
-    if (dotenv.hasVariable("RENDERER_LOG_DEBUG")) logDebug_ = dotenv["RENDERER_LOG_DEBUG"];
+    try {
+        if (dotenv.hasVariable("KAFKA_HOST")) kafkaHost_ = dotenv["KAFKA_HOST"];
+        if (dotenv.hasVariable("KAFKA_GROUP_ID")) kafkaGroupID_ = dotenv["KAFKA_GROUP_ID"];
+        if (dotenv.hasVariable("KAFKA_TOPIC_INPUT")) kafkaTopicInput_ = dotenv["KAFKA_TOPIC_INPUT"];
+        if (dotenv.hasVariable("KAFKA_TOPIC_OUTPUT")) kafkaTopicOutput_ = dotenv["KAFKA_TOPIC_OUTPUT"];
+        if (dotenv.hasVariable("S3_HOST")) s3Host_ = dotenv["S3_HOST"];
+        if (dotenv.hasVariable("S3_ACCESS_KEY")) s3AccessKey_ = dotenv["S3_ACCESS_KEY"];
+        if (dotenv.hasVariable("S3_SECRET_KEY")) s3SecretKey_ = dotenv["S3_SECRET_KEY"];
+        if (dotenv.hasVariable("S3_BUCKET_INPUT")) s3BucketInput_ = dotenv["S3_BUCKET_INPUT"];
+        if (dotenv.hasVariable("S3_BUCKET_OUTPUT")) s3BucketOutput_ = dotenv["S3_BUCKET_OUTPUT"];
+        if (dotenv.hasVariable("RENDERER_LOG_LEVEL"))
+            logLevel_ = Logger::getLevelFromString(dotenv["RENDERER_LOG_LEVEL"]);
+        if (dotenv.hasVariable("RENDERER_LOG_DEBUG")) logDebug_ = dotenv["RENDERER_LOG_DEBUG"];
+    } catch (const env::Value::ValueError& e) {
+        Logger::getInstance().log(std::format("Invalid value format in .env file. Error: {}.", e.what()),
+                                  Logger::Level::ERROR);
+        throw;
+    }
 }
 
 void Config::fromEnvironment() {
-    if (char* ptr = std::getenv("KAFKA_HOST")) kafkaHost_ = env::Value(ptr);
-    if (char* ptr = std::getenv("KAFKA_GROUP_ID")) kafkaGroupID_ = env::Value(ptr);
-    if (char* ptr = std::getenv("KAFKA_TOPIC_INPUT")) kafkaTopicInput_ = env::Value(ptr);
-    if (char* ptr = std::getenv("KAFKA_TOPIC_OUTPUT")) kafkaTopicOutput_ = env::Value(ptr);
-    if (char* ptr = std::getenv("S3_HOST")) s3Host_ = env::Value(ptr);
-    if (char* ptr = std::getenv("S3_ACCESS_KEY")) s3AccessKey_ = env::Value(ptr);
-    if (char* ptr = std::getenv("S3_SECRET_KEY")) s3SecretKey_ = env::Value(ptr);
-    if (char* ptr = std::getenv("S3_BUCKET_INPUT")) s3BucketInput_ = env::Value(ptr);
-    if (char* ptr = std::getenv("S3_BUCKET_OUTPUT")) s3BucketOutput_ = env::Value(ptr);
-    if (char* ptr = std::getenv("RENDERER_LOG_LEVEL")) logLevel_ = Logger::getLevelFromString(env::Value(ptr));
-    if (char* ptr = std::getenv("RENDERER_LOG_DEBUG")) logDebug_ = env::Value(ptr);
+    try {
+        if (char* ptr = std::getenv("KAFKA_HOST")) kafkaHost_ = env::Value(ptr);
+        if (char* ptr = std::getenv("KAFKA_GROUP_ID")) kafkaGroupID_ = env::Value(ptr);
+        if (char* ptr = std::getenv("KAFKA_TOPIC_INPUT")) kafkaTopicInput_ = env::Value(ptr);
+        if (char* ptr = std::getenv("KAFKA_TOPIC_OUTPUT")) kafkaTopicOutput_ = env::Value(ptr);
+        if (char* ptr = std::getenv("S3_HOST")) s3Host_ = env::Value(ptr);
+        if (char* ptr = std::getenv("S3_ACCESS_KEY")) s3AccessKey_ = env::Value(ptr);
+        if (char* ptr = std::getenv("S3_SECRET_KEY")) s3SecretKey_ = env::Value(ptr);
+        if (char* ptr = std::getenv("S3_BUCKET_INPUT")) s3BucketInput_ = env::Value(ptr);
+        if (char* ptr = std::getenv("S3_BUCKET_OUTPUT")) s3BucketOutput_ = env::Value(ptr);
+        if (char* ptr = std::getenv("RENDERER_LOG_LEVEL")) logLevel_ = Logger::getLevelFromString(env::Value(ptr));
+        if (char* ptr = std::getenv("RENDERER_LOG_DEBUG")) logDebug_ = env::Value(ptr);
+    } catch (const env::Value::ValueError& e) {
+        Logger::getInstance().log(std::format("Invalid environment variable value format. Error: {}.", e.what()),
+                                  Logger::Level::ERROR);
+        throw;
+    }
 }
 
 std::string Config::kafkaHost() const {
