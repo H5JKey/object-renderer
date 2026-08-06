@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # PriZm
 
 [![C++](https://img.shields.io/badge/C++-23-blue?logo=cplusplus&style=flat-square)](https://isocpp.org/)
@@ -28,5 +27,3 @@ See the [Renderer documentation](renderer/README.md).
 ### Backend
 
 See the [Backend documentation](app/README.md).
-=======
->>>>>>> Stashed changes
