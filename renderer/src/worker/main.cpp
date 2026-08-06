@@ -122,21 +122,10 @@ int main() try {
     Logger::getInstance().log("Renderer application stopped successfully", Logger::Level::INFO);
     Aws::ShutdownAPI(options);
     return EXIT_SUCCESS;
-} catch (const env::dotenv::VariableError& e) {
-    Logger::getInstance().log(std::format("Required environment variable '{}' not found or invalid in '{}'. Reason: {}",
-                                          e.variable, e.filename, e.what()),
-                              Logger::Level::ERROR);
-    return EXIT_FAILURE;
-
 } catch (const env::dotenv::ParseError& e) {
     Logger::getInstance().log(
         std::format("Failed to parse .env file '{}' at line {}. Error: {}", e.filename, e.line, e.what()),
         Logger::Level::ERROR);
-    return EXIT_FAILURE;
-
-} catch (const env::Value::ValueError& e) {
-    Logger::getInstance().log(std::format("Invalid value format in .env file. Error: {}.", e.what()),
-                              Logger::Level::ERROR);
     return EXIT_FAILURE;
 } catch (const std::exception& e) {
     Aws::ShutdownAPI(options);
