@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <print>
 
+#include "context-guard.hpp"
 #include "logger.hpp"
 #include "render-engine.hpp"
 #include "scene-loader.hpp"
@@ -118,10 +119,7 @@ int main(int argc, char* argv[]) {
     std::filesystem::path absoluteDirectoryPath;
     if (outputPath.has_parent_path() && !outputPath.parent_path().empty()) {
         absoluteDirectoryPath = std::filesystem::absolute(outputPath.parent_path());
-        std::println("GGG");
     } else {
-        std::println("GGG");
-        std::println("GGG");
         absoluteDirectoryPath = std::filesystem::current_path();
     }
     std::string outputFilename = outputPath.stem().string();
@@ -138,7 +136,7 @@ int main(int argc, char* argv[]) {
 
         auto* eglTarget = dynamic_cast<EglTarget*>(egl.get());
         if (eglTarget) {
-            RenderTarget::ContextGuard guard(*egl);
+            ContextGuard guard(*egl);
             Logger::getInstance().log(
                 std::format("Writing into {}", (absoluteDirectoryPath / (outputFilename + ".png")).string()),
                 Logger::Level::DEBUG);

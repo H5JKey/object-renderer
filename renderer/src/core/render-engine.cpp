@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "context-guard.hpp"
 #include "logger.hpp"
 #include "render-target.hpp"
 #include "utils.hpp"
@@ -436,7 +437,7 @@ void RenderEngine::loadTextures(const std::vector<Scene::TextureData>& textures)
 void RenderEngine::renderFrame(RenderTarget& target, const Scene& scene, int samples) {
     Logger::getInstance().log(std::format("Rendering started ({}x{})", target.getWidth(), target.getHeight()),
                               Logger::Level::INFO);
-    RenderTarget::ContextGuard context(target);
+    ContextGuard context(target);
     glClearTexImage(target.getRawTexture(), 0, GL_RGBA, GL_FLOAT, nullptr);
     glClearTexImage(target.getNormalMap(), 0, GL_RGBA, GL_FLOAT, nullptr);
     glClearTexImage(target.getAlbedoMap(), 0, GL_RGBA, GL_FLOAT, nullptr);

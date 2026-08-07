@@ -10,6 +10,7 @@ add_library(renderer_core STATIC
     utils.cpp
     stb-implementation.cpp
     logger.cpp
+    context-guard.cpp
 )
 
 target_link_libraries(renderer_core PUBLIC
