@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include "config.hpp"
+#include "context-guard.hpp"
 #include "dotenv.hpp"
 #include "kafka-consumer.hpp"
 #include "kafka-producer.hpp"
@@ -24,7 +25,7 @@ Aws::SDKOptions options;
 std::vector<uint8_t> renderPipeline(RenderEngine& engine, Scene scene, int width, int height, int samples) {
     std::shared_ptr<RenderTarget> egl = TargetManager::getInstance().createEGLTarget(width, height);
     engine.renderFrame(*egl, scene, samples);
-    RenderTarget::ContextGuard guard(*egl);
+    ContextGuard guard(*egl);
     auto data = egl->getBufferData<uint8_t>(egl->getOutputTexture());
     return utils::writeToPng(data, width, height, 4);
 }

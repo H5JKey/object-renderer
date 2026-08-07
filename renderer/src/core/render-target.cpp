@@ -3,6 +3,7 @@
 #include <format>
 #include <stdexcept>
 
+#include "context-guard.hpp"
 #include "logger.hpp"
 
 EglTarget::EglTarget(int width, int height, EGLDisplay display, EGLConfig config, EGLContext context)

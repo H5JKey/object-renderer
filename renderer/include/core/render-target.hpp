@@ -11,6 +11,8 @@
 class TargetManager;
 
 class RenderTarget {
+    friend class ContextGuard;
+
    protected:
     friend class TargetManager;
     int width, height;
@@ -26,14 +28,6 @@ class RenderTarget {
     virtual void release() const = 0;
 
    public:
-    struct ContextGuard {
-        ContextGuard(const RenderTarget& target) : target(target) { target.makeCurrent(); }
-
-        ~ContextGuard() { target.release(); }
-
-       private:
-        const RenderTarget& target;
-    };
     int getWidth() const noexcept { return width; }
     int getHeight() const noexcept { return height; }
     GLuint getRawTexture() const noexcept { return rawTexture; }
