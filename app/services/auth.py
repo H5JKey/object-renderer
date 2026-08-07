@@ -39,7 +39,11 @@ class AuthService:
         user = await self.user_repository.create_user(create_user_data)
         user_response = UserResponse.model_validate(user)
         token = create_token(user_response)
-        logger.info("User registered, username=%s", register_user_data.username)
+        logger.info(
+            "User registered, user_id=%s, username=%s",
+            user_response.id,
+            register_user_data.username,
+        )
         return token
 
     async def authenticate_user(
@@ -60,7 +64,11 @@ class AuthService:
 
         user_response = UserResponse.model_validate(user)
         token = create_token(user_response)
-        logger.info("User authed, username=%s", auth_user_data.username)
+        logger.info(
+            "User authed, user_id=%s, username=%s",
+            user.id,
+            auth_user_data.username,
+        )
         return token
 
     async def refresh_access_token(self, user_id: int) -> TokenInfo:

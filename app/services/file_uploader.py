@@ -6,7 +6,10 @@ from uuid import uuid4
 from core.interfaces.clients import AbstractS3Client
 from core.interfaces.repositories import AbstractFileRepository
 from core.interfaces.services import AbstractFileUploader
+from core.logging import get_logger
 from schemas.file import FileCreate, FileResponse
+
+logger = get_logger(__name__)
 
 
 class FileUploader(AbstractFileUploader):
@@ -61,5 +64,13 @@ class FileUploader(AbstractFileUploader):
         created_file, _ = await asyncio.gather(
             create_file_coroutine,
             upload_file_to_s3_coroutine,
+        )
+
+        logger.info(
+            "Uploaded file, bucket=%s, key=%s, name=%s, size=%s",
+            self.bucket,
+            key,
+            file_name,
+            size,
         )
         return FileResponse.model_validate(created_file)
