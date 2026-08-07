@@ -2,12 +2,15 @@ from json import dumps, loads
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from core.constants import kafka_topic
+from core.logging import get_logger
 from pydantic import BaseModel
 from schemas.event import AddRenderProjectEvent
 from services.project import ProjectService
 
 from infrastructure.database.core import session_factory
 from infrastructure.database.unit_of_work import UnitOfWork
+
+logger = get_logger(__name__)
 
 
 def serialize_message[T: BaseModel](message_data: T) -> bytes:
@@ -30,6 +33,7 @@ async def add_render_to_project_consume(consumer: AIOKafkaConsumer) -> None:
         add_render_project_event = AddRenderProjectEvent.model_validate(
             json_data,
         )
+        logger.info("Received message, %s", add_render_project_event)
         project_id = add_render_project_event.project_id
         async with (
             session_factory() as session,

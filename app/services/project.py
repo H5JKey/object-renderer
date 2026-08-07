@@ -8,6 +8,7 @@ from core.exceptions.project import ProjectIdNotFoundError
 from core.exceptions.user import UserIdNotFoundError
 from core.interfaces.clients import AbstractUnitOfWorkClient
 from core.interfaces.services import AbstractRenderService
+from core.logging import get_logger
 from infrastructure.database.models import User
 from infrastructure.database.repositories.file import FileRepository
 from infrastructure.database.repositories.project import ProjectRepository
@@ -23,6 +24,8 @@ from schemas.project import (
     ProjectWithRenderResponse,
 )
 from schemas.render import RenderResponse
+
+logger = get_logger(__name__)
 
 
 class ProjectService:
@@ -69,6 +72,16 @@ class ProjectService:
             detail = "You are not allowed to watch this project."
             raise PermissionDeniedError(detail)
 
+        logger.info(
+            "Received project, project_id=%s, user_id=%s, render_id=%s, source_file_id=%s, name=%s, status=%s, visibility=%s",  # noqa: E501
+            project.id,
+            project.user_id,
+            project.render_id,
+            project.source_file_id,
+            project.name,
+            project.status,
+            project.visibility,
+        )
         return ProjectWithRenderFileResponse.model_validate(project)
 
     async def get_user_projects(
@@ -128,6 +141,17 @@ class ProjectService:
             file_id=render_file.id,
         )
 
+        logger.info(
+            "Added render to project, project_id=%s, user_id=%s, render_id=%s, source_file_id=%s, name=%s, status=%s, visibility=%s",  # noqa: E501
+            project.id,
+            project.user_id,
+            project.render_id,
+            project.source_file_id,
+            project.name,
+            project.status,
+            project.visibility,
+        )
+
     async def update_project_status(
         self,
         project_id: int,
@@ -136,6 +160,16 @@ class ProjectService:
         if project is None:
             raise ProjectIdNotFoundError(project_id)
 
+        logger.info(
+            "Updated project status, project_id=%s, user_id=%s, render_id=%s, source_file_id=%s, name=%s, status=%s, visibility=%s",  # noqa: E501
+            project.id,
+            project.user_id,
+            project.render_id,
+            project.source_file_id,
+            project.name,
+            project.status,
+            project.visibility,
+        )
         return ProjectWithRenderFileResponse.model_validate(project)
 
     async def create_project(
@@ -169,6 +203,16 @@ class ProjectService:
             **create_render_data.model_dump(),
         )
         await render_service.send_render_model_event(render_model_event_data)
+        logger.info(
+            "Created project, project_id=%s, user_id=%s, render_id=%s, source_file_id=%s, name=%s, status=%s, visibility=%s",  # noqa: E501
+            project.id,
+            user_id,
+            project.render_id,
+            project.source_file_id,
+            project.name,
+            project.status,
+            project.visibility,
+        )
         return project_with_render_response
 
     async def partial_update_project(
@@ -195,6 +239,16 @@ class ProjectService:
             project_id,
             partial_update_project_data,
         )
+        logger.info(
+            "Updated project, project_id=%s, user_id=%s, render_id=%s, source_file_id=%s, name=%s, status=%s, visibility=%s",  # noqa: E501
+            project_id,
+            user_id,
+            project.render_id,
+            project.source_file_id,
+            project.name,
+            project.status,
+            project.visibility,
+        )
         return ProjectWithRenderFileResponse.model_validate(project)
 
     async def delete_by_id(
@@ -217,3 +271,13 @@ class ProjectService:
             raise PermissionDeniedError(detail)
 
         await self.project_repository.delete_by_id(project_id)
+        logger.info(
+            "Deleted project, project_id=%s, user_id=%s, render_id=%s, source_file_id=%s, name=%s, status=%s, visibility=%s",  # noqa: E501
+            project_id,
+            user_id,
+            project.render_id,
+            project.source_file_id,
+            project.name,
+            project.status,
+            project.visibility,
+        )
