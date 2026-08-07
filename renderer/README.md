@@ -129,7 +129,7 @@ cd renderer/build && ./renderer_worker
 
 The worker can be configured using environment variables or a .env file in the priZm root directory. 
 > [!IMPORTANT]
-Environment variables take precedence over values defined in the .env file and overwrites .env values.
+Environment variables take precedence over values defined in the .env file and overwrite .env values.
 
 | Variable |  Description | Required | Default |
 |----------|--------------|----------|---------|
