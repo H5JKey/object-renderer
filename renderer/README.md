@@ -125,6 +125,27 @@ docker run --rm renderer renderer_worker
 ```bash
 cd renderer/build && ./renderer_worker
 ```
+### Configuration
+
+The worker can be configured using environment variables or a .env file in the priZm root directory. 
+> [!IMPORTANT]
+Environment variables take precedence over values defined in the .env file and overwrites .env values.
+
+| Variable |  Description | Required | Default |
+|----------|--------------|----------|---------|
+| `KAFKA_HOST` |	Kafka broker address | Yes | `-` |
+| `KAFKA_GROUP_ID` |	Kafka consumer group ID |	Yes | `-` |
+| `KAFKA_TOPIC_INPUT`	| Kafka topic to consume messages | Yes | `-` |
+| `KAFKA_TOPIC_OUTPUT` | Kafka topic to produce messages |	Yes | `-` |
+| `S3_HOST` |	S3 storage endpoint | Yes | `-` |
+| `S3_ACCESS_KEY`	| S3 access key | Yes | `-` |
+| `S3_SECRET_KEY`	| S3 secret key	| Yes | `-` |
+| `S3_BUCKET_INPUT`	| S3 bucket name for input files | Yes | `-` |
+| `S3_BUCKET_OUTPUT` | S3 bucket name for output files | Yes | `-` |
+| `RENDERER_LOG_LEVEL`	| Log level (DEBUG, INFO, WARNING, ERROR)	|	No | INFO |
+| `RENDERER_LOG_DEBUG`	| Enable debug logging (true/false)	| No | true |
+
+
 ## 3. Testing
 
 #### Docker
