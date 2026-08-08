@@ -14,6 +14,7 @@ void Config::apply(env::dotenv dotenv) {
         if (dotenv.hasVariable("RENDERER_LOG_LEVEL"))
             logLevel_ = Logger::getLevelFromString(dotenv["RENDERER_LOG_LEVEL"]);
         if (dotenv.hasVariable("RENDERER_LOG_DEBUG")) logDebug_ = dotenv["RENDERER_LOG_DEBUG"];
+        if (dotenv.hasVariable("RENDERER_PREVIEW")) preview_ = dotenv["RENDERER_PREVIEW"];
     } catch (const env::Value::ValueError& e) {
         Logger::getInstance().log(std::format("Invalid value format in .env file. Error: {}.", e.what()),
                                   Logger::Level::ERROR);
@@ -34,6 +35,7 @@ void Config::fromEnvironment() {
         if (char* ptr = std::getenv("S3_BUCKET_OUTPUT")) s3BucketOutput_ = env::Value(ptr);
         if (char* ptr = std::getenv("RENDERER_LOG_LEVEL")) logLevel_ = Logger::getLevelFromString(env::Value(ptr));
         if (char* ptr = std::getenv("RENDERER_LOG_DEBUG")) logDebug_ = env::Value(ptr);
+        if (char* ptr = std::getenv("RENDERER_PREVIEW")) preview_ = env::Value(ptr);
     } catch (const env::Value::ValueError& e) {
         Logger::getInstance().log(std::format("Invalid environment variable value format. Error: {}.", e.what()),
                                   Logger::Level::ERROR);
@@ -99,3 +101,4 @@ std::string Config::s3BucketOutput() const {
 }
 Logger::Level Config::logLevel() const { return logLevel_; }
 bool Config::logDebug() const { return logDebug_; }
+bool Config::preview() const { return preview_; }
