@@ -78,21 +78,23 @@ int main() try {
                 throw;
             }
             std::vector<uint8_t> data;
-            Logger::getInstance().log(
-                std::format("Get data from Json: [width: {}  height: {}  samples: {}]", width, height, samples),
-                Logger::Level::DEBUG);
-
             data = s3client.getData(bucket, key);
 
             Scene scene = sceneLoader.loadGltfFromMemory(data);
-            std::vector<uint8_t> output = renderPipeline(engine, scene, width, height, samples);
-
+            std::vector<uint8_t> output;
+            if (config.preview())
+                output = std::move(renderPipeline(engine, scene, 200, 200 * (static_cast<float>(height) / width), 5));
+            else
+                output = std::move(renderPipeline(engine, scene, width, height, samples));
             std::string outputKey = key;
             auto dotPos = outputKey.rfind('.');
             if (dotPos != std::string::npos) {
                 outputKey = outputKey.substr(0, dotPos);
             }
-            outputKey += ".png";
+            if (config.preview())
+                outputKey += "_preview.png";
+            else
+                outputKey += ".png";
 
             s3client.putData(output, config.s3BucketOutput(), outputKey);
 

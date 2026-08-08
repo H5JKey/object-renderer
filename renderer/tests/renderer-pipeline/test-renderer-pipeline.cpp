@@ -29,7 +29,7 @@ SceneLoader RendererPipelineTest::loader;
 TEST_F(RendererPipelineTest, RendererWorks) {
     std::shared_ptr<RenderTarget> egl;
     EXPECT_NO_THROW(egl = TargetManager::getInstance().createEGLTarget(100, 80));
-    ASSERT_EQ(egl, nullptr);
+    ASSERT_NE(egl, nullptr);
     EXPECT_NO_THROW(engine->renderFrame(*egl, scene, 3));
 }
 
