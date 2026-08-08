@@ -13,17 +13,31 @@ PriZm is an open-source rendering platform that combines a physically based path
 ## Repository Structure
 
 ```text
-app/          Backend service
-renderer/     Rendering engine (standalone CLI and worker)
+priZm/
+├── backend/                 # Python-based server infrastructure
+│   ├── api/                 # REST API endpoints
+│   ├── core/                # Core application logic
+│   ├── dependencies/        
+│   ├── infrastructure/      
+│   ├── migrations/          # Database migrations
+│   ├── schemas/             # Data validation schemas
+│   └── services/            # Business logic services
+│
+└── renderer/                # C++ path tracing engine
+    ├── include/             # Public headers
+    ├── src/                 # Implementation source files
+    ├── shaders/             # OpenGL shader programs sources
+    ├── lib/                 # Third-party dependencies
+    ├── tests/               # Unit and integration tests
+    └── images/              # Example output renders
 ```
 
-- **Renderer** - a path tracing engine that can run as s standalone CLI application or as a distributed worker.
-- **Backend** - manages rendering jobs, storage, client communications  and other server-side functionality.
-
 ### Renderer
+> Path tracing engine that can run as s standalone CLI application or as a distributed worker.
 
 See the [Renderer documentation](renderer/README.md).
 
 ### Backend
+> Manages rendering jobs, storage, client communications  and other server-side functionality.
 
 See the [Backend documentation](app/README.md).
