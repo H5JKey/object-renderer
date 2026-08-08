@@ -2,8 +2,7 @@
 
 > Headless OpenGL compute shader physically based path tracer using EGL
 
-An renderer that runs entirely without a display server,
-using EGL for GPU-accelerated rendering in headless environments
+---
 
 ## Demos
 
@@ -18,6 +17,8 @@ using EGL for GPU-accelerated rendering in headless environments
   </tr>
 </table>
 
+---
+
 ## Key features:
 - **GLSL compute shaders for path tracing**
 - **Physically based rendering**
@@ -28,6 +29,8 @@ using EGL for GPU-accelerated rendering in headless environments
 - **Logging system**
 - **Unit tests with googleTest**
 - **Docker ready**
+
+---
 
 ## Build Options
 
@@ -45,6 +48,8 @@ using EGL for GPU-accelerated rendering in headless environments
 | Option | CMake Flag | Description |
 |--------|-----------|-------------|
 | **Tests** | `-DBUILD_TESTS=ON` | Build unit tests |
+
+---
 
 ## 1. CLI version
 
@@ -97,6 +102,7 @@ docker run --rm renderer renderer_cli <width> <height> <samples> <input_scene> [
 | `-p, --plane` | `float` | Add ground plane at scene center with specified size |
 | `-c, --camera` | `vec3 vec3 float` | Set camera: `position lookAt fov` |
 
+---
 
 ## 2. Worker version
 
@@ -125,9 +131,10 @@ docker run --rm renderer renderer_worker
 ```bash
 cd renderer/build && ./renderer_worker
 ```
+
 ### Configuration
 
-The worker can be configured using environment variables or a .env file in the priZm root directory. 
+The worker can be configured using environment variables or a .env file in the priZm/renderer directory. 
 > [!IMPORTANT]
 Environment variables take precedence over values defined in the .env file and overwrite .env values.
 
@@ -142,9 +149,9 @@ Environment variables take precedence over values defined in the .env file and o
 | `S3_SECRET_KEY`	| S3 secret key	| Yes | `-` |
 | `S3_BUCKET_INPUT`	| S3 bucket name for input files | Yes | `-` |
 | `S3_BUCKET_OUTPUT` | S3 bucket name for output files | Yes | `-` |
-| `RENDERER_LOG_LEVEL`	| Log level (DEBUG, INFO, WARNING, ERROR)	|	No | INFO |
-| `RENDERER_LOG_DEBUG`	| Enable debug logging (true/false)	| No | true |
-| `RENDERER_PREVIEW` | Generate image in lower resolution and only 5 samples (true/false) | No | false |
+| `RENDERER_LOG_LEVEL`	| Log level (DEBUG, INFO, WARNING, ERROR)	|	No | `INFO` |
+| `RENDERER_LOG_DEBUG`	| Enable debug logging (true/false)	| No | `true` |
+| `RENDERER_PREVIEW` | Generate image in lower resolution and only 5 samples (true/false) | No | `false` |
 
 ### Preview
 
@@ -161,6 +168,7 @@ The worker can be configured to generate preview images. When preview mode is en
   </tr>
 </table>
 
+---
 
 ## 3. Testing
 
