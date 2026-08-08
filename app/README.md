@@ -7,20 +7,11 @@
 ## 🚀 Quick Start
 
 ```bash
-# Install
-poetry install
-
-# Migrate
-poetry run alembic upgrade head
-
-# Run
-poetry run uvicorn main:app --reload --port 8000
 ```
 
 Or with Docker:
 
 ```bash
-docker-compose up -d backend
 ```
 
 ---
