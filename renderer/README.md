@@ -142,9 +142,9 @@ Environment variables take precedence over values defined in the .env file and o
 | `S3_SECRET_KEY`	| S3 secret key	| Yes | `-` |
 | `S3_BUCKET_INPUT`	| S3 bucket name for input files | Yes | `-` |
 | `S3_BUCKET_OUTPUT` | S3 bucket name for output files | Yes | `-` |
-| `RENDERER_LOG_LEVEL`	| Log level (DEBUG, INFO, WARNING, ERROR)	|	No | INFO |
-| `RENDERER_LOG_DEBUG`	| Enable debug logging (true/false)	| No | true |
-| `RENDERER_PREVIEW` | Generate image in lower resolution and only 5 samples (true/false) | No | false |
+| `RENDERER_LOG_LEVEL`	| Log level (DEBUG, INFO, WARNING, ERROR)	|	No | `INFO` |
+| `RENDERER_LOG_DEBUG`	| Enable debug logging (true/false)	| No | `true` |
+| `RENDERER_PREVIEW` | Generate image in lower resolution and only 5 samples (true/false) | No | `false` |
 
 ### Preview
 
