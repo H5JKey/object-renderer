@@ -17,6 +17,7 @@ class Config {
     std::optional<std::string> s3BucketOutput_;
     Logger::Level logLevel_ = Logger::Level::INFO;  // default
     bool logDebug_ = false;                         // default
+    bool preview_ = false;                          // default
 
    public:
     Config() = default;
@@ -35,4 +36,5 @@ class Config {
     std::string s3BucketOutput() const;
     Logger::Level logLevel() const;
     bool logDebug() const;
+    bool preview() const;
 };

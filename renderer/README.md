@@ -127,6 +127,19 @@ cd renderer/build && ./renderer_worker
 ```
 ### Configuration
 
+The worker can be configured to generate preview images. When preview mode is enabled, the renderer produces lower-quality outputs significantly faster, allowing you to verify scene composition and camera angles before committing to full-resolution renders.
+
+<table>
+  <tr>
+    <th>Full Render (1920x1080, 1000 samples)</th>
+    <th>Preview Mode (200x112, 5 samples)</th> 
+  </tr>
+  <tr>
+    <td><img src="images/original.png" alt="Full render" width="400"></td>
+    <td><img src="images/preview.png" alt="Preview mode" width="400"></td>
+  </tr>
+</table>
+
 The worker can be configured using environment variables or a .env file in the priZm root directory. 
 > [!IMPORTANT]
 Environment variables take precedence over values defined in the .env file and overwrite .env values.
@@ -144,6 +157,11 @@ Environment variables take precedence over values defined in the .env file and o
 | `S3_BUCKET_OUTPUT` | S3 bucket name for output files | Yes | `-` |
 | `RENDERER_LOG_LEVEL`	| Log level (DEBUG, INFO, WARNING, ERROR)	|	No | INFO |
 | `RENDERER_LOG_DEBUG`	| Enable debug logging (true/false)	| No | true |
+| `RENDERER_PREVIEW` | Generate image in lower resolution and only 5 samples (true/false) | No | false |
+
+### Preview
+
+
 
 
 ## 3. Testing
