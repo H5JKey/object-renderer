@@ -66,10 +66,11 @@ int main() try {
                 width = inputJson["width"];
                 height = inputJson["height"];
                 samples = inputJson["samples"];
-                bucket = inputJson["bucket"];
-                key = inputJson["key"];
-                // modelName = inputJson["name"];
                 project_id = inputJson["project_id"];
+
+                bucket = inputJson["file"]["bucket"];
+                key = inputJson["file"]["key"];
+                // modelName = inputJson["file"]["name"];
             } catch (const std::exception& e) {
                 Logger::getInstance().log(
                     std::format("Failed to parse json from string: {}. Error: {}", message, e.what()),
@@ -98,10 +99,12 @@ int main() try {
             json outputJson;
             try {
                 outputJson["project_id"] = project_id;
-                outputJson["bucket"] = "output";
-                outputJson["key"] = outputKey;
-                outputJson["name"] = "67";
-                outputJson["size"] = 67;
+                outputJson["file"] = {
+                    {"bucket", config.s3BucketOutput()},
+                    {"name", "67"},
+                    {"key", outputKey},
+                    {"size", 67},
+                };
             } catch (const std::exception& e) {
                 Logger::getInstance().log(std::format("Failed to generate output json: {}", e.what()),
                                           Logger::Level::ERROR);
