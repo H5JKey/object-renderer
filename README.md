@@ -10,6 +10,8 @@
 
 PriZm is an open-source rendering platform that combines a physically based path tracing engine written in C++ with a scalable backend for distributed rendering written in Python.
 
+---
+
 ## Repository Structure
 
 ```text
@@ -31,6 +33,8 @@ priZm/
     ├── tests/               # Unit and integration tests
     └── images/              # Example output renders
 ```
+
+---
 
 ### Renderer
 > Path tracing engine that can run as s standalone CLI application or as a distributed worker.
