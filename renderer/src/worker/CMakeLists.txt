@@ -34,7 +34,7 @@ target_compile_options(renderer_worker PRIVATE
 add_custom_command(
     TARGET renderer_worker POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
-        ${CMAKE_SOURCE_DIR}/../.env
+        ${CMAKE_SOURCE_DIR}/.env
         ${CMAKE_BINARY_DIR}/.env
     COMMENT "Linking .env to build directory"
 )
